@@ -174,7 +174,9 @@ async function initApp(){
   setSessionBadge(session);
   await loadFromCloud();
   applyAccessScope(session.user.email);
-  renderAll();
+  let rp=currentReportingPeriod();
+  let creadas=generateObligationsAllClients(rp.month,rp.year);
+  if(creadas>0){save()}else{renderAll()}
 }
 
 sb.auth.onAuthStateChange((_event,session)=>{if(!session)showLogin()});
