@@ -361,6 +361,7 @@ function openTaskModal(id){let t=id?db.tasks.find(x=>x.id===id):{title:'',client
 function openQuick(){modal('Crear nuevo',`<div class="grid cols3"><button class="card" onclick="closeModal();openClientModal()"><h3>Cliente</h3><p>Alta y asignación de equipo.</p></button><button class="card" onclick="closeModal();openObligationModal()"><h3>Obligación</h3><p>Nueva obligación y checklist.</p></button><button class="card" onclick="closeModal();openTaskModal()"><h3>Tarea</h3><p>Actividad interna del despacho.</p></button></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`)}function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='respaldo-cyaroma.json';a.click()}function renderAll(){renderDashboard();renderClients();renderObligations();renderPayrollChecklist();renderPayrollMovs();renderIncapacidades();renderBilling();renderTasks();renderStaff();renderCalendar();renderReports();renderCatalog();renderSettings()}
 function renderSettings(){let el=$('#emailTemplateInput');if(el&&document.activeElement!==el)el.value=db.emailTemplate}
 function saveEmailTemplate(){db.emailTemplate=$('#emailTemplateInput').value;save();alert('Plantilla guardada.')}
+function upgradeEmailTemplate(t){if(!t||typeof t!=='string')return defaults.emailTemplate;if(t.includes('{remitente}'))return t;if(/Saludos,/.test(t))return t.replace(/Saludos,/,'Saludos,\n{remitente}');return t+'\n{remitente}'}
 
 /* ============ Solicitar información por correo (mailto precargado) ============ */
 const INFO_REQUEST_ITEMS=['Estados de cuenta bancarios','XML de facturas emitidas (CFDI)','XML de facturas recibidas (CFDI)','Comprobantes / recibos de nómina','Comprobantes de gastos (tickets, notas)','Contratos o documentos nuevos'];
@@ -435,7 +436,7 @@ async function loadFromCloud(){
     payrollMovs: Array.isArray(cloud.payrollMovs) ? cloud.payrollMovs : [],
     incapacidades: Array.isArray(cloud.incapacidades) ? cloud.incapacidades : [],
     bankRequests: Array.isArray(cloud.bankRequests) ? cloud.bankRequests : [],
-    emailTemplate: typeof cloud.emailTemplate === 'string' && cloud.emailTemplate ? cloud.emailTemplate : defaults.emailTemplate
+    emailTemplate: upgradeEmailTemplate((typeof cloud.emailTemplate==='string'&&cloud.emailTemplate)?cloud.emailTemplate:defaults.emailTemplate)
   };
 }
 
