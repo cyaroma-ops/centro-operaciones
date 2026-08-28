@@ -502,19 +502,33 @@ const SUPABASE_URL = 'https://lkyhpcrhjoshzdugoaqb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_E8z6YstIpgrRsv5IiBc1SA_UNbpKfTC';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+async function fetchAllRows(table,cols,orderCol,ascending){
+  let all=[],from=0;const pageSize=1000;
+  while(true){
+    let q=sb.from(table).select(cols||'*');
+    if(orderCol)q=q.order(orderCol,{ascending:ascending!==false});
+    q=q.range(from,from+pageSize-1);
+    const {data,error}=await q;
+    if(error)return {data:null,error};
+    all=all.concat(data||[]);
+    if(!data||data.length<pageSize)break;
+    from+=pageSize;
+  }
+  return {data:all,error:null};
+}
 async function loadFromCloud(){
   try{
     const keys=Object.keys(TABLE_MAP);
-    const results=await Promise.all(keys.map(k=>sb.from(TABLE_MAP[k].table).select('*')));
+    const results=await Promise.all(keys.map(k=>fetchAllRows(TABLE_MAP[k].table,'*')));
     const errored=results.find(r=>r.error);
     if(errored){console.error(errored.error);alert('No se pudo cargar la información desde la nube. Revisa la configuración de Supabase.');return}
     let out={};
     keys.forEach((k,i)=>{out[k]=(results[i].data||[]).map(row=>fromRow(k,row))});
 
-    const {data:historyRows,error:histErr}=await sb.from('history').select('*').order('id',{ascending:false});
+    const {data:historyRows,error:histErr}=await fetchAllRows('history','*','id',false);
     out.history=histErr?[]:(historyRows||[]).map(r=>({client:r.client_id,date:r.date,text:r.text}));
 
-    const {data:settingsRows}=await sb.from('settings').select('*');
+    const {data:settingsRows}=await fetchAllRows('settings','*');
     let tpl=(settingsRows||[]).find(s=>s.key==='emailTemplate');
     out.emailTemplate=upgradeEmailTemplate(tpl?tpl.value:defaults.emailTemplate);
 
