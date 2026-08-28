@@ -14,6 +14,8 @@
 .login-left-phrase{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:600;color:var(--gold);line-height:1.5;margin:0 0 22px}
 .login-left-desc{font-size:12.5px;line-height:1.7;color:rgba(255,255,255,.72);margin:0 0 36px}
 .login-features{display:flex;justify-content:space-between;gap:10px;width:100%}
+.login-compliance-graphic{display:flex;align-items:flex-end;justify-content:center;gap:9px;width:120px;height:70px;margin:48px 0 0;opacity:.85}
+.login-bar{width:14px;background:linear-gradient(180deg,var(--gold),rgba(201,169,97,.35));border-radius:3px 3px 0 0}
 .login-feature{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:0}
 .login-feature svg{width:20px;height:20px;color:var(--gold)}
 .login-feature span{font-size:10px;color:rgba(255,255,255,.8);letter-spacing:.01em}
@@ -39,7 +41,7 @@
 @media(max-width:760px){
   .login-bg{flex-direction:column;overflow-y:auto}
   .login-left{flex:none;max-width:100%;width:100%;padding:22px 20px;min-height:0}
-  .login-decor,.login-left-title,.login-left-tag,.login-left .login-gold-line,.login-left-phrase,.login-left-desc,.login-features,.login-left-footer{display:none}
+  .login-decor,.login-left-title,.login-left-tag,.login-left .login-gold-line,.login-left-phrase,.login-left-desc,.login-features,.login-compliance-graphic,.login-left-footer{display:none}
   .login-left-inner{max-width:220px}
   .login-logo{margin-bottom:0}
   .login-right{padding:34px 22px 90px;justify-content:flex-start}
@@ -116,6 +118,13 @@
         <div class="login-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span>Calendario</span></div>
         <div class="login-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span>Tareas</span></div>
         <div class="login-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 8.5c0-2.5-2-4.5-4.5-4.5S11.5 6 11.5 8.5 13.5 13 16 13s4.5-2 4.5-4.5z"></path><path d="M3 20.5c0-3.5 3-6.5 7-6.5"></path><circle cx="7" cy="9" r="3.2"></circle><path d="M13.5 16.2c1.4-.9 3-.9 4.6 0 1.6.9 2.9 2.5 2.9 4.3"></path></svg><span>Equipo</span></div>
+      </div>
+      <div class="login-compliance-graphic" aria-hidden="true">
+        <div class="login-bar" style="height:38%"></div>
+        <div class="login-bar" style="height:62%"></div>
+        <div class="login-bar" style="height:48%"></div>
+        <div class="login-bar" style="height:80%"></div>
+        <div class="login-bar" style="height:56%"></div>
       </div>
     </div>
     <div class="login-left-footer">RESPONSABILIDAD &middot; CONFIANZA &middot; EXPERIENCIA</div>
