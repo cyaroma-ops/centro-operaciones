@@ -60,7 +60,7 @@
 <section class="page" id="tasks"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div class="seg"><button class="active" onclick="setTaskView('kanban',this)">Kanban</button><button onclick="setTaskView('list',this)">Lista</button></div><button class="btn primary" onclick="openTaskModal()">+ Nueva tarea</button></div><div id="tasksContent"></div></section>
 <section class="page" id="calendar"><div class="filters"><input id="calSearch" placeholder="Buscar cliente" oninput="renderCalendar()"><select id="calType" onchange="renderCalendar()"><option value="">Todos los tipos</option><option>Obligación</option><option>Vigencia</option></select><select id="calRange" onchange="renderCalendar()"><option value="todo">Todo</option><option value="vencidas">Solo vencidas</option><option value="30">Próximos 30 días</option><option value="90">Próximos 90 días</option></select></div><div class="card"><h3>Calendario de vencimientos</h3><div id="calendarContent"></div></div></section>
 <section class="page" id="staff"><div class="filters"><input id="staffSearch" placeholder="Buscar personal" oninput="renderStaff()"><select id="staffDept" onchange="renderStaff()"><option value="">Todos los departamentos</option><option>Fiscal</option><option>Contabilidad</option><option>Nóminas</option><option>Facturación</option><option>Administración</option></select><button class="btn primary" onclick="openStaffModal()">+ Nuevo usuario</button></div><div id="staffTable"></div></section>
-<section class="page" id="reports"><div class="grid cols3"><div class="card"><h3>Obligaciones por estado</h3><div id="reportStates"></div></div><div class="card"><h3>Vigencias próximas</h3><div id="reportExpiries"></div></div><div class="card"><h3>Productividad del equipo</h3><div id="reportTeam"></div></div></div></section>
+<section class="page" id="reports"><div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn primary" onclick="exportExcelReport()">⇩ Exportar Excel</button><button class="btn" onclick="exportPDFReport()">⇩ Exportar PDF</button></div><div class="grid cols3"><div class="card"><h3>Obligaciones por estado</h3><div id="reportStates"></div></div><div class="card"><h3>Vigencias próximas</h3><div id="reportExpiries"></div></div><div class="card"><h3>Productividad del equipo</h3><div id="reportTeam"></div></div></div></section>
 <section class="page" id="settings"><div class="grid cols2"><div class="card"><h3>Catálogo de obligaciones</h3><div id="catalog"></div><button class="btn" onclick="addCatalog()">+ Agregar concepto</button></div><div class="card"><h3>Datos del despacho</h3><div class="form-grid"><div class="field"><label>Nombre</label><input value="Consultores y Asociados Roma S.A. de C.V."></div><div class="field"><label>Nombre comercial</label><input value="CYARoma"></div><div class="field full"><label>Dominio sugerido</label><input value="control.cyaroma.com.mx"></div></div></div></div><div class="card" style="margin-top:20px"><h3>Plantilla de correo — Solicitud de información</h3><div class="hint" style="margin-bottom:8px">Se usa cada vez que alguien pide información a un cliente desde su ficha. Usa <b>{cliente}</b> donde quieras que aparezca el nombre del cliente, <b>{items}</b> donde quieras la lista de lo solicitado, y <b>{remitente}</b> donde quieras que aparezca el nombre de quien tiene la sesión iniciada (así cada correo queda firmado con la persona correcta, sin depender de la firma de Outlook de cada quien).</div><textarea id="emailTemplateInput" rows="9" style="width:100%;font-family:inherit;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:8px"></textarea><button class="btn primary" style="margin-top:10px" onclick="saveEmailTemplate()">Guardar plantilla</button></div></section>
 <section class="page" id="audit"><div class="filters"><input id="auditSearch" placeholder="Buscar por usuario o texto" oninput="renderAudit()"></div><div class="card"><h3>Historial de cambios</h3><div class="hint" style="margin-bottom:10px">Cada vez que alguien guarda algo en el sistema (crea, edita, marca, o elimina), queda un registro aquí — quién fue y qué cambió, en todos los módulos.</div><div id="auditTable"></div></div></section>
 <section class="page" id="clientDetail"></section>
@@ -110,7 +110,8 @@ const TABLE_MAP={
 };
 const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso']};
 function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
-function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let item={};Object.keys(map).forEach(jsKey=>{item[jsKey]=row[map[jsKey]]});return item}
+const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id']};
+function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let numFields=NUMERIC_ID_FIELDS[collectionKey]||[];let item={};Object.keys(map).forEach(jsKey=>{let v=row[map[jsKey]];if(numFields.includes(jsKey)&&v!==null&&v!==undefined)v=Number(v);item[jsKey]=v});return item}
 function summarizeChanges(before,after){
   before=before||{};after=after||{};
   const collections=[['clients','cliente(s)'],['obligations','obligación(es)'],['payroll','registro(s) de nómina'],['payrollMovs','alta(s)/baja(s) de personal'],['incapacidades','incapacidad(es)'],['bankRequests','solicitud(es) bancaria(s)'],['tasks','tarea(s)'],['staff','usuario(s) de Personal'],['catalog','concepto(s) de catálogo']];
@@ -271,6 +272,54 @@ function renderCalendar(){
   items.sort((a,b)=>a.date.localeCompare(b.date));
   $('#calendarContent').innerHTML=items.length?`<div class="timeline">${items.map(x=>{let overdue=x.date<today;return `<div class="time-item ${overdue?'overdue':''}"><b style="${overdue?'color:#b92e38':''}">${x.date} · ${x.title}</b><div class="role">${x.sub} · ${x.type}${overdue?' · <b style="color:#b92e38">Vencida</b>':''}</div></div>`}).join('')}</div>`:'<div class="empty">Sin resultados para este filtro.</div>';
 }
+function loadScriptOnce(src,globalCheck){return new Promise((resolve,reject)=>{if(typeof globalCheck!=='undefined'&&globalCheck)return resolve();if(document.querySelector(`script[src="${src}"]`))return resolve();let s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('No se pudo cargar '+src));document.head.appendChild(s)})}
+
+async function exportExcelReport(){
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',typeof XLSX!=='undefined');
+    let myClients=visibleClients(),myObl=visibleObligations();
+    let clientRows=myClients.map((c,i)=>{
+      let os=myObl.filter(o=>o.client===c.id);
+      let pct=os.length?Math.round(os.filter(o=>o.state==='Concluida').length/os.length*100):0;
+      return {'No.':i+1,'Cliente':clientDisplay(c.id),'Razón social':c.name,'RFC':c.rfc||'','Régimen':(c.regimenes||[]).join(', '),'Tipo':c.type||'','Contador':person(c.accountant).name,'Supervisor':person(c.supervisor).name,'Estado':c.state,'FIEL':c.fiel||'','CSD':c.csd||'','% Cumplimiento':pct};
+    });
+    let oblRows=myObl.map(o=>({'Cliente':clientDisplay(o.client),'Obligación':o.name,'Periodo':o.period,'Vencimiento':o.due||'','Estado':o.state,'Resultado':o.resultado||'','Responsable':person(o.owner).name,'Pasos completados':`${o.checks.filter(Boolean).length}/10`}));
+    let teamRows=db.staff.filter(s=>s.status==='Activo').map(s=>{let completadas=db.obligations.filter(o=>o.owner===s.id&&o.state==='Concluida').length;let pendientes=personPendingCount(s.id);return {'Usuario':s.name,'Rol':s.role,'Departamento':s.dept,'Clientes asignados':db.clients.filter(c=>clientAssignedIds(c).includes(s.id)).length,'Obligaciones concluidas':completadas,'Pendientes totales':pendientes};});
+    let wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(clientRows),'Clientes');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(oblRows),'Obligaciones');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(teamRows),'Productividad');
+    XLSX.writeFile(wb,`Reporte_Cyaroma_${toISODate(new Date())}.xlsx`);
+  }catch(e){console.error(e);alert('No se pudo generar el Excel. Revisa tu conexión a internet e intenta de nuevo.')}
+}
+
+async function exportPDFReport(){
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
+    const {jsPDF}=window.jspdf;
+    let doc=new jsPDF();
+    let myClients=visibleClients(),myObl=visibleObligations();
+    let done=myObl.filter(o=>o.state==='Concluida').length,total=myObl.length,over=myObl.filter(o=>new Date(o.due)<new Date()&&o.state!=='Concluida').length;
+    let y=20;
+    doc.setFontSize(16);doc.text('Reporte de Cumplimiento — Roma & Associates',14,y);y+=8;
+    doc.setFontSize(10);doc.setTextColor(120);doc.text(`Generado el ${new Date().toLocaleString('es-MX')}`,14,y);y+=12;
+    doc.setTextColor(0);doc.setFontSize(12);doc.text('Resumen general',14,y);y+=7;
+    doc.setFontSize(10);
+    [['Clientes',myClients.length],['Obligaciones del periodo',total],['Concluidas',done],['Vencidas',over]].forEach(([label,val])=>{doc.text(`${label}: ${val}`,14,y);y+=6});
+    y+=6;
+    doc.setFontSize(12);doc.text('Vigencias próximas (FIEL / CSD)',14,y);y+=7;doc.setFontSize(9);
+    let expiryItems=[];
+    myClients.filter(c=>c.state==='Activo').forEach(c=>{let sf=dateStatus(c.fiel);if(sf.days!==null&&sf.days<=60)expiryItems.push(`${c.name} — FIEL vence ${c.fiel} (${sf.text})`);let sc=dateStatus(c.csd);if(sc.days!==null&&sc.days<=60)expiryItems.push(`${c.name} — CSD vence ${c.csd} (${sc.text})`)});
+    if(!expiryItems.length)expiryItems=['Sin vigencias próximas en los siguientes 60 días.'];
+    expiryItems.slice(0,20).forEach(t=>{if(y>270){doc.addPage();y=20}doc.text(`• ${t}`,14,y);y+=5.5});
+    y+=6;
+    if(y>250){doc.addPage();y=20}
+    doc.setFontSize(12);doc.text('Productividad del equipo',14,y);y+=7;doc.setFontSize(9);
+    db.staff.filter(s=>s.status==='Activo').forEach(s=>{if(y>270){doc.addPage();y=20}let pend=personPendingCount(s.id);doc.text(`• ${s.name}: ${pend} pendiente(s)`,14,y);y+=5.5});
+    doc.save(`Reporte_Cyaroma_${toISODate(new Date())}.pdf`);
+  }catch(e){console.error(e);alert('No se pudo generar el PDF. Revisa tu conexión a internet e intenta de nuevo.')}
+}
+
 function renderReports(){let states=['Sin iniciar','En proceso','En revisión','Concluida'];$('#reportStates').innerHTML=states.map(s=>`<div class="prow"><span>${s}</span><div class="progress"><span style="width:${db.obligations.length?db.obligations.filter(o=>o.state===s).length/db.obligations.length*100:0}%"></span></div><b>${db.obligations.filter(o=>o.state===s).length}</b></div>`).join('');
   let expiryItems=[];
   visibleClients().filter(c=>c.state==='Activo').forEach(c=>{let sf=dateStatus(c.fiel);if(sf.days!==null&&sf.days<=60)expiryItems.push({name:c.name,label:'FIEL',date:c.fiel,status:sf});let sc=dateStatus(c.csd);if(sc.days!==null&&sc.days<=60)expiryItems.push({name:c.name,label:'Sello digital (CSD)',date:c.csd,status:sc})});
@@ -410,30 +459,49 @@ function autoCalcDueDate(){let cid=+$('#oClient').value;let c=db.clients.find(x=
 function saveObligation(){let month=+$('#oMonth').value,year=+$('#oYear').value;let name=$('#oName').value;let period=ANUAL_NAMES.includes(name)?`Ejercicio ${year}`:`${MESES[month-1]} ${year}`;db.obligations.push({id:Date.now(),client:+$('#oClient').value,name:name,period:period,due:$('#oDue').value,owner:+$('#oOwner').value,state:$('#oState').value,resultado:null,checks:Array(10).fill(0)});closeModal();save()}
 
 /* ============ Marcar obligaciones atrasadas (rezago manual) ============ */
-function openBacklogModal(){let cl=visibleClients();if(!cl.length){alert('No hay clientes disponibles.');return}modal('Marcar obligaciones atrasadas',buildBacklogForm(cl[0].id),`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveBacklog()">Crear seleccionadas</button>`)}
-function buildBacklogForm(cid){let c=db.clients.find(x=>x.id===cid);let types=(c&&c.obligationTypes&&c.obligationTypes.length)?c.obligationTypes:catalogNames();let year=new Date().getFullYear();return `<div class="form-grid"><div class="field"><label>Cliente</label><select id="bkClient" onchange="updateBacklogTypeOptions()">${options(visibleClients(),cid)}</select></div><div class="field"><label>Obligación</label><select id="bkName">${types.map(x=>`<option>${x}</option>`).join('')}</select></div><div class="field"><label>Año</label><input id="bkYear" type="number" value="${year}"></div><div class="field full"><div class="hint">Si eliges "Declaración Anual" se crea un solo registro para ese año (los meses no aplican). Para las demás, marca los meses en los que le falta presentar.</div></div><div class="field full"><label>Meses pendientes</label><div>${MESES.map((m,i)=>`<label style="margin-right:14px"><input type="checkbox" class="bkMonth" value="${i+1}"> ${m}</label>`).join('')}</div></div></div>`}
-function updateBacklogTypeOptions(){let cid=+$('#bkClient').value;let c=db.clients.find(x=>x.id===cid);let types=(c&&c.obligationTypes&&c.obligationTypes.length)?c.obligationTypes:catalogNames();$('#bkName').innerHTML=types.map(x=>`<option>${x}</option>`).join('')}
-function saveBacklog(){let cid=+$('#bkClient').value;let c=db.clients.find(x=>x.id===cid);let name=$('#bkName').value;let year=+$('#bkYear').value;let created=0;
-  if(ANUAL_NAMES.includes(name)){
-    let period=`Ejercicio ${year}`;
-    if(!db.obligations.some(o=>o.client===cid&&o.name===name&&o.period===period)){
-      let due=calcVencimiento(name,1,year,c.rfc,c.type);
-      db.obligations.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),client:cid,name:name,period:period,due:due,owner:c.accountant,state:'Sin iniciar',resultado:null,checks:Array(10).fill(0)}));
-      created++;
-    }
-  } else {
-    let months=$$('.bkMonth:checked').map(x=>+x.value);
-    if(!months.length){alert('Selecciona al menos un mes.');return}
-    months.forEach(month=>{
-      let period=`${MESES[month-1]} ${year}`;
+function openBacklogModal(){let cl=visibleClients();if(!cl.length){alert('No hay clientes disponibles.');return}modal('Marcar obligaciones atrasadas',buildBacklogForm(),`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveBacklog()">Crear seleccionadas</button>`)}
+function buildBacklogForm(){let cl=visibleClients();let year=new Date().getFullYear();return `<div class="form-grid">
+  <div class="field full"><label>Clientes (marca uno o varios)</label>
+    <div style="margin-bottom:6px"><button type="button" class="btn" onclick="toggleAllBacklogClients(true)">Marcar todos</button> <button type="button" class="btn" onclick="toggleAllBacklogClients(false)">Desmarcar todos</button></div>
+    <div style="max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:10px">${cl.map(c=>`<label style="display:block;margin-bottom:5px"><input type="checkbox" class="bkClientChk" value="${c.id}"> ${clientDisplay(c.id)}</label>`).join('')}</div>
+  </div>
+  <div class="field"><label>Obligación</label><select id="bkName">${catalogNames().map(x=>`<option>${x}</option>`).join('')}</select></div>
+  <div class="field"><label>Año</label><input id="bkYear" type="number" value="${year}"></div>
+  <div class="field full"><div class="hint">Solo se crean atrasos en los clientes que tengan esta obligación marcada como aplicable — los demás se omiten y se avisa al final. Si eliges "Declaración Anual" se crea un solo registro por cliente para ese año (los meses no aplican).</div></div>
+  <div class="field full"><label>Meses pendientes</label><div>${MESES.map((m,i)=>`<label style="margin-right:14px"><input type="checkbox" class="bkMonth" value="${i+1}"> ${m}</label>`).join('')}</div></div>
+</div>`}
+function toggleAllBacklogClients(val){$$('.bkClientChk').forEach(x=>x.checked=val)}
+function saveBacklog(){
+  let clientIds=$$('.bkClientChk:checked').map(x=>+x.value);
+  if(!clientIds.length){alert('Selecciona al menos un cliente.');return}
+  let name=$('#bkName').value;let year=+$('#bkYear').value;
+  let months=$$('.bkMonth:checked').map(x=>+x.value);
+  if(!ANUAL_NAMES.includes(name)&&!months.length){alert('Selecciona al menos un mes.');return}
+  let created=0,omitidos=[];
+  clientIds.forEach(cid=>{
+    let c=db.clients.find(x=>x.id===cid);
+    if(!c||!(c.obligationTypes||[]).includes(name)){omitidos.push(c?clientDisplay(c.id):cid);return}
+    if(ANUAL_NAMES.includes(name)){
+      let period=`Ejercicio ${year}`;
       if(db.obligations.some(o=>o.client===cid&&o.name===name&&o.period===period))return;
-      let due=calcVencimiento(name,month,year,c.rfc,c.type);
-      db.obligations.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),client:cid,name:name,period:period,due:due,owner:c.accountant,state:'Sin iniciar',resultado:null,checks:Array(10).fill(0)}));
+      let due=calcVencimiento(name,1,year,c.rfc,c.type);
+      db.obligations.push(stamp({id:Date.now()+Math.floor(Math.random()*100000)+cid,client:cid,name:name,period:period,due:due,owner:c.accountant,state:'Sin iniciar',resultado:null,checks:Array(10).fill(0)}));
       created++;
-    });
-  }
+    }else{
+      months.forEach(month=>{
+        let period=`${MESES[month-1]} ${year}`;
+        if(db.obligations.some(o=>o.client===cid&&o.name===name&&o.period===period))return;
+        let due=calcVencimiento(name,month,year,c.rfc,c.type);
+        db.obligations.push(stamp({id:Date.now()+Math.floor(Math.random()*100000)+cid+month,client:cid,name:name,period:period,due:due,owner:c.accountant,state:'Sin iniciar',resultado:null,checks:Array(10).fill(0)}));
+        created++;
+      });
+    }
+  });
   closeModal();save();
-  alert(created>0?`Se crearon ${created} obligación(es) atrasada(s).`:'No se creó ninguna (ya existían para ese cliente/obligación/periodo).');
+  let atendidos=clientIds.length-omitidos.length;
+  let msg=`Se crearon ${created} obligación(es) atrasada(s) en ${atendidos} cliente(s).`;
+  if(omitidos.length)msg+=`\n\nSe omitieron ${omitidos.length} cliente(s) que no tienen "${name}" marcada como obligación aplicable:\n${omitidos.slice(0,15).join(', ')}${omitidos.length>15?'...':''}`;
+  alert(msg);
 }
 function addCatalog(){let x=prompt('Nombre de la nueva obligación');if(!x)return;let jur=confirm('¿Es una obligación ESTATAL? Aceptar = Estatal, Cancelar = Federal')?'Estatal':'Federal';db.catalog.push(stamp({name:x,jurisdiction:jur}));save()}
 function openWorkflow(id){let o=db.obligations.find(x=>x.id===id);let esOpinion=o.name==='Opinión de Cumplimiento SAT';modal(`${o.name} · ${clientDisplay(o.client)}`,`<div class="grid cols2" style="margin-top:0"><div><h3>Checklist operativo</h3><div class="checklist">${steps.map((s,i)=>`<label class="check-item ${o.checks[i]?'done':''}"><input type="checkbox" ${o.checks[i]?'checked':''} onchange="toggleCheck(${id},${i},this.checked)"><div><b>${s}</b><div class="role">${o.checks[i]?'Completado':'Pendiente'}</div></div></label>`).join('')}</div></div><div><h3>Resumen</h3><p><b>Periodo:</b> ${o.period}</p><p><b>Vencimiento:</b> ${o.due}</p><p><b>Responsable:</b> ${person(o.owner).name}</p><div class="field"><label>Estado general</label><select onchange="changeOblState(${id},this.value)">${['Sin iniciar','En proceso','En revisión','Concluida'].map(x=>`<option ${x===o.state?'selected':''}>${x}</option>`).join('')}</select></div>${esOpinion?`<div class="field"><label>Resultado (al descargarla)</label><select onchange="setResultado(${id},this.value)"><option value="" ${!o.resultado?'selected':''}>Pendiente de descargar</option><option value="Positivo" ${o.resultado==='Positivo'?'selected':''}>Positivo</option><option value="Negativo" ${o.resultado==='Negativo'?'selected':''}>Negativo</option></select></div>`:''}<div style="margin-top:15px"><b>Avance ${o.checks.filter(Boolean).length}/${steps.length}</b><div class="progress"><span style="width:${o.checks.filter(Boolean).length/steps.length*100}%"></span></div></div></div></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`)}
@@ -526,7 +594,7 @@ async function loadFromCloud(){
     keys.forEach((k,i)=>{out[k]=(results[i].data||[]).map(row=>fromRow(k,row))});
 
     const {data:historyRows,error:histErr}=await fetchAllRows('history','*','id',false);
-    out.history=histErr?[]:(historyRows||[]).map(r=>({client:r.client_id,date:r.date,text:r.text}));
+    out.history=histErr?[]:(historyRows||[]).map(r=>({client:Number(r.client_id),date:r.date,text:r.text}));
 
     const {data:settingsRows}=await fetchAllRows('settings','*');
     let tpl=(settingsRows||[]).find(s=>s.key==='emailTemplate');
