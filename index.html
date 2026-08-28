@@ -293,29 +293,105 @@ async function exportExcelReport(){
   }catch(e){console.error(e);alert('No se pudo generar el Excel. Revisa tu conexión a internet e intenta de nuevo.')}
 }
 
+function getLogoDataUrl(){let img=document.querySelector('.brand img');return img?img.src:null}
+
 async function exportPDFReport(){
   try{
     await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',typeof window.jspdf!=='undefined'&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable!=='undefined');
     const {jsPDF}=window.jspdf;
     let doc=new jsPDF();
+    const NAVY=[7,59,118];
+    const pageW=doc.internal.pageSize.getWidth();
+    const pageH=doc.internal.pageSize.getHeight();
     let myClients=visibleClients(),myObl=visibleObligations();
-    let done=myObl.filter(o=>o.state==='Concluida').length,total=myObl.length,over=myObl.filter(o=>new Date(o.due)<new Date()&&o.state!=='Concluida').length;
-    let y=20;
-    doc.setFontSize(16);doc.text('Reporte de Cumplimiento — Roma & Associates',14,y);y+=8;
-    doc.setFontSize(10);doc.setTextColor(120);doc.text(`Generado el ${new Date().toLocaleString('es-MX')}`,14,y);y+=12;
-    doc.setTextColor(0);doc.setFontSize(12);doc.text('Resumen general',14,y);y+=7;
-    doc.setFontSize(10);
-    [['Clientes',myClients.length],['Obligaciones del periodo',total],['Concluidas',done],['Vencidas',over]].forEach(([label,val])=>{doc.text(`${label}: ${val}`,14,y);y+=6});
-    y+=6;
-    doc.setFontSize(12);doc.text('Vigencias próximas (FIEL / CSD)',14,y);y+=7;doc.setFontSize(9);
-    let expiryItems=[];
-    myClients.filter(c=>c.state==='Activo').forEach(c=>{let sf=dateStatus(c.fiel);if(sf.days!==null&&sf.days<=60)expiryItems.push(`${c.name} — FIEL vence ${c.fiel} (${sf.text})`);let sc=dateStatus(c.csd);if(sc.days!==null&&sc.days<=60)expiryItems.push(`${c.name} — CSD vence ${c.csd} (${sc.text})`)});
-    if(!expiryItems.length)expiryItems=['Sin vigencias próximas en los siguientes 60 días.'];
-    expiryItems.slice(0,20).forEach(t=>{if(y>270){doc.addPage();y=20}doc.text(`• ${t}`,14,y);y+=5.5});
-    y+=6;
-    if(y>250){doc.addPage();y=20}
-    doc.setFontSize(12);doc.text('Productividad del equipo',14,y);y+=7;doc.setFontSize(9);
-    db.staff.filter(s=>s.status==='Activo').forEach(s=>{if(y>270){doc.addPage();y=20}let pend=personPendingCount(s.id);doc.text(`• ${s.name}: ${pend} pendiente(s)`,14,y);y+=5.5});
+    let done=myObl.filter(o=>o.state==='Concluida').length,total=myObl.length,over=myObl.filter(o=>new Date(o.due)<new Date()&&o.state!=='Concluida').length,pendientes=total-done;
+    let logo=getLogoDataUrl();
+
+    function drawHeader(){
+      doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);
+      doc.rect(0,0,pageW,26,'F');
+      if(logo){try{doc.addImage(logo,'PNG',12,5,30,15)}catch(e){}}
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(13);doc.setFont(undefined,'bold');
+      doc.text('Reporte de Cumplimiento',pageW-12,12,{align:'right'});
+      doc.setFontSize(8.5);doc.setFont(undefined,'normal');
+      doc.text(`Generado el ${new Date().toLocaleString('es-MX')}`,pageW-12,18,{align:'right'});
+      doc.setTextColor(0,0,0);
+    }
+    function drawFooter(){
+      let n=doc.internal.getNumberOfPages();
+      for(let i=1;i<=n;i++){
+        doc.setPage(i);
+        doc.setFontSize(8);doc.setTextColor(150);doc.setFont(undefined,'normal');
+        doc.text('Roma & Associates — Documento confidencial',12,pageH-8);
+        doc.text(`Página ${i} de ${n}`,pageW-12,pageH-8,{align:'right'});
+      }
+      doc.setTextColor(0);
+    }
+
+    drawHeader();
+    let y=36;
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(0);
+    doc.text('Resumen general',12,y);y+=4;
+
+    doc.autoTable({
+      startY:y,
+      head:[['Clientes','Obligaciones del periodo','Concluidas','Pendientes','Vencidas']],
+      body:[[myClients.length,total,done,pendientes,over]],
+      theme:'grid',
+      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',halign:'center'},
+      bodyStyles:{halign:'center',fontStyle:'bold',fontSize:12},
+      margin:{left:12,right:12},
+      didDrawPage:drawHeader
+    });
+    y=doc.lastAutoTable.finalY+10;
+
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.text('Vigencias próximas (FIEL / CSD)',12,y);y+=4;
+    let expiryRows=[];
+    myClients.filter(c=>c.state==='Activo').forEach(c=>{
+      let sf=dateStatus(c.fiel);if(sf.days!==null&&sf.days<=60)expiryRows.push([c.name,'FIEL',c.fiel,sf.text]);
+      let sc=dateStatus(c.csd);if(sc.days!==null&&sc.days<=60)expiryRows.push([c.name,'CSD',c.csd,sc.text]);
+    });
+    if(!expiryRows.length){
+      doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(120);
+      doc.text('Sin vigencias próximas en los siguientes 60 días.',12,y+5);
+      doc.setTextColor(0);y+=14;
+    }else{
+      doc.autoTable({
+        startY:y,
+        head:[['Cliente','Tipo','Fecha','Estado']],
+        body:expiryRows,
+        theme:'striped',
+        headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},
+        margin:{left:12,right:12},
+        didDrawPage:drawHeader,
+        didParseCell:function(data){
+          if(data.section==='body'&&data.column.index===3){
+            let txt=String(data.cell.raw||'').toLowerCase();
+            if(txt.includes('vencid')){data.cell.styles.textColor=[196,85,77];data.cell.styles.fontStyle='bold'}
+            else{data.cell.styles.textColor=[190,120,20];data.cell.styles.fontStyle='bold'}
+          }
+        }
+      });
+      y=doc.lastAutoTable.finalY+10;
+    }
+
+    if(y>240){doc.addPage();drawHeader();y=36}
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(0);doc.text('Productividad del equipo',12,y);y+=4;
+    let teamRows=db.staff.filter(s=>s.status==='Activo').map(s=>[s.name,s.role,personPendingCount(s.id)]).sort((a,b)=>b[2]-a[2]);
+    doc.autoTable({
+      startY:y,
+      head:[['Usuario','Rol','Pendientes']],
+      body:teamRows,
+      theme:'striped',
+      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},
+      columnStyles:{2:{halign:'center',fontStyle:'bold'}},
+      margin:{left:12,right:12},
+      didDrawPage:drawHeader
+    });
+
+    drawFooter();
     doc.save(`Reporte_Cyaroma_${toISODate(new Date())}.pdf`);
   }catch(e){console.error(e);alert('No se pudo generar el PDF. Revisa tu conexión a internet e intenta de nuevo.')}
 }
