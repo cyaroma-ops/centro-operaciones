@@ -96,27 +96,21 @@ const REGIMENES=['General de Ley Personas Morales','RESICO Personas Morales','RE
 let db=defaults;let taskView='kanban';const steps=['Información solicitada','XML recibidos','Estados de cuenta recibidos','Bancos conciliados','Papeles de trabajo terminados','Revisión del contador','Revisión del supervisor','Autorización del cliente','Declaración presentada','Pago realizado'];const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let lastSyncedSnapshot=null;
 function stamp(o){o._ts=Date.now();return o}
-function mergeById(cloudArr,localArr,key){
-  key=key||'id';
-  cloudArr=Array.isArray(cloudArr)?cloudArr:[];
-  localArr=Array.isArray(localArr)?localArr:[];
-  let map=new Map();
-  cloudArr.forEach(item=>map.set(item[key],item));
-  localArr.forEach(item=>{
-    let existing=map.get(item[key]);
-    if(!existing){map.set(item[key],item);return}
-    let tsExisting=existing._ts||0, tsLocal=item._ts||0;
-    map.set(item[key], tsLocal>=tsExisting ? item : existing);
-  });
-  return [...map.values()];
-}
-function mergeHistory(cloudArr,localArr){
-  cloudArr=Array.isArray(cloudArr)?cloudArr:[];
-  localArr=Array.isArray(localArr)?localArr:[];
-  let seen=new Set(),merged=[];
-  [...localArr,...cloudArr].forEach(item=>{let k=JSON.stringify(item);if(!seen.has(k)){seen.add(k);merged.push(item)}});
-  return merged;
-}
+const TABLE_MAP={
+  staff:{table:'staff',key:'id',cols:{id:'id',name:'name',email:'email',role:'role',dept:'dept',status:'status'}},
+  clients:{table:'clients',key:'id',cols:{id:'id',name:'name',nombreComercial:'nombre_comercial',rfc:'rfc',type:'type',regimenes:'regimenes',activity:'activity',state:'state',fiel:'fiel',csd:'csd',bankFrequency:'bank_frequency',supervisor:'supervisor_id',accountant:'accountant_id',assistant:'assistant_ids',payroll:'payroll_ids',payrollAssistant:'payroll_assistant_ids',services:'services',emails:'emails',obligationTypes:'obligation_types'}},
+  catalog:{table:'catalog',key:'name',cols:{name:'name',jurisdiction:'jurisdiction'}},
+  obligations:{table:'obligations',key:'id',cols:{id:'id',client:'client_id',name:'name',period:'period',due:'due',owner:'owner_id',state:'state',resultado:'resultado',checks:'checks'}},
+  payroll:{table:'payroll_checklist',key:'id',cols:{id:'id',client:'client_id',period:'period',responsable:'responsable_id',sua:'sua',lineaIMSS:'linea_imss',lineaInfonavit:'linea_infonavit',facturacion:'facturacion',opinionCumplimiento:'opinion_cumplimiento',ema:'ema',eba:'eba'}},
+  payrollMovs:{table:'payroll_movs',key:'id',cols:{id:'id',client:'client_id',colaborador:'colaborador',responsable:'responsable_id',tipo:'tipo',fechaSolicitud:'fecha_solicitud',idse:'idse',acuse:'acuse',aplicacionNomina:'aplicacion_nomina',conciliacion:'conciliacion'}},
+  incapacidades:{table:'incapacidades',key:'id',cols:{id:'id',client:'client_id',colaborador:'colaborador',folio:'folio',responsable:'responsable_id',tipo:'tipo',inicio:'inicio',fin:'fin',dias:'dias',documento:'documento',aplicado:'aplicado'}},
+  bankRequests:{table:'bank_requests',key:'id',cols:{id:'id',client:'client_id',date:'date'}},
+  tasks:{table:'tasks',key:'id',cols:{id:'id',title:'title',client:'client_id',owner:'owner_id',due:'due',priority:'priority',state:'state'}},
+  auditLog:{table:'audit_log',key:'id',cols:{id:'id',actor:'actor',date:'date',summary:'summary'}}
+};
+const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due']};
+function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
+function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let item={};Object.keys(map).forEach(jsKey=>{item[jsKey]=row[map[jsKey]]});return item}
 function summarizeChanges(before,after){
   before=before||{};after=after||{};
   const collections=[['clients','cliente(s)'],['obligations','obligación(es)'],['payroll','registro(s) de nómina'],['payrollMovs','alta(s)/baja(s) de personal'],['incapacidades','incapacidad(es)'],['bankRequests','solicitud(es) bancaria(s)'],['tasks','tarea(s)'],['staff','usuario(s) de Personal'],['catalog','concepto(s) de catálogo']];
@@ -137,34 +131,47 @@ function summarizeChanges(before,after){
 let saveTimer=null;
 function save(){renderAll();clearTimeout(saveTimer);setSaveStatus('Guardando…');saveTimer=setTimeout(performSave,500)}
 async function performSave(){
-  let changesSummary = lastSyncedSnapshot ? summarizeChanges(lastSyncedSnapshot, db) : '';
-  if(changesSummary){
-    db.auditLog = db.auditLog || [];
-    db.auditLog.unshift(stamp({id:Date.now()+Math.floor(Math.random()*100000), actor: currentStaff?currentStaff.name:(currentUserEmail||'Desconocido'), date:new Date().toLocaleString('es-MX'), summary: changesSummary}));
-    if(db.auditLog.length>500) db.auditLog = db.auditLog.slice(0,500);
+  const changesSummary = lastSyncedSnapshot ? summarizeChanges(lastSyncedSnapshot, db) : '';
+  let hadError=false;
+  for(const key of Object.keys(TABLE_MAP)){
+    const map=TABLE_MAP[key];
+    const beforeArr=(lastSyncedSnapshot&&lastSyncedSnapshot[key])||[];
+    const afterArr=db[key]||[];
+    const beforeMap=new Map(beforeArr.map(x=>[x[map.key],x]));
+    const afterMap=new Map(afterArr.map(x=>[x[map.key],x]));
+    const toUpsert=[];
+    afterMap.forEach((item,id)=>{const prev=beforeMap.get(id);if(!prev||JSON.stringify(prev)!==JSON.stringify(item))toUpsert.push(toRow(key,item))});
+    const toDelete=[];
+    beforeMap.forEach((item,id)=>{if(!afterMap.has(id))toDelete.push(id)});
+    if(toUpsert.length){const {error}=await sb.from(map.table).upsert(toUpsert,{onConflict:map.key});if(error){console.error(`Error guardando ${key}:`,error);hadError=true}}
+    if(toDelete.length){const {error}=await sb.from(map.table).delete().in(map.key,toDelete);if(error){console.error(`Error eliminando de ${key}:`,error);hadError=true}}
   }
-  try{
-    const {data,error:selErr} = await sb.from(TABLE).select('data').eq('id',ROW_ID).single();
-    if(!selErr && data && data.data){
-      let cloud = data.data;
-      db.staff = mergeById(cloud.staff, db.staff);
-      db.clients = mergeById(cloud.clients, db.clients);
-      db.obligations = mergeById(cloud.obligations, db.obligations);
-      db.payroll = mergeById(cloud.payroll, db.payroll);
-      db.payrollMovs = mergeById(cloud.payrollMovs, db.payrollMovs);
-      db.incapacidades = mergeById(cloud.incapacidades, db.incapacidades);
-      db.bankRequests = mergeById(cloud.bankRequests, db.bankRequests);
-      db.tasks = mergeById(cloud.tasks, db.tasks);
-      db.catalog = mergeById(cloud.catalog, db.catalog, 'name');
-      db.history = mergeHistory(cloud.history, db.history);
-      db.auditLog = mergeById(cloud.auditLog||[], db.auditLog||[]);
-    }
-  }catch(e){console.error('No se pudo fusionar antes de guardar', e)}
-  const {error} = await sb.from(TABLE).update({data:db}).eq('id',ROW_ID);
-  setSaveStatus(error?'Error al guardar':'Guardado ✓');
-  if(error){console.error(error)}else{lastSyncedSnapshot = JSON.parse(JSON.stringify(db))}
+  const beforeHistoryCount=((lastSyncedSnapshot&&lastSyncedSnapshot.history)||[]).length;
+  const afterHistory=db.history||[];
+  const newHistoryEntries=afterHistory.slice(0,Math.max(0,afterHistory.length-beforeHistoryCount));
+  if(newHistoryEntries.length){
+    const rows=newHistoryEntries.map(h=>({client_id:h.client,date:h.date,text:h.text}));
+    const {error}=await sb.from('history').insert(rows);
+    if(error){console.error('Error guardando historial:',error);hadError=true}
+  }
+  const prevTemplate=lastSyncedSnapshot?lastSyncedSnapshot.emailTemplate:null;
+  if(db.emailTemplate!==prevTemplate){
+    const {error}=await sb.from('settings').upsert([{key:'emailTemplate',value:db.emailTemplate}],{onConflict:'key'});
+    if(error){console.error('Error guardando plantilla:',error);hadError=true}
+  }
+  if(changesSummary){
+    const entry=stamp({id:Date.now()+Math.floor(Math.random()*100000),actor:currentStaff?currentStaff.name:(currentUserEmail||'Desconocido'),date:new Date().toLocaleString('es-MX'),summary:changesSummary});
+    db.auditLog=db.auditLog||[];
+    db.auditLog.unshift(entry);
+    if(db.auditLog.length>500)db.auditLog=db.auditLog.slice(0,500);
+    const {error}=await sb.from('audit_log').upsert([toRow('auditLog',entry)],{onConflict:'id'});
+    if(error){console.error('Error guardando auditoría:',error);hadError=true}
+  }
+  setSaveStatus(hadError?'Error al guardar':'Guardado ✓');
+  if(!hadError){lastSyncedSnapshot=JSON.parse(JSON.stringify(db))}
   renderAll();
-}function setSaveStatus(t){let el=document.getElementById('saveStatus');if(el)el.textContent=t}function person(id){return db.staff.find(x=>x.id==id)||{name:'Sin asignar'}}function client(id){return db.clients.find(x=>x.id==id)||{name:'Sin cliente'}}function clientDisplay(id){let c=client(id);return c.nombreComercial||c.name}function dateStatus(d){if(!d)return {text:'Sin fecha',cls:'p-gray',days:null};let days=Math.ceil((new Date(d+'T12:00:00')-new Date())/864e5);if(days<0)return {text:'Vencida',cls:'p-red',days};if(days<=14)return {text:`${days} día${days===1?'':'s'}`,cls:'p-orange',days};if(days<=30)return {text:`${days} días`,cls:'p-amber',days};return {text:'Vigente',cls:'p-green',days}}
+}
+function setSaveStatus(t){let el=document.getElementById('saveStatus');if(el)el.textContent=t}function person(id){return db.staff.find(x=>x.id==id)||{name:'Sin asignar'}}function client(id){return db.clients.find(x=>x.id==id)||{name:'Sin cliente'}}function clientDisplay(id){let c=client(id);return c.nombreComercial||c.name}function dateStatus(d){if(!d)return {text:'Sin fecha',cls:'p-gray',days:null};let days=Math.ceil((new Date(d+'T12:00:00')-new Date())/864e5);if(days<0)return {text:'Vencida',cls:'p-red',days};if(days<=14)return {text:`${days} día${days===1?'':'s'}`,cls:'p-orange',days};if(days<=30)return {text:`${days} días`,cls:'p-amber',days};return {text:'Vigente',cls:'p-green',days}}
 const titles={dashboard:['Dashboard','Resumen general del despacho'],clients:['Clientes','Expedientes y responsables'],obligations:['Obligaciones','Seguimiento mensual y checklist'],payroll:['Nómina','Checklist mensual, altas/bajas e incapacidades'],billing:['Facturación','Solicitud de movimientos bancarios'],tasks:['Centro de tareas','Trabajo pendiente del equipo'],calendar:['Calendario','Fechas límite y vigencias'],staff:['Personal','Usuarios, roles y carga de trabajo'],reports:['Reportes','Indicadores de cumplimiento'],settings:['Configuración','Catálogos y parámetros'],audit:['Auditoría','Quién hizo qué y cuándo, en todo el sistema']};
 $$('#nav button').forEach(b=>b.onclick=()=>{showPage(b.dataset.page,b);closeMobileNav()});function closeMobileNav(){$('#nav')?.classList.remove('open');$('#sideUserbox')?.classList.remove('open');$('#sideCopyright')?.classList.remove('open');$('#navToggle')?.classList.remove('open')}function showPage(id,b){$$('.page').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');$$('#nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');let t=titles[id]||['Expediente del cliente','Detalle operativo'];$('#pageTitle').textContent=t[0];$('#pageSub').textContent=t[1];renderAll()}
 function renderDashboard(){let myObl=visibleObligations(),myClients=visibleClients();let done=myObl.filter(x=>x.state==='Concluida').length, total=myObl.length,pending=total-done,over=myObl.filter(x=>new Date(x.due)<new Date()&&x.state!=='Concluida').length, fiel=myClients.filter(x=>x.state==='Activo').filter(x=>{let sf=dateStatus(x.fiel),sc=dateStatus(x.csd);return (sf.days!==null&&sf.days<=30)||(sc.days!==null&&sc.days<=30)}).length;$('#kpis').innerHTML=[[total,'Obligaciones del mes'],[done,'Concluidas'],[pending,'Pendientes'],[over,'Vencidas'],[fiel,'FIEL/CSD por vencer']].map((x,i)=>`<div class="card kpi"><small>${x[1]}</small><strong>${x[0]}</strong><span class="delta">Actualizado ahora</span></div>`).join('');$('#clientProgress').innerHTML=myClients.map(c=>{let os=myObl.filter(o=>o.client===c.id),pct=os.length?Math.round(os.filter(o=>o.state==='Concluida').length/os.length*100):0;return `<div class="prow"><b>${c.name}</b><div class="progress"><span style="width:${pct}%"></span></div><b>${pct}%</b></div>`}).join('');let as=[];myObl.filter(o=>o.name==='Opinión de Cumplimiento SAT'&&o.resultado==='Negativo').forEach(o=>as.push(`<div class="alert red"><div><b>⚠️ Opinión de Cumplimiento SAT: Negativa</b><span>${clientDisplay(o.client)} · ${o.period}</span></div></div>`));function riskAlertClass(cls){return cls==='p-red'?'red':cls==='p-orange'?'orange':cls==='p-amber'?'':''}myClients.filter(c=>c.state==='Activo').forEach(c=>{let sf=dateStatus(c.fiel);if(sf.days!==null&&sf.days<=30)as.push(`<div class="alert ${riskAlertClass(sf.cls)}"><div><b>FIEL ${sf.text.toLowerCase()}</b><span>${c.name} · ${c.fiel}</span></div></div>`);let sc=dateStatus(c.csd);if(sc.days!==null&&sc.days<=30)as.push(`<div class="alert ${riskAlertClass(sc.cls)}"><div><b>Sello digital (CSD) ${sc.text.toLowerCase()}</b><span>${c.name} · ${c.csd}</span></div></div>`)});db.tasks.filter(t=>t.state!=='Concluida'&&new Date(t.due)<=new Date(Date.now()+3*864e5)&&(isAdmin||myClients.some(c=>c.id===t.client))).forEach(t=>as.push(`<div class="alert red"><div><b>${t.title}</b><span>${clientDisplay(t.client)} · ${t.due}</span></div></div>`));$('#alerts').innerHTML=as.join('')||'<div class="alert green"><div><b>Sin alertas críticas</b><span>Todo bajo control.</span></div></div>';$('#upcoming').innerHTML=tableObl(myObl.slice().sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5));$('#staffLoad').innerHTML=db.staff.filter(s=>s.status==='Activo').map(s=>{let n=db.tasks.filter(t=>t.owner===s.id&&t.state!=='Concluida').length,pct=Math.min(100,n*20);return `<div class="prow"><span>${s.name}</span><div class="progress"><span style="width:${pct}%"></span></div><b>${n}</b></div>`}).join('')}
@@ -493,32 +500,40 @@ function sendInfoRequest(cid){
 // 2) Pega aquí tu Project URL y tu anon public key (Settings > API)
 const SUPABASE_URL = 'https://lkyhpcrhjoshzdugoaqb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_E8z6YstIpgrRsv5IiBc1SA_UNbpKfTC';
-const TABLE = 'cyaroma_data';
-const ROW_ID = 1;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function loadFromCloud(){
-  const {data,error} = await sb.from(TABLE).select('data').eq('id',ROW_ID).single();
-  if(error){console.error(error);alert('No se pudo cargar la información desde la nube. Revisa la configuración de Supabase.');return}
-  const cloud = (data && data.data) || {};
-  // Nos aseguramos de que siempre existan todas las listas, aunque la base de datos
-  // esté recién creada y venga vacía ({}). Esto evita que la app se rompa al no
-  // encontrar, por ejemplo, db.staff o db.clients.
-  db = {
-    staff: Array.isArray(cloud.staff) ? cloud.staff : [],
-    clients: (Array.isArray(cloud.clients) ? cloud.clients : []).map(c=>({emails:[], payrollAssistant:[], nombreComercial:'', services:[], obligationTypes:[], ...c, assistant: Array.isArray(c.assistant)?c.assistant:(c.assistant?[c.assistant]:[]), payroll: Array.isArray(c.payroll)?c.payroll:(c.payroll?[c.payroll]:[]), regimenes: Array.isArray(c.regimenes)?c.regimenes:(c.regime?[c.regime]:['General de Ley Personas Morales']), services: Array.isArray(c.services)?c.services:[], obligationTypes: Array.isArray(c.obligationTypes)?c.obligationTypes:[]})),
-    obligations: Array.isArray(cloud.obligations) ? cloud.obligations : [],
-    tasks: Array.isArray(cloud.tasks) ? cloud.tasks : [],
-    history: Array.isArray(cloud.history) ? cloud.history : [],
-    catalog: (()=>{let cloudRaw=Array.isArray(cloud.catalog)?cloud.catalog:[];let cloudNorm=cloudRaw.map(x=>typeof x==='string'?{name:x,jurisdiction:'Federal'}:x).filter(x=>!OLD_CATALOG.includes(x.name));let byName={};defaults.catalog.forEach(c=>{byName[c.name]=c});cloudNorm.forEach(c=>{if(!byName[c.name])byName[c.name]=c});return Object.values(byName)})(),
-    payroll: Array.isArray(cloud.payroll) ? cloud.payroll : [],
-    payrollMovs: Array.isArray(cloud.payrollMovs) ? cloud.payrollMovs : [],
-    incapacidades: Array.isArray(cloud.incapacidades) ? cloud.incapacidades : [],
-    bankRequests: Array.isArray(cloud.bankRequests) ? cloud.bankRequests : [],
-    auditLog: Array.isArray(cloud.auditLog) ? cloud.auditLog : [],
-    emailTemplate: upgradeEmailTemplate((typeof cloud.emailTemplate==='string'&&cloud.emailTemplate)?cloud.emailTemplate:defaults.emailTemplate)
-  };
-  lastSyncedSnapshot = JSON.parse(JSON.stringify(db));
+  try{
+    const keys=Object.keys(TABLE_MAP);
+    const results=await Promise.all(keys.map(k=>sb.from(TABLE_MAP[k].table).select('*')));
+    const errored=results.find(r=>r.error);
+    if(errored){console.error(errored.error);alert('No se pudo cargar la información desde la nube. Revisa la configuración de Supabase.');return}
+    let out={};
+    keys.forEach((k,i)=>{out[k]=(results[i].data||[]).map(row=>fromRow(k,row))});
+
+    const {data:historyRows,error:histErr}=await sb.from('history').select('*').order('id',{ascending:false});
+    out.history=histErr?[]:(historyRows||[]).map(r=>({client:r.client_id,date:r.date,text:r.text}));
+
+    const {data:settingsRows}=await sb.from('settings').select('*');
+    let tpl=(settingsRows||[]).find(s=>s.key==='emailTemplate');
+    out.emailTemplate=upgradeEmailTemplate(tpl?tpl.value:defaults.emailTemplate);
+
+    out.clients=out.clients.map(c=>({emails:[],payrollAssistant:[],nombreComercial:'',services:[],obligationTypes:[],repse:'',...c,
+      assistant: Array.isArray(c.assistant)?c.assistant:(c.assistant?[c.assistant]:[]),
+      payroll: Array.isArray(c.payroll)?c.payroll:(c.payroll?[c.payroll]:[]),
+      payrollAssistant: Array.isArray(c.payrollAssistant)?c.payrollAssistant:[],
+      regimenes: Array.isArray(c.regimenes)&&c.regimenes.length?c.regimenes:['General de Ley Personas Morales'],
+      services: Array.isArray(c.services)?c.services:[],
+      obligationTypes: Array.isArray(c.obligationTypes)?c.obligationTypes:[],
+      emails: Array.isArray(c.emails)?c.emails:[]
+    }));
+
+    db=out;
+    lastSyncedSnapshot=JSON.parse(JSON.stringify(db));
+  }catch(e){
+    console.error(e);
+    alert('No se pudo cargar la información desde la nube. Revisa la configuración de Supabase.');
+  }
 }
 
 function showLogin(){document.getElementById('loginOverlay').style.display='flex';document.getElementById('appRoot').style.display='none'}
