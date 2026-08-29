@@ -70,6 +70,13 @@
 .p-orange{background:#ffe8d6;color:#b5590c}
 .alert.orange{border-color:#e07b1f;background:#fff3e8}.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px}.filters input,.filters select,.field input,.field select,.field textarea{border:1px solid #d9e1ec;background:#fff;border-radius:9px;padding:10px 11px;color:var(--ink)}.filters input{min-width:240px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:600}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.form-grid .full{grid-column:1/-1}.modal-bg{display:none;position:fixed;inset:0;background:rgba(7,26,50,.55);z-index:50;align-items:center;justify-content:center;padding:18px}.modal-bg.show{display:flex}.modal{background:#fff;width:min(860px,100%);max-height:92vh;overflow:auto;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.modal-head,.modal-foot{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-foot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end}.modal-body{padding:20px}.x{border:0;background:#eef3f9;border-radius:8px;padding:7px 10px;cursor:pointer}.checklist{display:grid;gap:8px}.check-item{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.check-item.done{background:#f0fbf6;border-color:#c7eedb}.check-item input{margin-top:3px}.timeline{border-left:2px solid #d9e3f0;margin-left:8px;padding-left:19px}.time-item{position:relative;margin:0 0 15px}.time-item:before{content:"";position:absolute;left:-25px;top:4px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px #eaf2ff}
 .time-item.overdue:before{background:var(--red);box-shadow:0 0 0 4px #ffe3e3}.kanban{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:13px;overflow:auto}.lane{background:#edf2f8;border-radius:12px;padding:11px;min-height:340px}.lane h4{margin:2px 3px 11px}.task-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:9px;box-shadow:0 4px 12px rgba(38,62,92,.05);cursor:pointer}.task-card b{display:block}.task-card small{color:var(--muted)}.profile-grid{grid-template-columns:1fr 1fr 1fr 1fr}.statbox{border:1px solid var(--line);border-radius:10px;padding:12px}.statbox small{color:var(--muted)}.statbox b{display:block;margin-top:5px}.tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin:15px 0}.tab{border:0;background:transparent;padding:10px 12px;color:var(--muted);cursor:pointer}.tab.active{color:var(--blue);border-bottom:2px solid var(--blue);font-weight:700}.role{font-size:11px;color:var(--muted)}.person{display:flex;align-items:center;gap:10px}.empty{text-align:center;color:var(--muted);padding:30px}.hint{font-size:12px;color:var(--muted);background:#f3f7fc;border-radius:8px;padding:10px}.seg{display:flex;gap:5px;background:#edf2f8;padding:4px;border-radius:9px}.seg button{border:0;background:transparent;padding:7px 10px;border-radius:7px;cursor:pointer}.seg button.active{background:white;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0}
+.cal-cell{min-height:74px;border:1px solid var(--line);border-radius:8px;padding:5px;font-size:11px}
+.cal-cell.empty{border:0}
+.cal-daynum{font-weight:700;color:var(--muted);margin-bottom:3px}
+.cal-chip{background:#eaf2ff;color:var(--nav);border-radius:5px;padding:1px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:760px){.cal-cell{min-height:52px;font-size:9.5px;padding:3px}}
 .help-item{border-bottom:1px solid var(--line);padding:2px 0}
 .help-item:last-child{border-bottom:0}
 .help-item summary{padding:13px 4px;cursor:pointer;font-weight:600;font-size:13.5px;list-style:none;display:flex;align-items:center;justify-content:space-between}
@@ -240,7 +247,7 @@
     <details class="help-item"><summary>No encuentro la respuesta a mi duda</summary><div class="help-body">Pregúntale directamente a Rodolfo (administrador) o al equipo — y si es algo que le puede servir a todos, se puede agregar aquí.</div></details>
   </div>
 </section>
-<section class="page" id="vacations"><div id="vacationsContent"></div></section>
+<section class="page" id="vacations"><div id="vacationsViewToggle" style="margin-bottom:13px"><div class="seg"><button class="active" onclick="setVacationView('lista',this)">Lista</button><button onclick="setVacationView('calendario',this)">Calendario</button></div></div><div id="vacationsContent"></div></section>
 <section class="page" id="clientDetail"></section>
 <section class="page" id="personDetail"></section>
 </main></div>
@@ -961,16 +968,51 @@ function vacationSummary(staffMember,refDateStr){
   const range=currentServiceYearRange(staffMember.fechaIngreso,refDateStr);
   return {years,settledThrough,correspond,tomados,disponibles:Math.max(0,correspond-tomados),range};
 }
+let vacationView='lista';let vacationCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+function setVacationView(v,b){vacationView=v;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderVacations()}
+function changeVacationCalMonth(delta){vacationCalDate=new Date(vacationCalDate.getFullYear(),vacationCalDate.getMonth()+delta,1);renderVacations()}
 function renderVacations(){
   const el=$('#vacationsContent');if(!el)return;
+  const toggle=$('#vacationsViewToggle');
   const today=toISODate(new Date());
   if(isAdmin){
+    if(toggle)toggle.style.display='block';
+    if(vacationView==='calendario'){el.innerHTML=buildVacationCalendarHTML();return}
     const activeStaff=db.staff.filter(s=>s.status==='Activo');
     el.innerHTML=`<div class="card"><h3>Vacaciones del equipo</h3><div class="hint" style="margin-bottom:10px">Calculado según la reforma "Vacaciones Dignas" (12 días el primer año, aumentando cada aniversario). Los días tomados cuentan de lunes a sábado — domingo no cuenta.</div><div class="table-wrap"><table class="table"><thead><tr><th>Persona</th><th>Fecha de ingreso</th><th>Antigüedad</th><th>Corresponden</th><th>Tomados</th><th>Disponibles</th><th></th></tr></thead><tbody>${activeStaff.map(s=>{const v=vacationSummary(s,today);return `<tr onclick="openVacationDetail(${s.id})" style="cursor:pointer"><td><b>${s.name}</b></td><td>${s.fechaIngreso||'Sin capturar'}</td><td>${v.years} año(s)</td><td>${v.correspond}</td><td>${v.tomados}</td><td><span class="pill ${v.disponibles>0?'p-green':'p-gray'}">${v.disponibles}</span></td><td><button class="btn" onclick="event.stopPropagation();openVacationDetail(${s.id})">Ver detalle</button></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">Sin personal activo</td></tr>'}</tbody></table></div></div>`;
   }else{
+    if(toggle)toggle.style.display='none';
     if(!currentStaff){el.innerHTML='<div class="card"><div class="empty">No se encontró tu expediente en Personal — pídele a un administrador que lo revise.</div></div>';return}
     el.innerHTML=vacationPersonalCard(currentStaff.id);
   }
+}
+function buildVacationCalendarHTML(){
+  const year=vacationCalDate.getFullYear(),month=vacationCalDate.getMonth();
+  const firstDay=new Date(year,month,1);
+  const startWeekday=firstDay.getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthLabel=firstDay.toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+  const staffById=new Map(db.staff.map(s=>[s.id,s]));
+  const byDay={};
+  (db.vacationPeriods||[]).forEach(p=>{
+    let d=new Date(p.fechaInicio+'T00:00:00');
+    const end=new Date(p.fechaFin+'T00:00:00');
+    while(d<=end){
+      if(d.getFullYear()===year&&d.getMonth()===month){
+        const dayNum=d.getDate();
+        const person=staffById.get(p.staff);
+        if(person){if(!byDay[dayNum])byDay[dayNum]=[];byDay[dayNum].push(person.name)}
+      }
+      d.setDate(d.getDate()+1);
+    }
+  });
+  let cells='';
+  for(let i=0;i<startWeekday;i++)cells+='<div class="cal-cell empty"></div>';
+  for(let day=1;day<=daysInMonth;day++){
+    const names=byDay[day]||[];
+    cells+=`<div class="cal-cell"><div class="cal-daynum">${day}</div>${names.map(n=>`<div class="cal-chip">${n}</div>`).join('')}</div>`;
+  }
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><button class="btn" onclick="changeVacationCalMonth(-1)">← Anterior</button><h3 style="text-transform:capitalize;margin:0">${monthLabel}</h3><button class="btn" onclick="changeVacationCalMonth(1)">Siguiente →</button></div><div class="cal-grid"><div class="cal-dow">Dom</div><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div><div class="cal-dow">Mié</div><div class="cal-dow">Jue</div><div class="cal-dow">Vie</div><div class="cal-dow">Sáb</div>${cells}</div></div>`;
 }
 function vacationPersonalCard(staffId){
   const s=db.staff.find(x=>x.id===staffId);
@@ -979,8 +1021,15 @@ function vacationPersonalCard(staffId){
   const v=vacationSummary(s,today);
   const misPeriodos=(db.vacationPeriods||[]).filter(p=>p.staff===staffId).slice().sort((a,b)=>b.fechaInicio.localeCompare(a.fechaInicio));
   const configBlock=isAdmin?`<div class="card" style="margin-bottom:15px"><h3>Configuración de acumulación</h3><div class="hint" style="margin-bottom:10px">Por default se asume liquidado hasta el año ${Math.max(0,v.years-1)} (el inmediato anterior al actual) — así nadie acumula días de golpe al activar esto. Si sabes que esta persona sí tiene días reales sin tomar de años pasados, baja este número.</div><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div class="field" style="margin:0"><label>Liquidado hasta el año (de ${v.years} de antigüedad total)</label><input id="vSettled" type="number" min="0" value="${v.settledThrough}" style="width:120px"></div><button class="btn primary" onclick="saveSettledYears(${staffId})">Guardar</button></div></div>`:'';
-  return `${configBlock}<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${misPeriodos.length?misPeriodos.map(p=>`<div class="prow"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+p.notas:''}</span><b>${p.dias} día(s)</b>${isAdmin?`<button class="btn" onclick="deleteVacationPeriod(${p.id})">Eliminar</button>`:''}</div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
+  return `${configBlock}<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${misPeriodos.length?misPeriodos.map(p=>`<div class="prow" style="position:relative"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+p.notas:''}</span><span style="display:flex;align-items:center;gap:10px"><b>${p.dias} día(s)</b>${isAdmin?`<div style="position:relative"><button class="btn" onclick="event.stopPropagation();toggleVacationMenu(${p.id})">⋯</button><div class="vac-menu" id="vacMenu${p.id}" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);z-index:5;min-width:120px;overflow:hidden"><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left" onclick="editVacationPeriod(${p.id})">Editar</button><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left;color:var(--red)" onclick="deleteVacationPeriod(${p.id})">Eliminar</button></div></div>`:''}</span></div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
 }
+function toggleVacationMenu(periodId){
+  const menu=$('#vacMenu'+periodId);
+  const wasOpen=menu.style.display==='block';
+  $$('.vac-menu').forEach(m=>m.style.display='none');
+  if(!wasOpen){menu.style.display='block';setTimeout(()=>document.addEventListener('click',closeVacMenusOnce,{once:true}),0)}
+}
+function closeVacMenusOnce(){$$('.vac-menu').forEach(m=>m.style.display='none')}
 function saveSettledYears(staffId){
   if(!isAdmin){alert('Solo un administrador puede configurar esto.');return}
   const s=db.staff.find(x=>x.id===staffId);if(!s)return;
@@ -991,19 +1040,27 @@ function saveSettledYears(staffId){
 function openVacationDetail(staffId){
   const s=db.staff.find(x=>x.id===staffId);if(!s)return;
   if(!isAdmin&&(!currentStaff||currentStaff.id!==staffId)){alert('Solo puedes ver tus propias vacaciones.');return}
+  const toggle=$('#vacationsViewToggle');if(toggle)toggle.style.display='none';
   $('#vacationsContent').innerHTML=`<button class="btn" style="margin-bottom:12px" onclick="renderVacations()">← Vacaciones</button><div class="client-header"><div><h2>${s.name}</h2><p class="role">${s.role} · ${s.dept}</p></div>${isAdmin?`<button class="btn primary" onclick="openVacationModal(${staffId})">+ Registrar periodo</button>`:''}</div>${vacationPersonalCard(staffId)}`;
 }
-function openVacationModal(staffId){
+function openVacationModal(staffId,periodId){
   if(!isAdmin){alert('Solo un administrador puede registrar periodos de vacaciones.');return}
   const activeStaff=db.staff.filter(s=>s.status==='Activo');
-  modal('Registrar periodo de vacaciones',`<div class="form-grid"><div class="field"><label>Persona</label><select id="vStaff">${options(activeStaff,staffId)}</select></div><div class="field"><label>Fecha de inicio</label><input id="vInicio" type="date" oninput="previewVacationDays()"></div><div class="field"><label>Fecha de fin</label><input id="vFin" type="date" oninput="previewVacationDays()"></div><div class="field full"><div class="hint" id="vPreview">Cuentan de lunes a sábado — domingo no cuenta.</div></div><div class="field full"><label>Notas <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="vNotas" placeholder="Ej. vacaciones de verano"></div></div>`,`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveVacationPeriod(${staffId})">Guardar</button>`);
+  const p=periodId?(db.vacationPeriods||[]).find(x=>x.id===periodId):null;
+  modal(p?'Editar periodo de vacaciones':'Registrar periodo de vacaciones',`<div class="form-grid"><div class="field"><label>Persona</label><select id="vStaff" ${p?'disabled':''}>${options(activeStaff,p?p.staff:staffId)}</select></div><div class="field"><label>Fecha de inicio</label><input id="vInicio" type="date" value="${p?p.fechaInicio:''}" oninput="previewVacationDays()"></div><div class="field"><label>Fecha de fin</label><input id="vFin" type="date" value="${p?p.fechaFin:''}" oninput="previewVacationDays()"></div><div class="field full"><div class="hint" id="vPreview">Cuentan de lunes a sábado — domingo no cuenta.</div></div><div class="field full"><label>Notas <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="vNotas" value="${p&&p.notas?p.notas:''}" placeholder="Ej. vacaciones de verano"></div></div>`,`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="saveVacationPeriod(${staffId},${periodId||0})">Guardar</button>`);
+  if(p)previewVacationDays();
+}
+function editVacationPeriod(periodId){
+  const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);if(!p)return;
+  closeVacMenusOnce();
+  openVacationModal(p.staff,periodId);
 }
 function previewVacationDays(){
   const ini=$('#vInicio').value,fin=$('#vFin').value,box=$('#vPreview');
   if(!ini||!fin||fin<ini){box.textContent='Cuentan de lunes a sábado — domingo no cuenta.';return}
   box.textContent=`Se descontarán ${countVacationDays(ini,fin)} día(s) (cuentan de lunes a sábado — domingo no cuenta).`;
 }
-function saveVacationPeriod(staffId){
+function saveVacationPeriod(staffId,periodId){
   if(!isAdmin){alert('Solo un administrador puede registrar periodos de vacaciones.');return}
   const sel=+$('#vStaff').value||staffId;
   const ini=$('#vInicio').value,fin=$('#vFin').value;
@@ -1012,7 +1069,13 @@ function saveVacationPeriod(staffId){
   const dias=countVacationDays(ini,fin);
   if(dias<=0){alert('Ese periodo no tiene días que contar (revisa que no sean solo domingos).');return}
   db.vacationPeriods=db.vacationPeriods||[];
-  db.vacationPeriods.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),staff:sel,fechaInicio:ini,fechaFin:fin,dias,notas:$('#vNotas').value.trim()||null,createdBy:currentStaff?currentStaff.id:null}));
+  const notas=$('#vNotas').value.trim()||null;
+  if(periodId){
+    const idx=db.vacationPeriods.findIndex(x=>x.id===periodId);
+    if(idx>-1)db.vacationPeriods[idx]=stamp({...db.vacationPeriods[idx],fechaInicio:ini,fechaFin:fin,dias,notas});
+  }else{
+    db.vacationPeriods.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),staff:sel,fechaInicio:ini,fechaFin:fin,dias,notas,createdBy:currentStaff?currentStaff.id:null}));
+  }
   closeModal();save();openVacationDetail(sel);
 }
 function deleteVacationPeriod(id){
