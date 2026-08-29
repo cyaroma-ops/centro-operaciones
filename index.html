@@ -906,10 +906,10 @@ function isOnline(staffId){let ls=presenceMap[staffId];if(!ls)return false;retur
 async function initApp(){
   const {data:{session}} = await sb.auth.getSession();
   if(!session){showLogin();return}
-  hideLogin();
   setSessionBadge(session);
   await loadFromCloud();
   applyAccessScope(session.user.email);
+  hideLogin();
   let rp=currentReportingPeriod();
   let creadas=generateObligationsAllClients();
   let creadasP=generatePayrollAllClients(rp.month,rp.year);
