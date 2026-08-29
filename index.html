@@ -382,7 +382,7 @@ function calcVencimiento(obligationName,periodMonth,periodYear,rfc,clientType){
 }
 
 /* ===== Acceso por cliente asignado (contadores solo ven lo suyo) ===== */
-let currentStaff=null, isAdmin=true, currentUserEmail=null;
+let currentStaff=null, isAdmin=false, currentUserEmail=null;
 function resolveCurrentStaff(email){
   if(!email) return null;
   return db.staff.find(s=>s.email && s.email.toLowerCase()===email.toLowerCase()) || null;
@@ -390,7 +390,7 @@ function resolveCurrentStaff(email){
 function applyAccessScope(email){
   currentUserEmail = email;
   currentStaff = resolveCurrentStaff(email);
-  isAdmin = !currentStaff || currentStaff.role==='Administrador';
+  isAdmin = !!currentStaff && currentStaff.role==='Administrador';
   $$('.admin-only').forEach(b=>b.style.display = isAdmin?'':'none');
   if(!isAdmin){
     let activePage = $('#nav button.active')?.dataset.page;
@@ -407,10 +407,12 @@ function clientAssignedIds(c){return [c.supervisor,c.accountant,...assistantIds(
 function personNames(ids){let arr=asIds(ids);return arr.length?arr.map(id=>person(id).name).join(', '):'Sin asignar'}
 function visibleClients(){
   if(isAdmin) return db.clients;
+  if(!currentStaff) return [];
   return db.clients.filter(c=>clientAssignedIds(c).includes(currentStaff.id));
 }
 function visibleObligations(){
   if(isAdmin) return db.obligations;
+  if(!currentStaff) return [];
   let ids=visibleClients().map(c=>c.id);
   return db.obligations.filter(o=>ids.includes(o.client));
 }
