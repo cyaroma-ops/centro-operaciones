@@ -22,6 +22,9 @@
 .login-left-footer{position:relative;z-index:1;font-size:10px;letter-spacing:.18em;color:var(--gold);opacity:.85;margin-top:auto;padding-top:34px}
 .login-right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:40px 24px}
 .login-form-wrap{width:min(360px,100%)}
+.auth-checking{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--muted);font-size:13px}
+.auth-spinner{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--nav);border-radius:50%;animation:auth-spin .8s linear infinite}
+@keyframes auth-spin{to{transform:rotate(360deg)}}
 .login-right-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:700;color:var(--ink);text-align:center;margin:0 0 6px}
 .login-right-sub{font-size:11px;letter-spacing:.16em;color:var(--muted);text-align:center;margin:0 0 12px}
 .login-form-wrap .login-gold-line{margin-left:auto;margin-right:auto}
@@ -153,7 +156,11 @@
     <div class="login-left-footer">RESPONSABILIDAD &middot; CONFIANZA &middot; EXPERIENCIA</div>
   </div>
   <div class="login-right">
-    <div class="login-form-wrap">
+    <div id="authChecking" class="auth-checking">
+      <div class="auth-spinner"></div>
+      <p>Verificando sesión…</p>
+    </div>
+    <div class="login-form-wrap" id="loginFormWrap" style="display:none">
       <h2 class="login-right-title">Centro de Operaciones</h2>
       <p class="login-right-sub">GESTIÓN Y CUMPLIMIENTO</p>
       <div class="login-gold-line small"></div>
@@ -879,7 +886,7 @@ async function loadFromCloud(){
 
 (function(){let sidebarLogo=document.querySelector('.brand img');let loginLogo=document.getElementById('loginLogo');if(sidebarLogo&&loginLogo)loginLogo.src=sidebarLogo.src})();
 function toggleLoginPass(btn){let input=document.getElementById('loginPass');let on=btn.querySelector('.eye-on'),off=btn.querySelector('.eye-off');if(input.type==='password'){input.type='text';on.style.display='none';off.style.display='';btn.setAttribute('aria-label','Ocultar contraseña')}else{input.type='password';on.style.display='';off.style.display='none';btn.setAttribute('aria-label','Mostrar contraseña')}}
-function showLogin(){document.getElementById('loginOverlay').style.display='flex';document.getElementById('appRoot').style.display='none'}
+function showLogin(){document.getElementById('loginOverlay').style.display='flex';document.getElementById('appRoot').style.display='none';document.getElementById('authChecking').style.display='none';document.getElementById('loginFormWrap').style.display='block'}
 function hideLogin(){document.getElementById('loginOverlay').style.display='none';document.getElementById('appRoot').style.display='grid'}
 
 async function doLogin(){
