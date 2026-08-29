@@ -891,7 +891,7 @@ async function doLogin(){
   await initApp();
 }
 
-async function doLogout(){await sb.auth.signOut();showLogin()}
+async function doLogout(){await sb.auth.signOut();location.reload()}
 
 function setSessionBadge(session){
   let email=session?.user?.email||'';
