@@ -275,7 +275,7 @@ let db=defaults;let taskView='kanban';const steps=['Información solicitada','XM
 let lastSyncedSnapshot=null;
 function stamp(o){o._ts=Date.now();return o}
 const TABLE_MAP={
-  staff:{table:'staff',key:'id',cols:{id:'id',name:'name',email:'email',role:'role',dept:'dept',status:'status',fechaIngreso:'fecha_ingreso',telefono:'telefono',tipoContrato:'tipo_contrato'}},
+  staff:{table:'staff',key:'id',cols:{id:'id',name:'name',email:'email',role:'role',dept:'dept',status:'status',fechaIngreso:'fecha_ingreso',telefono:'telefono',tipoContrato:'tipo_contrato',aniosLiquidados:'vacaciones_anios_liquidados'}},
   clients:{table:'clients',key:'id',cols:{id:'id',name:'name',nombreComercial:'nombre_comercial',rfc:'rfc',type:'type',regimenes:'regimenes',activity:'activity',state:'state',fiel:'fiel',csd:'csd',bankFrequency:'bank_frequency',supervisor:'supervisor_id',accountant:'accountant_id',assistant:'assistant_ids',payroll:'payroll_ids',payrollAssistant:'payroll_assistant_ids',services:'services',emails:'emails',obligationTypes:'obligation_types'}},
   catalog:{table:'catalog',key:'name',cols:{name:'name',jurisdiction:'jurisdiction'}},
   obligations:{table:'obligations',key:'id',cols:{id:'id',client:'client_id',name:'name',period:'period',due:'due',owner:'owner_id',state:'state',resultado:'resultado',checks:'checks'}},
@@ -932,12 +932,12 @@ function vacationDaysForYear(yearsCumplidos){
   return 22+bloque*2;
 }
 function currentServiceYearRange(fechaIngresoStr,refDateStr){
-  const ing=new Date(fechaIngresoStr+'T00:00:00'),ref=new Date(refDateStr+'T00:00:00');
-  let lastAnnivYear=ref.getFullYear();
-  const annivThisYear=new Date(ref.getFullYear(),ing.getMonth(),ing.getDate());
-  if(ref<annivThisYear)lastAnnivYear-=1;
-  const start=new Date(lastAnnivYear,ing.getMonth(),ing.getDate());
-  const end=new Date(lastAnnivYear+1,ing.getMonth(),ing.getDate());
+  return serviceYearRange(fechaIngresoStr, yearsOfService(fechaIngresoStr,refDateStr));
+}
+function serviceYearRange(fechaIngresoStr,n){
+  const ing=new Date(fechaIngresoStr+'T00:00:00');
+  const start=new Date(ing.getFullYear()+n,ing.getMonth(),ing.getDate());
+  const end=new Date(ing.getFullYear()+n+1,ing.getMonth(),ing.getDate());
   end.setDate(end.getDate()-1);
   const iso=d=>d.toISOString().slice(0,10);
   return {start:iso(start),end:iso(end)};
@@ -949,19 +949,24 @@ function countVacationDays(fechaInicioStr,fechaFinStr){
 }
 function vacationSummary(staffMember,refDateStr){
   refDateStr=refDateStr||toISODate(new Date());
-  if(!staffMember.fechaIngreso)return {years:0,correspond:0,tomados:0,disponibles:0,range:null};
+  if(!staffMember.fechaIngreso)return {years:0,settledThrough:0,correspond:0,tomados:0,disponibles:0,range:null};
   const years=yearsOfService(staffMember.fechaIngreso,refDateStr);
-  const correspond=vacationDaysForYear(years);
+  const settledThrough=(staffMember.aniosLiquidados!=null&&staffMember.aniosLiquidados!=='')?Number(staffMember.aniosLiquidados):Math.max(0,years-1);
+  let correspond=0,tomados=0;
+  for(let y=settledThrough+1;y<=years;y++){
+    correspond+=vacationDaysForYear(y);
+    const r=serviceYearRange(staffMember.fechaIngreso,y);
+    tomados+=(db.vacationPeriods||[]).filter(v=>v.staff===staffMember.id&&v.fechaInicio>=r.start&&v.fechaInicio<=r.end).reduce((s,v)=>s+v.dias,0);
+  }
   const range=currentServiceYearRange(staffMember.fechaIngreso,refDateStr);
-  const tomados=(db.vacationPeriods||[]).filter(v=>v.staff===staffMember.id&&v.fechaInicio>=range.start&&v.fechaInicio<=range.end).reduce((s,v)=>s+v.dias,0);
-  return {years,correspond,tomados,disponibles:Math.max(0,correspond-tomados),range};
+  return {years,settledThrough,correspond,tomados,disponibles:Math.max(0,correspond-tomados),range};
 }
 function renderVacations(){
   const el=$('#vacationsContent');if(!el)return;
   const today=toISODate(new Date());
   if(isAdmin){
     const activeStaff=db.staff.filter(s=>s.status==='Activo');
-    el.innerHTML=`<div class="card"><h3>Vacaciones del equipo</h3><div class="hint" style="margin-bottom:10px">Calculado según la reforma "Vacaciones Dignas" (12 días el primer año, aumentando cada aniversario). Los días tomados cuentan de lunes a sábado — domingo no cuenta.</div><div class="table-wrap"><table class="table"><thead><tr><th>Persona</th><th>Fecha de ingreso</th><th>Antigüedad</th><th>Corresponden (año actual)</th><th>Tomados</th><th>Disponibles</th><th></th></tr></thead><tbody>${activeStaff.map(s=>{const v=vacationSummary(s,today);return `<tr onclick="openVacationDetail(${s.id})" style="cursor:pointer"><td><b>${s.name}</b></td><td>${s.fechaIngreso||'Sin capturar'}</td><td>${v.years} año(s)</td><td>${v.correspond}</td><td>${v.tomados}</td><td><span class="pill ${v.disponibles>0?'p-green':'p-gray'}">${v.disponibles}</span></td><td><button class="btn" onclick="event.stopPropagation();openVacationDetail(${s.id})">Ver detalle</button></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">Sin personal activo</td></tr>'}</tbody></table></div></div>`;
+    el.innerHTML=`<div class="card"><h3>Vacaciones del equipo</h3><div class="hint" style="margin-bottom:10px">Calculado según la reforma "Vacaciones Dignas" (12 días el primer año, aumentando cada aniversario). Los días tomados cuentan de lunes a sábado — domingo no cuenta.</div><div class="table-wrap"><table class="table"><thead><tr><th>Persona</th><th>Fecha de ingreso</th><th>Antigüedad</th><th>Corresponden</th><th>Tomados</th><th>Disponibles</th><th></th></tr></thead><tbody>${activeStaff.map(s=>{const v=vacationSummary(s,today);return `<tr onclick="openVacationDetail(${s.id})" style="cursor:pointer"><td><b>${s.name}</b></td><td>${s.fechaIngreso||'Sin capturar'}</td><td>${v.years} año(s)</td><td>${v.correspond}</td><td>${v.tomados}</td><td><span class="pill ${v.disponibles>0?'p-green':'p-gray'}">${v.disponibles}</span></td><td><button class="btn" onclick="event.stopPropagation();openVacationDetail(${s.id})">Ver detalle</button></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">Sin personal activo</td></tr>'}</tbody></table></div></div>`;
   }else{
     if(!currentStaff){el.innerHTML='<div class="card"><div class="empty">No se encontró tu expediente en Personal — pídele a un administrador que lo revise.</div></div>';return}
     el.innerHTML=vacationPersonalCard(currentStaff.id);
@@ -973,7 +978,15 @@ function vacationPersonalCard(staffId){
   const today=toISODate(new Date());
   const v=vacationSummary(s,today);
   const misPeriodos=(db.vacationPeriods||[]).filter(p=>p.staff===staffId).slice().sort((a,b)=>b.fechaInicio.localeCompare(a.fechaInicio));
-  return `<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden (año actual)</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${misPeriodos.length?misPeriodos.map(p=>`<div class="prow"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+p.notas:''}</span><b>${p.dias} día(s)</b>${isAdmin?`<button class="btn" onclick="deleteVacationPeriod(${p.id})">Eliminar</button>`:''}</div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
+  const configBlock=isAdmin?`<div class="card" style="margin-bottom:15px"><h3>Configuración de acumulación</h3><div class="hint" style="margin-bottom:10px">Por default se asume liquidado hasta el año ${Math.max(0,v.years-1)} (el inmediato anterior al actual) — así nadie acumula días de golpe al activar esto. Si sabes que esta persona sí tiene días reales sin tomar de años pasados, baja este número.</div><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div class="field" style="margin:0"><label>Liquidado hasta el año (de ${v.years} de antigüedad total)</label><input id="vSettled" type="number" min="0" value="${v.settledThrough}" style="width:120px"></div><button class="btn primary" onclick="saveSettledYears(${staffId})">Guardar</button></div></div>`:'';
+  return `${configBlock}<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${misPeriodos.length?misPeriodos.map(p=>`<div class="prow"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+p.notas:''}</span><b>${p.dias} día(s)</b>${isAdmin?`<button class="btn" onclick="deleteVacationPeriod(${p.id})">Eliminar</button>`:''}</div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
+}
+function saveSettledYears(staffId){
+  if(!isAdmin){alert('Solo un administrador puede configurar esto.');return}
+  const s=db.staff.find(x=>x.id===staffId);if(!s)return;
+  const raw=$('#vSettled').value;
+  s.aniosLiquidados=raw===''?null:Math.max(0,+raw);
+  stamp(s);save();openVacationDetail(staffId);
 }
 function openVacationDetail(staffId){
   const s=db.staff.find(x=>x.id===staffId);if(!s)return;
