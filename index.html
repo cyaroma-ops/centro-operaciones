@@ -358,7 +358,10 @@ function summarizeChanges(before,after){
 }
 let saveTimer=null;
 function save(){renderAll();clearTimeout(saveTimer);setSaveStatus('Guardando…');saveTimer=setTimeout(performSave,500)}
+let saveInProgress=false;
 async function performSave(){
+  saveInProgress=true;
+  try{
   const changesSummary = lastSyncedSnapshot ? summarizeChanges(lastSyncedSnapshot, db) : '';
   let hadError=false;
   for(const key of Object.keys(TABLE_MAP)){
@@ -395,10 +398,19 @@ async function performSave(){
     const {error}=await sb.from('audit_log').upsert([toRow('auditLog',entry)],{onConflict:'id'});
     if(error){console.error('Error guardando auditoría:',error);hadError=true}
   }
-  setSaveStatus(hadError?'Error al guardar':'Guardado ✓');
+  setSaveStatus(hadError?'⚠️ Error al guardar — no cierres esta pestaña, avisa al administrador':'Guardado ✓');
   if(!hadError){lastSyncedSnapshot=JSON.parse(JSON.stringify(db))}
   renderAll();
+  }catch(e){
+    console.error('Error inesperado al guardar:',e);
+    setSaveStatus('⚠️ Error al guardar — no cierres esta pestaña, avisa al administrador');
+  }finally{
+    saveInProgress=false;
+  }
 }
+window.addEventListener('beforeunload',function(e){
+  if(saveTimer||saveInProgress){e.preventDefault();e.returnValue='Todavía hay cambios guardándose. Si sales ahora, podrías perderlos.';return e.returnValue}
+});
 function setSaveStatus(t){let el=document.getElementById('saveStatus');if(el)el.textContent=t}function person(id){return db.staff.find(x=>x.id==id)||{name:'Sin asignar'}}function client(id){return db.clients.find(x=>x.id==id)||{name:'Sin cliente'}}function clientDisplay(id){let c=client(id);return c.nombreComercial||c.name}function dateStatus(d){if(!d)return {text:'Sin fecha',cls:'p-gray',days:null};let days=Math.ceil((new Date(d+'T12:00:00')-new Date())/864e5);if(days<0)return {text:'Vencida',cls:'p-red',days};if(days<=14)return {text:`${days} día${days===1?'':'s'}`,cls:'p-orange',days};if(days<=30)return {text:`${days} días`,cls:'p-amber',days};return {text:'Vigente',cls:'p-green',days}}
 const titles={dashboard:['Dashboard','Resumen general del despacho'],clients:['Clientes','Expedientes y responsables'],obligations:['Obligaciones','Seguimiento mensual y checklist'],payroll:['Nómina','Checklist mensual, altas/bajas e incapacidades'],billing:['Facturación','Solicitud de movimientos bancarios'],tasks:['Centro de tareas','Trabajo pendiente del equipo'],calendar:['Calendario','Fechas límite y vigencias'],staff:['Personal','Usuarios, roles y carga de trabajo'],reports:['Reportes','Indicadores de cumplimiento'],settings:['Configuración','Catálogos y parámetros'],audit:['Auditoría','Quién hizo qué y cuándo, en todo el sistema'],help:['Ayuda','Cómo funciona el Centro de Operaciones'],vacations:['Vacaciones','Días que corresponden y periodos tomados']};
 $$('#nav button').forEach(b=>b.onclick=()=>{showPage(b.dataset.page,b);closeMobileNav()});function closeMobileNav(){$('#nav')?.classList.remove('open');$('#sideUserbox')?.classList.remove('open');$('#sideCopyright')?.classList.remove('open');$('#navToggle')?.classList.remove('open')}function showPage(id,b){$$('.page').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');$$('#nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');let t=titles[id]||['Expediente del cliente','Detalle operativo'];$('#pageTitle').textContent=t[0];$('#pageSub').textContent=t[1];renderAll()}
