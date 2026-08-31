@@ -282,6 +282,7 @@
     <details class="help-item"><summary>¿Cómo saco un reporte para una junta?</summary><div class="help-body">En "Reportes", botones "Exportar Excel" (datos completos de clientes, obligaciones y equipo) o "Exportar PDF" (resumen visual listo para presentar).</div></details>
     <details class="help-item"><summary>¿Cómo activo la verificación en dos pasos?</summary><div class="help-body">Agrega un código adicional (generado por una app como Google Authenticator o Authy) además de tu contraseña, para proteger tu cuenta. Los administradores deben tenerla activada obligatoriamente; cualquier otra persona puede activarla si quiere.<br><br><button class="btn primary" onclick="beginVoluntaryMfaEnroll()">Activar verificación en dos pasos</button></div></details>
     <details class="help-item"><summary>¿Cómo desactivo la verificación en dos pasos?</summary><div class="help-body">Si ya la tienes activada y quieres quitarla (por ejemplo, cambiaste de teléfono), usa este botón. <b>Nota:</b> si eres administrador, la próxima vez que inicies sesión se te va a pedir configurarla de nuevo, ya que es obligatoria para tu cuenta.<br><br><button class="btn" onclick="unenrollMfa()">Desactivar verificación en dos pasos</button></div></details>
+    <details class="help-item"><summary>¿Cómo cambio mi contraseña?</summary><div class="help-body">Si tu contraseña te la dio un administrador (o quieres una más segura), puedes cambiarla tú mismo aquí, sin pedirle ayuda a nadie.<br><br><button class="btn primary" onclick="openChangePasswordModal()">Cambiar mi contraseña</button></div></details>
     <details class="help-item"><summary>No encuentro la respuesta a mi duda</summary><div class="help-body">Pregúntale directamente a Rodolfo (administrador) o al equipo — y si es algo que le puede servir a todos, se puede agregar aquí.</div></details>
   </div>
 </section>
@@ -1192,7 +1193,7 @@ async function startMfaEnrollment(mandatory){
     const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Centro de Operaciones '+Date.now()});
     if(error){body.innerHTML=`<div class="hint" style="color:var(--red)">No se pudo iniciar la configuración: ${esc(error.message)}</div>`;return}
     mfaFactorId=data.id;
-    body.innerHTML=`<div style="display:flex;justify-content:center;margin-bottom:14px"><img src="${data.totp.qr_code}" alt="Código QR para verificación en dos pasos" style="width:180px;height:180px"></div><p class="hint" style="text-align:center;margin-bottom:14px">Escanea este código con Google Authenticator, Authy, o una app similar. Si no puedes escanearlo, ingresa esta clave manualmente:<br><code style="user-select:all">${data.totp.secret}</code></p><div class="login-field"><label>Código de 6 dígitos</label><input id="mfaEnrollCode" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:20px;letter-spacing:6px"></div><button class="login-btn" onclick="verifyMfaEnrollment()">Verificar y activar</button>${mandatory?'':'<button class="btn" style="width:100%;margin-top:10px" onclick="cancelMfaEnroll()">Cancelar</button>'}`;
+    body.innerHTML=`<div style="display:flex;justify-content:center;margin-bottom:14px"><img src="${esc(data.totp.qr_code)}" alt="Código QR para verificación en dos pasos" style="width:180px;height:180px"></div><p class="hint" style="text-align:center;margin-bottom:14px">Escanea este código con Google Authenticator, Authy, o una app similar. Si no puedes escanearlo, ingresa esta clave manualmente:<br><code style="user-select:all">${esc(data.totp.secret)}</code></p><div class="login-field"><label>Código de 6 dígitos</label><input id="mfaEnrollCode" inputmode="numeric" maxlength="6" placeholder="000000" style="text-align:center;font-size:20px;letter-spacing:6px"></div><button class="login-btn" onclick="verifyMfaEnrollment()">Verificar y activar</button>${mandatory?'':'<button class="btn" style="width:100%;margin-top:10px" onclick="cancelMfaEnroll()">Cancelar</button>'}`;
   }catch(e){body.innerHTML=`<div class="hint" style="color:var(--red)">Ocurrió un error inesperado.</div>`}
 }
 async function verifyMfaEnrollment(){
@@ -1220,6 +1221,22 @@ async function unenrollMfa(){
     await sb.auth.mfa.unenroll({factorId:f.id});
     alert('Verificación en dos pasos desactivada.');
   }catch(e){alert('No se pudo desactivar. Intenta de nuevo.')}
+}
+function openChangePasswordModal(){
+  modal('Cambiar mi contraseña',`<div class="form-grid"><div class="field full"><label>Nueva contraseña</label><input id="newPass1" type="password" placeholder="Al menos 8 caracteres"></div><div class="field full"><label>Confirmar nueva contraseña</label><input id="newPass2" type="password"></div><div class="field full"><div class="hint" id="changePassError"></div></div></div>`,`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="submitChangePassword()">Cambiar contraseña</button>`);
+}
+async function submitChangePassword(){
+  const p1=$('#newPass1').value,p2=$('#newPass2').value,errBox=$('#changePassError');
+  errBox.style.color='var(--red)';
+  if(p1.length<8){errBox.textContent='La contraseña debe tener al menos 8 caracteres.';return}
+  if(p1!==p2){errBox.textContent='Las dos contraseñas no coinciden.';return}
+  errBox.textContent='Guardando…';errBox.style.color='var(--muted)';
+  try{
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error){errBox.style.color='var(--red)';errBox.textContent='No se pudo cambiar: '+error.message;return}
+    closeModal();
+    alert('Tu contraseña se cambió correctamente. La usarás la próxima vez que inicies sesión.');
+  }catch(e){errBox.style.color='var(--red)';errBox.textContent='Ocurrió un error. Intenta de nuevo.'}
 }
 async function initApp(){
   const {data:{session}} = await sb.auth.getSession();
