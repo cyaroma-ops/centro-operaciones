@@ -360,6 +360,7 @@ let saveTimer=null;
 function save(){renderAll();clearTimeout(saveTimer);setSaveStatus('Guardando…');saveTimer=setTimeout(performSave,500)}
 let saveInProgress=false;
 async function performSave(){
+  saveTimer=null;
   saveInProgress=true;
   try{
   const changesSummary = lastSyncedSnapshot ? summarizeChanges(lastSyncedSnapshot, db) : '';
