@@ -435,7 +435,7 @@ function renderGlobalSearch(){
   if(!q){panel.classList.remove('show');panel.innerHTML='';return}
   const clientsMatch=visibleClients().filter(c=>(c.nombreComercial||'').toLowerCase().includes(q)||c.name.toLowerCase().includes(q)||(c.rfc||'').toLowerCase().includes(q)).slice(0,5);
   const oblMatch=visibleObligations().filter(o=>o.name.toLowerCase().includes(q)||clientDisplay(o.client).toLowerCase().includes(q)).slice(0,5);
-  const staffMatch=db.staff.filter(s=>s.status==='Activo'&&(s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||(s.role||'').toLowerCase().includes(q))).slice(0,5);
+  const staffMatch=isAdmin?db.staff.filter(s=>s.status==='Activo'&&(s.name.toLowerCase().includes(q)||(s.email||'').toLowerCase().includes(q)||(s.role||'').toLowerCase().includes(q))).slice(0,5):[];
   let html='';
   if(clientsMatch.length){html+='<div class="gsr-group-title">Clientes</div>'+clientsMatch.map(c=>`<div class="gsr-item" onclick="goToSearchResult('client',${c.id})"><b>${esc(c.nombreComercial||c.name)}</b><small>${esc(c.rfc)}</small></div>`).join('')}
   if(oblMatch.length){html+='<div class="gsr-group-title">Obligaciones</div>'+oblMatch.map(o=>`<div class="gsr-item" onclick="goToSearchResult('obligation',${o.id})"><b>${esc(o.name)}</b><small>${esc(clientDisplay(o.client))} · ${esc(o.period)}</small></div>`).join('')}
