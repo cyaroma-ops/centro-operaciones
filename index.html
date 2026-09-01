@@ -1015,15 +1015,15 @@ function openInfoRequestModal(cid,preselect){
   preselect=preselect||[];
   let c=db.clients.find(x=>x.id===cid);
   if(!c)return;
-  if(!c.emails||!c.emails.length){alert('Este cliente no tiene correos de contacto capturados. Agrégalos editando el cliente.');return}
+  let hasEmails=c.emails&&c.emails.length;
   modal(`Solicitar información — ${c.nombreComercial||c.name}`,
     `<div class="form-grid">
-      <div class="field full"><label>Enviar a</label>${c.emails.map(em=>`<label style="display:block;margin-bottom:4px"><input type="checkbox" class="reqEmail" value="${esc(em)}" checked> ${esc(em)}</label>`).join('')}</div>
+      <div class="field full"><label>Enviar a</label>${hasEmails?c.emails.map(em=>`<label style="display:block;margin-bottom:4px"><input type="checkbox" class="reqEmail" value="${esc(em)}" checked> ${esc(em)}</label>`).join(''):'<div class="hint">Este cliente no tiene correos capturados — puedes seguir usando WhatsApp, o agrégale un correo editando el cliente.</div>'}</div>
       <div class="field full"><label>Qué necesitas</label>${INFO_REQUEST_ITEMS.map(it=>`<label style="display:block;margin-bottom:4px"><input type="checkbox" class="reqItem" value="${it}" ${preselect.includes(it)?'checked':''}> ${it}</label>`).join('')}<div style="margin-top:6px"><input id="reqOther" placeholder="Otro (opcional)"></div></div>
       <div class="field full"><label>Asunto</label><input id="reqSubject" value="Solicitud de información — ${esc(c.nombreComercial||c.name)}"></div>
       <div class="field full"><label>Cuerpo del correo (puedes editarlo antes de enviar)</label><textarea id="reqBody" rows="10" style="width:100%;font-family:inherit;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:8px"></textarea></div>
     </div>`,
-    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="sendInfoRequest(${cid})">✉️ Abrir en tu correo</button>`
+    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn" onclick="sendInfoRequestWhatsApp(${cid})">💬 Enviar por WhatsApp</button><button class="btn primary" onclick="sendInfoRequest(${cid})" ${hasEmails?'':'disabled title="Este cliente no tiene correos capturados"'}>✉️ Abrir en tu correo</button>`
   );
   updateInfoRequestPreview(cid);
   $$('.reqItem').forEach(el=>el.onchange=()=>updateInfoRequestPreview(cid));
@@ -1041,6 +1041,19 @@ function updateInfoRequestPreview(cid){
   let body=template.replace('{cliente}',c.nombreComercial||c.name).replace('{items}',items).replace('{remitente}',remitente);
   let bodyEl=$('#reqBody');
   if(bodyEl)bodyEl.value=body;
+}
+function sendInfoRequestWhatsApp(cid){
+  let subject=$('#reqSubject').value;
+  let body=$('#reqBody').value;
+  let fullMessage=subject?`*${subject}*\n\n${body}`:body;
+  window.open(`https://wa.me/?text=${encodeURIComponent(fullMessage)}`,'_blank');
+  let itemsList=$$('.reqItem:checked').map(x=>x.value);
+  let other=$('#reqOther')?$('#reqOther').value.trim():'';
+  if(other)itemsList.push(other);
+  if(itemsList.some(it=>BANK_TRIGGER_ITEMS.includes(it)))logBankRequest(cid);
+  db.history.unshift({client:cid,date:new Date().toLocaleString('es-MX'),_ts:Date.now(),text:`Se solicitó información (${itemsList.join(', ')||'sin especificar'}) por WhatsApp.`});
+  save();
+  closeModal();
 }
 function sendInfoRequest(cid){
   let toEmails=$$('.reqEmail:checked').map(x=>x.value);
