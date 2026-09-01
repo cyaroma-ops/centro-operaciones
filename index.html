@@ -98,6 +98,8 @@
 .cal-cell.empty{border:0}
 .cal-daynum{font-weight:700;color:var(--muted);margin-bottom:3px}
 .cal-chip{background:#eaf2ff;color:var(--nav);border-radius:5px;padding:1px 5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-chip-vig{background:#f3ecff;color:var(--purple)}
+.cal-chip-over{background:#fde8e8;color:var(--red)}
 @media(max-width:760px){.cal-cell{min-height:52px;font-size:9.5px;padding:3px}}
 .help-item{border-bottom:1px solid var(--line);padding:2px 0}
 .help-item:last-child{border-bottom:0}
@@ -277,7 +279,7 @@
   <div id="billingTable"></div>
 </section>
 <section class="page" id="tasks"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px"><div class="seg"><button class="active" onclick="setTaskView('kanban',this)">Kanban</button><button onclick="setTaskView('list',this)">Lista</button></div><button class="btn primary" onclick="openTaskModal()">+ Nueva tarea</button></div><div id="tasksContent"></div></section>
-<section class="page" id="calendar"><div class="filters"><input id="calSearch" placeholder="Buscar cliente" oninput="renderCalendar()"><select id="calType" onchange="renderCalendar()"><option value="">Todos los tipos</option><option>Obligación</option><option>Vigencia</option></select><select id="calRange" onchange="renderCalendar()"><option value="todo">Todo</option><option value="vencidas">Solo vencidas</option><option value="30">Próximos 30 días</option><option value="90">Próximos 90 días</option></select></div><div class="card"><h3>Calendario de vencimientos</h3><div id="calendarContent"></div></div></section>
+<section class="page" id="calendar"><div class="filters"><input id="calSearch" placeholder="Buscar cliente" oninput="renderCalendar()"><select id="calType" onchange="renderCalendar()"><option value="">Todos los tipos</option><option>Obligación</option><option>Vigencia</option></select><select id="calRange" onchange="renderCalendar()"><option value="todo">Todo</option><option value="vencidas">Solo vencidas</option><option value="30">Próximos 30 días</option><option value="90">Próximos 90 días</option></select></div><div style="margin-bottom:13px"><div class="seg"><button class="active" onclick="setCalendarView('lista',this)">Lista</button><button onclick="setCalendarView('calendario',this)">Calendario</button></div></div><div class="card" id="calendarCard"><h3>Calendario de vencimientos</h3><div id="calendarContent"></div></div></section>
 <section class="page" id="staff"><div class="filters"><input id="staffSearch" placeholder="Buscar personal" oninput="renderStaff()"><select id="staffDept" onchange="renderStaff()"><option value="">Todos los departamentos</option><option>Fiscal</option><option>Contabilidad</option><option>Nóminas</option><option>Facturación</option><option>Administración</option></select><button class="btn primary admin-only" onclick="openStaffModal()">+ Nuevo usuario</button></div><div id="staffTable"></div></section>
 <section class="page" id="reports"><div style="display:flex;gap:10px;margin-bottom:15px"><button class="btn primary" onclick="exportExcelReport()">⇩ Exportar Excel</button><button class="btn" onclick="exportPDFReport()">⇩ Exportar PDF</button></div><div class="grid cols3"><div class="card"><h3>Obligaciones por estado</h3><div id="reportStates"></div></div><div class="card"><h3>Vigencias próximas</h3><div id="reportExpiries"></div></div><div class="card"><h3>Productividad del equipo</h3><div id="reportTeam"></div></div></div></section>
 <section class="page" id="settings"><div class="grid cols2"><div class="card"><h3>Catálogo de obligaciones</h3><div id="catalog"></div><button class="btn" onclick="addCatalog()">+ Agregar concepto</button></div><div class="card"><h3>Puestos del equipo</h3><div class="hint" style="margin-bottom:10px">Son solo una etiqueta descriptiva — quién tiene acceso de administrador se controla aparte, en el expediente de cada persona ("Es administrador"), así que puedes agregar o quitar puestos libremente, sin ningún riesgo.</div><div id="staffRolesList"></div><button class="btn" onclick="addStaffRole()">+ Agregar puesto</button></div><div class="card"><h3>Datos del despacho</h3><div class="form-grid"><div class="field"><label>Nombre</label><input value="Consultores y Asociados Roma S.A. de C.V."></div><div class="field"><label>Nombre comercial</label><input value="CYARoma"></div><div class="field full"><label>Dominio sugerido</label><input value="control.cyaroma.com.mx"></div></div></div></div><div class="card" style="margin-top:20px"><h3>Plantilla de correo — Solicitud de información</h3><div class="hint" style="margin-bottom:8px">Se usa cada vez que alguien pide información a un cliente desde su ficha. Usa <b>{cliente}</b> donde quieras que aparezca el nombre del cliente, <b>{items}</b> donde quieras la lista de lo solicitado, y <b>{remitente}</b> donde quieras que aparezca el nombre de quien tiene la sesión iniciada (así cada correo queda firmado con la persona correcta, sin depender de la firma de Outlook de cada quien).</div><textarea id="emailTemplateInput" rows="9" style="width:100%;font-family:inherit;font-size:13px;padding:10px;border:1px solid var(--line);border-radius:8px"></textarea><button class="btn primary" style="margin-top:10px" onclick="saveEmailTemplate()">Guardar plantilla</button></div></section>
@@ -577,14 +579,17 @@ function renderTasks(){let el=$('#tasksContent');if(taskView==='list'){el.innerH
 function setTaskView(v,b){taskView=v;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}
 function renderStaff(){let q=($('#staffSearch')?.value||'').toLowerCase(),d=$('#staffDept')?.value||'',a=db.staff.filter(s=>s.name.toLowerCase().includes(q)&&(!d||s.dept===d));$('#staffTable').innerHTML=`<div class="table-wrap"><table class="table"><thead><tr><th>Usuario</th><th>Rol</th><th>Departamento</th><th>Clientes</th><th>Pendientes totales</th><th>Estado</th><th></th></tr></thead><tbody>${a.map(s=>`<tr onclick="openPerson(${s.id})" style="cursor:pointer"><td><div class="person"><div class="avatar" style="background:#eaf2ff;position:relative">${esc(s.name.split(' ').map(x=>x[0]).slice(0,2).join(''))}<span title="${isOnline(s.id)?'En línea ahora':'Sin conexión'}" style="position:absolute;bottom:-2px;right:-2px;width:11px;height:11px;border-radius:50%;border:2px solid #fff;background:${isOnline(s.id)?'#22c55e':'#c9d2e0'}"></span></div><div><b>${esc(s.name)}</b><div class="role">${esc(s.email||'')}${isOnline(s.id)?' · <span style="color:#17895a;font-weight:600">En línea</span>':''}</div></div></div></td><td>${esc(s.role)}</td><td>${esc(s.dept)}</td><td>${db.clients.filter(c=>clientAssignedIds(c).includes(s.id)).length}</td><td>${personPendingCount(s.id)}</td><td>${pill(s.status==='Activo'?'Concluida':'Sin iniciar')}</td><td>${isAdmin?`<button class="btn" onclick="event.stopPropagation();openStaffModal(${s.id})">Editar</button>`:''}</td></tr>`).join('')}</tbody></table></div>`}
 function addDaysPlain(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
+let calendarView='lista';let calCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+function setCalendarView(v,b){calendarView=v;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCalendar()}
+function changeCalCalMonth(delta){calCalDate=new Date(calCalDate.getFullYear(),calCalDate.getMonth()+delta,1);renderCalendar()}
 function renderCalendar(){
   let q=($('#calSearch')?.value||'').toLowerCase();
   let type=$('#calType')?.value||'';
   let range=$('#calRange')?.value||'todo';
   let items=[
-    ...visibleObligations().map(o=>({date:o.due,title:o.name,sub:clientDisplay(o.client),type:'Obligación'})),
-    ...visibleClients().filter(c=>c.fiel&&c.state==='Activo').map(c=>({date:c.fiel,title:'Vencimiento FIEL',sub:c.name,type:'Vigencia'})),
-    ...visibleClients().filter(c=>c.csd&&c.state==='Activo').map(c=>({date:c.csd,title:'Vencimiento Sello Digital (CSD)',sub:c.name,type:'Vigencia'}))
+    ...visibleObligations().map(o=>({date:o.due,title:o.name,sub:clientDisplay(o.client),type:'Obligación',kind:'obligation',id:o.id})),
+    ...visibleClients().filter(c=>c.fiel&&c.state==='Activo').map(c=>({date:c.fiel,title:'Vencimiento FIEL',sub:c.name,type:'Vigencia',kind:'client',id:c.id})),
+    ...visibleClients().filter(c=>c.csd&&c.state==='Activo').map(c=>({date:c.csd,title:'Vencimiento Sello Digital (CSD)',sub:c.name,type:'Vigencia',kind:'client',id:c.id}))
   ].filter(x=>x.date);
   let today=toISODate(new Date());
   items=items.filter(x=>x.sub.toLowerCase().includes(q)&&(!type||x.type===type));
@@ -592,7 +597,35 @@ function renderCalendar(){
   else if(range==='30')items=items.filter(x=>x.date>=today&&x.date<=toISODate(addDaysPlain(new Date(),30)));
   else if(range==='90')items=items.filter(x=>x.date>=today&&x.date<=toISODate(addDaysPlain(new Date(),90)));
   items.sort((a,b)=>a.date.localeCompare(b.date));
-  $('#calendarContent').innerHTML=items.length?`<div class="timeline">${items.map(x=>{let overdue=x.date<today;return `<div class="time-item ${overdue?'overdue':''}"><b style="${overdue?'color:#b92e38':''}">${x.date} · ${esc(x.title)}</b><div class="role">${esc(x.sub)} · ${esc(x.type)}${overdue?' · <b style="color:#b92e38">Vencida</b>':''}</div></div>`}).join('')}</div>`:'<div class="empty">Sin resultados para este filtro.</div>';
+  if(calendarView==='calendario'){$('#calendarContent').innerHTML=buildObligationCalendarHTML(items);return}
+  $('#calendarContent').innerHTML=items.length?`<div class="timeline">${items.map(x=>{let overdue=x.date<today;return `<div class="time-item ${overdue?'overdue':''}" style="cursor:pointer" onclick="goToCalendarItem('${x.kind}',${x.id})"><b style="${overdue?'color:#b92e38':''}">${x.date} · ${esc(x.title)}</b><div class="role">${esc(x.sub)} · ${esc(x.type)}${overdue?' · <b style="color:#b92e38">Vencida</b>':''}</div></div>`}).join('')}</div>`:'<div class="empty">Sin resultados para este filtro.</div>';
+}
+function goToCalendarItem(kind,id){if(kind==='obligation')openWorkflow(id);else openClient(id)}
+function buildObligationCalendarHTML(items){
+  const year=calCalDate.getFullYear(),month=calCalDate.getMonth();
+  const firstDay=new Date(year,month,1);
+  const startWeekday=firstDay.getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthLabel=firstDay.toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+  const today=toISODate(new Date());
+  const byDay={};
+  items.forEach(it=>{
+    const d=new Date(it.date+'T00:00:00');
+    if(d.getFullYear()===year&&d.getMonth()===month){
+      const dayNum=d.getDate();
+      if(!byDay[dayNum])byDay[dayNum]=[];
+      byDay[dayNum].push(it);
+    }
+  });
+  let cells='';
+  for(let i=0;i<startWeekday;i++)cells+='<div class="cal-cell empty"></div>';
+  for(let day=1;day<=daysInMonth;day++){
+    const dayItems=byDay[day]||[];
+    const dateStr=toISODate(new Date(year,month,day));
+    const overdue=dateStr<today;
+    cells+=`<div class="cal-cell">${dayItems.length?`<div class="cal-daynum">${day}</div>`:`<div class="cal-daynum" style="opacity:.4">${day}</div>`}${dayItems.map(it=>`<div class="cal-chip ${it.type==='Vigencia'?'cal-chip-vig':overdue?'cal-chip-over':''}" style="cursor:pointer" title="${esc(it.sub)} · ${esc(it.title)}" onclick="goToCalendarItem('${it.kind}',${it.id})">${esc(it.sub)}</div>`).join('')}</div>`;
+  }
+  return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><button class="btn" onclick="changeCalCalMonth(-1)">← Anterior</button><h3 style="text-transform:capitalize;margin:0">${monthLabel}</h3><button class="btn" onclick="changeCalCalMonth(1)">Siguiente →</button></div><div class="cal-grid"><div class="cal-dow">Dom</div><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div><div class="cal-dow">Mié</div><div class="cal-dow">Jue</div><div class="cal-dow">Vie</div><div class="cal-dow">Sáb</div>${cells}</div>`;
 }
 function loadScriptOnce(src,globalCheck){return new Promise((resolve,reject)=>{if(typeof globalCheck!=='undefined'&&globalCheck)return resolve();if(document.querySelector(`script[src="${src}"]`))return resolve();let s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('No se pudo cargar '+src));document.head.appendChild(s)})}
 
