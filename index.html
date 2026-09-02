@@ -1194,15 +1194,16 @@ function periodServiceYear(fechaIngreso,period){
   if(period.anioServicio!=null&&period.anioServicio!==''){return Number(period.anioServicio)}
   return yearsOfService(fechaIngreso,period.fechaInicio);
 }
-function vacationSummary(staffMember,refDateStr){
+function vacationSummary(staffMember,refDateStr,periodsOverride){
   refDateStr=refDateStr||toISODate(new Date());
   if(!staffMember.fechaIngreso)return {years:0,settledThrough:0,correspond:0,tomados:0,disponibles:0,range:null};
   const years=yearsOfService(staffMember.fechaIngreso,refDateStr);
   const settledThrough=(staffMember.aniosLiquidados!=null&&staffMember.aniosLiquidados!=='')?Number(staffMember.aniosLiquidados):Math.max(0,years-1);
+  const periods=periodsOverride||db.vacationPeriods||[];
   let correspond=0,tomados=0;
   for(let y=settledThrough+1;y<=years;y++){
     correspond+=vacationDaysForYear(y);
-    tomados+=(db.vacationPeriods||[]).filter(v=>v.staff===staffMember.id&&(v.status||'Autorizado')==='Autorizado'&&periodServiceYear(staffMember.fechaIngreso,v)===y).reduce((s,v)=>s+v.dias,0);
+    tomados+=periods.filter(v=>v.staff===staffMember.id&&(v.status||'Autorizado')==='Autorizado'&&periodServiceYear(staffMember.fechaIngreso,v)===y).reduce((s,v)=>s+v.dias,0);
   }
   const range=currentServiceYearRange(staffMember.fechaIngreso,refDateStr);
   return {years,settledThrough,correspond,tomados,disponibles:Math.max(0,correspond-tomados),range};
@@ -1385,7 +1386,11 @@ async function viewVacationEvidence(periodId){
 function printVacationRequest(periodId){
   const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);if(!p)return;
   const s=db.staff.find(x=>x.id===p.staff);if(!s)return;
-  const v=vacationSummary(s,toISODate(new Date()));
+  const today=toISODate(new Date());
+  const periodsExcluding=(db.vacationPeriods||[]).filter(x=>x.id!==periodId);
+  const periodsAutorizado=periodsExcluding.concat([{...p,status:'Autorizado'}]);
+  const vAntes=vacationSummary(s,today,periodsExcluding);
+  const vDespues=vacationSummary(s,today,periodsAutorizado);
   const fechaSolicitud=new Date(p._ts||Date.now());
   const win=window.open('','_blank');
   if(!win)return;
@@ -1405,10 +1410,10 @@ td{padding:6px 4px;vertical-align:bottom}
 <tr><td class="lbl">NOMBRE DEL EMPLEADO:<br><b>${esc(s.name)}</b></td><td class="lbl">FECHA DE LA SOLICITUD:<br><b>${fechaSolicitud.toLocaleDateString('es-MX')}</b></td></tr>
 <tr><td class="lbl">FECHA DE INGRESO:<br><b>${s.fechaIngreso||'—'}</b></td><td class="lbl">DEPARTAMENTO / PUESTO:<br><b>${esc(s.dept)} / ${esc(s.role)}</b></td></tr>
 </table>
-<p>Por medio del presente solicito autorización para tomar las vacaciones, del ejercicio en curso (<b>año ${v.years} de antigüedad</b>):</p>
+<p>Por medio del presente solicito autorización para tomar las vacaciones, del ejercicio en curso (<b>año ${vAntes.years} de antigüedad</b>):</p>
 <p>A partir del <b>${p.fechaInicio}</b> al <b>${p.fechaFin}</b>.</p>
 <table>
-<tr><td class="lbl">Días a tomar:<br><b>${p.dias}</b></td><td class="lbl">Días disponibles antes de esta solicitud:<br><b>${v.disponibles}</b></td></tr>
+<tr><td class="lbl">Días a tomar:<br><b>${p.dias}</b></td><td class="lbl">Días disponibles ANTES de esta solicitud:<br><b>${vAntes.disponibles}</b></td><td class="lbl">Días disponibles DESPUÉS (una vez autorizada):<br><b>${vDespues.disponibles}</b></td></tr>
 </table>
 ${p.notas?`<p class="lbl">Notas: ${esc(p.notas)}</p>`:''}
 <div class="firma">Firma del empleado</div>
