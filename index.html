@@ -396,7 +396,7 @@ const TABLE_MAP={
   bankRequests:{table:'bank_requests',key:'id',cols:{id:'id',client:'client_id',date:'date'}},
   tasks:{table:'tasks',key:'id',cols:{id:'id',title:'title',client:'client_id',owner:'owner_id',due:'due',priority:'priority',state:'state'}},
   auditLog:{table:'audit_log',key:'id',cols:{id:'id',actor:'actor',date:'date',summary:'summary'}},
-  vacationPeriods:{table:'vacation_periods',key:'id',cols:{id:'id',staff:'staff_id',fechaInicio:'fecha_inicio',fechaFin:'fecha_fin',dias:'dias',notas:'notas',createdBy:'created_by'}},
+  vacationPeriods:{table:'vacation_periods',key:'id',cols:{id:'id',staff:'staff_id',fechaInicio:'fecha_inicio',fechaFin:'fecha_fin',dias:'dias',notas:'notas',createdBy:'created_by',status:'status',evidenciaUrl:'evidencia_url'}},
   staffRoles:{table:'staff_roles',key:'id',cols:{id:'id',name:'name'}},
   notes:{table:'notes',key:'id',cols:{id:'id',client:'client_id',obligation:'obligation_id',text:'text',author:'author_id'}},
   regimenesFiscales:{table:'regimenes_fiscales',key:'id',cols:{id:'id',name:'name'}}
@@ -1199,7 +1199,7 @@ function vacationSummary(staffMember,refDateStr){
   for(let y=settledThrough+1;y<=years;y++){
     correspond+=vacationDaysForYear(y);
     const r=serviceYearRange(staffMember.fechaIngreso,y);
-    tomados+=(db.vacationPeriods||[]).filter(v=>v.staff===staffMember.id&&v.fechaInicio>=r.start&&v.fechaInicio<=r.end).reduce((s,v)=>s+v.dias,0);
+    tomados+=(db.vacationPeriods||[]).filter(v=>v.staff===staffMember.id&&(v.status||'Autorizado')==='Autorizado'&&v.fechaInicio>=r.start&&v.fechaInicio<=r.end).reduce((s,v)=>s+v.dias,0);
   }
   const range=currentServiceYearRange(staffMember.fechaIngreso,refDateStr);
   return {years,settledThrough,correspond,tomados,disponibles:Math.max(0,correspond-tomados),range};
@@ -1255,9 +1255,14 @@ function vacationPersonalCard(staffId){
   if(!s)return '<div class="card"><div class="empty">No encontrado.</div></div>';
   const today=toISODate(new Date());
   const v=vacationSummary(s,today);
-  const misPeriodos=(db.vacationPeriods||[]).filter(p=>p.staff===staffId).slice().sort((a,b)=>b.fechaInicio.localeCompare(a.fechaInicio));
+  const isSelf=currentStaff&&currentStaff.id===staffId;
+  const allPeriodos=(db.vacationPeriods||[]).filter(p=>p.staff===staffId).slice().sort((a,b)=>b.fechaInicio.localeCompare(a.fechaInicio));
+  const pendientes=allPeriodos.filter(p=>(p.status||'Autorizado')==='Pendiente');
+  const historial=allPeriodos.filter(p=>(p.status||'Autorizado')!=='Pendiente');
   const configBlock=isAdmin?`<div class="card" style="margin-bottom:15px"><h3>Configuración de acumulación</h3><div class="hint" style="margin-bottom:10px">Por default se asume liquidado hasta el año ${Math.max(0,v.years-1)} (el inmediato anterior al actual) — así nadie acumula días de golpe al activar esto. Si sabes que esta persona sí tiene días reales sin tomar de años pasados, baja este número.</div><div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap"><div class="field" style="margin:0"><label>Liquidado hasta el año (de ${v.years} de antigüedad total)</label><input id="vSettled" type="number" min="0" value="${v.settledThrough}" style="width:120px"></div><button class="btn primary" onclick="saveSettledYears(${staffId})">Guardar</button></div></div>`:'';
-  return `${configBlock}<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${misPeriodos.length?misPeriodos.map(p=>`<div class="prow" style="position:relative"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+esc(p.notas):''}</span><span style="display:flex;align-items:center;gap:10px"><b>${p.dias} día(s)</b>${isAdmin?`<div style="position:relative"><button class="btn" onclick="event.stopPropagation();toggleVacationMenu(${p.id})">⋯</button><div class="vac-menu" id="vacMenu${p.id}" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);z-index:5;min-width:120px;overflow:hidden"><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left" onclick="editVacationPeriod(${p.id})">Editar</button><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left;color:var(--red)" onclick="deleteVacationPeriod(${p.id})">Eliminar</button></div></div>`:''}</span></div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
+  const pendientesBlock=pendientes.length?`<div class="card" style="margin-bottom:15px;border:1px solid var(--amber)"><h3>🕒 Solicitudes pendientes de autorización</h3>${pendientes.map(p=>`<div class="prow" style="align-items:flex-start"><span>${p.fechaInicio} al ${p.fechaFin} · <b>${p.dias} día(s)</b>${p.notas?' · '+esc(p.notas):''}</span><span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${p.evidenciaUrl?`<button class="btn" onclick="viewVacationEvidence(${p.id})">📎 Ver evidencia</button>`:''}${isAdmin?`<button class="btn" onclick="triggerEvidenceUpload(${p.id})">📎 Subir evidencia</button>`:''}<button class="btn" onclick="printVacationRequest(${p.id})">🖨️ Imprimir</button>${isAdmin?`<button class="btn" style="background:var(--green);color:#fff;border-color:var(--green)" onclick="authorizeVacationRequest(${p.id})">✓ Autorizar</button><button class="btn" style="color:var(--red)" onclick="rejectVacationRequest(${p.id})">✕ Rechazar</button>`:''}</span></div>`).join('')}</div>`:'';
+  const requestBtn=isSelf?`<button class="btn primary" style="margin-bottom:15px" onclick="openVacationRequestModal(${staffId})">+ Solicitar vacaciones</button>`:'';
+  return `${configBlock}${requestBtn}${pendientesBlock}<div class="grid kpis" style="margin-bottom:15px"><div class="card kpi"><small>Antigüedad</small><strong>${v.years} año(s)</strong></div><div class="card kpi"><small>Corresponden</small><strong>${v.correspond}</strong></div><div class="card kpi"><small>Tomados</small><strong>${v.tomados}</strong></div><div class="card kpi"><small>Disponibles</small><strong>${v.disponibles}</strong></div></div><div class="card"><h3>Historial de periodos</h3>${historial.length?historial.map(p=>`<div class="prow" style="position:relative"><span>${p.fechaInicio} al ${p.fechaFin}${p.notas?' · '+esc(p.notas):''}${p.status==='Rechazado'?' · <span style="color:var(--red)">Rechazado</span>':''}</span><span style="display:flex;align-items:center;gap:10px"><b>${p.dias} día(s)</b>${p.evidenciaUrl?`<button class="btn" onclick="viewVacationEvidence(${p.id})">📎</button>`:''}<button class="btn" onclick="printVacationRequest(${p.id})">🖨️</button>${isAdmin?`<div style="position:relative"><button class="btn" onclick="event.stopPropagation();toggleVacationMenu(${p.id})">⋯</button><div class="vac-menu" id="vacMenu${p.id}" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);z-index:5;min-width:120px;overflow:hidden"><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left" onclick="editVacationPeriod(${p.id})">Editar</button><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left" onclick="triggerEvidenceUpload(${p.id})">Subir evidencia</button><button class="btn" style="width:100%;border:0;border-radius:0;text-align:left;color:var(--red)" onclick="deleteVacationPeriod(${p.id})">Eliminar</button></div></div>`:''}</span></div>`).join(''):'<div class="empty">Sin periodos registrados todavía</div>'}</div>`;
 }
 function toggleVacationMenu(periodId){
   const menu=$('#vacMenu'+periodId);
@@ -1310,9 +1315,105 @@ function saveVacationPeriod(staffId,periodId){
     const idx=db.vacationPeriods.findIndex(x=>x.id===periodId);
     if(idx>-1)db.vacationPeriods[idx]=stamp({...db.vacationPeriods[idx],fechaInicio:ini,fechaFin:fin,dias,notas});
   }else{
-    db.vacationPeriods.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),staff:sel,fechaInicio:ini,fechaFin:fin,dias,notas,createdBy:currentStaff?currentStaff.id:null}));
+    db.vacationPeriods.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),staff:sel,fechaInicio:ini,fechaFin:fin,dias,notas,status:'Autorizado',createdBy:currentStaff?currentStaff.id:null}));
   }
   closeModal();save();openVacationDetail(sel);
+}
+function openVacationRequestModal(staffId){
+  if(!currentStaff||currentStaff.id!==staffId){alert('Solo puedes solicitar tus propias vacaciones.');return}
+  modal('Solicitar vacaciones',`<div class="form-grid"><div class="field"><label>Fecha de inicio</label><input id="vrInicio" type="date" oninput="previewVacationRequestDays()"></div><div class="field"><label>Fecha de fin</label><input id="vrFin" type="date" oninput="previewVacationRequestDays()"></div><div class="field full"><div class="hint" id="vrPreview">Cuentan de lunes a sábado — domingo no cuenta.</div></div><div class="field full"><label>Notas <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="vrNotas" placeholder="Ej. vacaciones de fin de año"></div><div class="field full"><div class="hint">Tu solicitud queda <b>pendiente de autorización</b>. En cuanto la envíes, puedes imprimir el formato para recabar la firma correspondiente.</div></div></div>`,`<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="submitVacationRequest(${staffId})">Enviar solicitud</button>`);
+}
+function previewVacationRequestDays(){
+  const ini=$('#vrInicio').value,fin=$('#vrFin').value,box=$('#vrPreview');
+  if(!ini||!fin||fin<ini){box.textContent='Cuentan de lunes a sábado — domingo no cuenta.';return}
+  box.textContent=`Se descontarán ${countVacationDays(ini,fin)} día(s) una vez que se autorice (cuentan de lunes a sábado — domingo no cuenta).`;
+}
+function submitVacationRequest(staffId){
+  if(!currentStaff||currentStaff.id!==staffId){alert('Solo puedes solicitar tus propias vacaciones.');return}
+  const ini=$('#vrInicio').value,fin=$('#vrFin').value;
+  if(!ini||!fin){alert('Captura ambas fechas.');return}
+  if(fin<ini){alert('La fecha de fin no puede ser antes que la de inicio.');return}
+  const dias=countVacationDays(ini,fin);
+  if(dias<=0){alert('Ese periodo no tiene días que contar (revisa que no sean solo domingos).');return}
+  db.vacationPeriods=db.vacationPeriods||[];
+  const notas=$('#vrNotas').value.trim()||null;
+  db.vacationPeriods.push(stamp({id:Date.now()+Math.floor(Math.random()*100000),staff:staffId,fechaInicio:ini,fechaFin:fin,dias,notas,status:'Pendiente',createdBy:staffId}));
+  closeModal();save();openVacationDetail(staffId);
+}
+function authorizeVacationRequest(periodId){
+  if(!isAdmin){alert('Solo un administrador puede autorizar solicitudes.');return}
+  const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);if(!p)return;
+  p.status='Autorizado';stamp(p);save();openVacationDetail(p.staff);
+}
+function rejectVacationRequest(periodId){
+  if(!isAdmin){alert('Solo un administrador puede rechazar solicitudes.');return}
+  if(!confirm('¿Rechazar esta solicitud de vacaciones? Ya no contará contra el saldo de esta persona.'))return;
+  const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);if(!p)return;
+  p.status='Rechazado';stamp(p);save();openVacationDetail(p.staff);
+}
+function triggerEvidenceUpload(periodId){
+  if(!isAdmin){alert('Solo un administrador puede subir evidencia.');return}
+  closeVacMenusOnce();
+  const input=document.createElement('input');
+  input.type='file';input.accept='image/png,image/jpeg,image/webp,application/pdf';
+  input.onchange=async()=>{
+    const file=input.files[0];if(!file)return;
+    if(file.size>10*1024*1024){alert('El archivo no puede pesar más de 10 MB.');return}
+    const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    const path=`${periodId}-${Date.now()}.${ext}`;
+    const {error}=await sb.storage.from('vacaciones-evidencia').upload(path,file,{upsert:true});
+    if(error){alert('No se pudo subir la evidencia: '+error.message);return}
+    const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);
+    if(p){p.evidenciaUrl=path;stamp(p);save();openVacationDetail(p.staff)}
+  };
+  input.click();
+}
+async function viewVacationEvidence(periodId){
+  const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);
+  if(!p||!p.evidenciaUrl)return;
+  try{
+    const {data,error}=await sb.storage.from('vacaciones-evidencia').createSignedUrl(p.evidenciaUrl,300);
+    if(error){alert('No se pudo abrir la evidencia: '+error.message);return}
+    window.open(data.signedUrl,'_blank');
+  }catch(e){alert('No se pudo abrir la evidencia.')}
+}
+function printVacationRequest(periodId){
+  const p=(db.vacationPeriods||[]).find(x=>x.id===periodId);if(!p)return;
+  const s=db.staff.find(x=>x.id===p.staff);if(!s)return;
+  const v=vacationSummary(s,toISODate(new Date()));
+  const fechaSolicitud=new Date(p._ts||Date.now());
+  const win=window.open('','_blank');
+  if(!win)return;
+  win.document.write(`<!doctype html><html><head><title>Solicitud de vacaciones - ${esc(s.name)}</title><meta charset="utf-8"><style>
+body{font-family:Arial,sans-serif;font-size:12px;padding:30px;color:#000;max-width:750px;margin:0 auto}
+h1{font-size:15px;text-align:center;margin-bottom:24px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;margin-bottom:16px}
+td{padding:6px 4px;vertical-align:bottom}
+.lbl{font-size:10px;color:#555}
+.firma{margin-top:70px;border-top:1px solid #000;width:250px;text-align:center;padding-top:4px;font-size:11px}
+.box{border:1px solid #000;padding:14px;margin-top:26px}
+.estado{display:flex;justify-content:space-around;margin-top:30px;font-weight:bold}
+@media print{body{padding:15px}}
+</style></head><body>
+<h1>Formato de control individual de vacaciones</h1>
+<table>
+<tr><td class="lbl">NOMBRE DEL EMPLEADO:<br><b>${esc(s.name)}</b></td><td class="lbl">FECHA DE LA SOLICITUD:<br><b>${fechaSolicitud.toLocaleDateString('es-MX')}</b></td></tr>
+<tr><td class="lbl">FECHA DE INGRESO:<br><b>${s.fechaIngreso||'—'}</b></td><td class="lbl">DEPARTAMENTO / PUESTO:<br><b>${esc(s.dept)} / ${esc(s.role)}</b></td></tr>
+</table>
+<p>Por medio del presente solicito autorización para tomar las vacaciones, del ejercicio en curso (<b>año ${v.years} de antigüedad</b>):</p>
+<p>A partir del <b>${p.fechaInicio}</b> al <b>${p.fechaFin}</b>.</p>
+<table>
+<tr><td class="lbl">Días a tomar:<br><b>${p.dias}</b></td><td class="lbl">Días disponibles antes de esta solicitud:<br><b>${v.disponibles}</b></td></tr>
+</table>
+${p.notas?`<p class="lbl">Notas: ${esc(p.notas)}</p>`:''}
+<div class="firma">Firma del empleado</div>
+<div class="box">
+<p class="lbl" style="margin:0">PARA USO EXCLUSIVO DE LA EMPRESA</p>
+<div class="estado"><span>AUTORIZADO ${p.status==='Autorizado'?'☑':'☐'}</span><span>NO AUTORIZADO ${p.status==='Rechazado'?'☑':'☐'}</span></div>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
+  win.document.close();
 }
 function deleteVacationPeriod(id){
   if(!isAdmin){alert('Solo un administrador puede eliminar periodos de vacaciones.');return}
