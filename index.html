@@ -1437,24 +1437,34 @@ function deleteVacationPeriod(id){
 let mfaFactorId=null;
 let mfaEnrollWasVoluntary=false;
 function hideAllAuthOverlays(){['loginOverlay','inactiveOverlay','mfaEnrollOverlay','mfaChallengeOverlay'].forEach(id=>{let el=document.getElementById(id);if(el)el.style.display='none'})}
-async function checkMfaStatus(){
+async function checkMfaChallenge(){
   try{
     const {data:aal}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-    const {data:factorsData}=await sb.auth.mfa.listFactors();
-    const verifiedFactor=(factorsData?.totp||[]).find(f=>f.status==='verified');
     if(aal&&aal.nextLevel==='aal2'&&aal.currentLevel!=='aal2'){
+      const {data:factorsData}=await sb.auth.mfa.listFactors();
+      const verifiedFactor=(factorsData?.totp||[]).find(f=>f.status==='verified');
       mfaFactorId=verifiedFactor?verifiedFactor.id:(factorsData?.totp?.[0]?.id);
       showMfaChallenge();
       return 'blocked';
     }
+    return 'ok';
+  }catch(e){
+    console.error('mfa challenge check',e);
+    return 'ok'; // si falla la revisión de MFA, no se bloquea el acceso por un error de red
+  }
+}
+async function checkMfaEnrollmentRequired(){
+  try{
+    const {data:factorsData}=await sb.auth.mfa.listFactors();
+    const verifiedFactor=(factorsData?.totp||[]).find(f=>f.status==='verified');
     if(!verifiedFactor&&isAdmin){
       showMfaEnroll(true);
       return 'blocked';
     }
     return 'ok';
   }catch(e){
-    console.error('mfa status',e);
-    return 'ok'; // si falla la revisión de MFA, no se bloquea el acceso por un error de red
+    console.error('mfa enrollment check',e);
+    return 'ok';
   }
 }
 function showMfaChallenge(){
@@ -1476,7 +1486,7 @@ async function verifyMfaChallenge(){
     if(vErr){errBox.textContent='Código incorrecto o expirado. Intenta de nuevo.';return}
     errBox.textContent='';
     hideAllAuthOverlays();
-    await continueAppLoad();
+    await proceedAfterMfaChallenge(currentUserEmail);
   }catch(e){errBox.textContent='Ocurrió un error. Intenta de nuevo.'}
 }
 function showMfaEnroll(mandatory){
@@ -1544,8 +1554,14 @@ async function initApp(){
   const {data:{session}} = await sb.auth.getSession();
   if(!session){showLogin();return}
   setSessionBadge(session);
+  currentUserEmail=session.user.email;
+  const challengeResult = await checkMfaChallenge();
+  if(challengeResult==='blocked') return;
+  await proceedAfterMfaChallenge(session.user.email);
+}
+async function proceedAfterMfaChallenge(email){
   await loadFromCloud();
-  applyAccessScope(session.user.email);
+  applyAccessScope(email);
   if(currentStaff&&currentStaff.status==='Inactivo'){
     document.getElementById('authChecking').style.display='none';
     document.getElementById('loginOverlay').style.display='none';
@@ -1553,8 +1569,8 @@ async function initApp(){
     document.getElementById('inactiveOverlay').style.display='flex';
     return;
   }
-  const mfaResult = await checkMfaStatus();
-  if(mfaResult==='blocked') return;
+  const enrollResult = await checkMfaEnrollmentRequired();
+  if(enrollResult==='blocked') return;
   await continueAppLoad();
 }
 async function continueAppLoad(){
