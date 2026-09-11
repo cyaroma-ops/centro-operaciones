@@ -1081,6 +1081,13 @@ const SUPABASE_URL = 'https://lkyhpcrhjoshzdugoaqb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_E8z6YstIpgrRsv5IiBc1SA_UNbpKfTC';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+async function fetchRecentHistory(limit){
+  try{
+    const {data,error}=await sb.from('history').select('*').order('id',{ascending:false}).range(0,limit-1);
+    if(error)return {data:null,error};
+    return {data,error:null};
+  }catch(e){return {data:null,error:e}}
+}
 async function fetchAllRows(table,cols,orderCol,ascending){
   let all=[],from=0;const pageSize=1000;
   while(true){
@@ -1098,17 +1105,19 @@ async function fetchAllRows(table,cols,orderCol,ascending){
 async function loadFromCloud(){
   try{
     const keys=Object.keys(TABLE_MAP);
-    const results=await Promise.all(keys.map(k=>fetchAllRows(TABLE_MAP[k].table,'*')));
+    const [results,historyResult,settingsResult]=await Promise.all([
+      Promise.all(keys.map(k=>fetchAllRows(TABLE_MAP[k].table,'*'))),
+      fetchRecentHistory(3000),
+      fetchAllRows('settings','*')
+    ]);
     const errored=results.find(r=>r.error);
     if(errored){console.error(errored.error);alert('No se pudo cargar la información desde la nube. Revisa la configuración de Supabase.');return}
     let out={};
     keys.forEach((k,i)=>{out[k]=(results[i].data||[]).map(row=>fromRow(k,row))});
 
-    const {data:historyRows,error:histErr}=await fetchAllRows('history','*','id',false);
-    out.history=histErr?[]:(historyRows||[]).map(r=>({client:Number(r.client_id),date:r.date,text:r.text}));
+    out.history=historyResult.error?[]:(historyResult.data||[]).map(r=>({client:Number(r.client_id),date:r.date,text:r.text}));
 
-    const {data:settingsRows}=await fetchAllRows('settings','*');
-    let tpl=(settingsRows||[]).find(s=>s.key==='emailTemplate');
+    let tpl=(settingsResult.data||[]).find(s=>s.key==='emailTemplate');
     out.emailTemplate=upgradeEmailTemplate(tpl?tpl.value:defaults.emailTemplate);
 
     out.clients=out.clients.map(c=>({emails:[],payrollAssistant:[],nombreComercial:'',services:[],obligationTypes:[],repse:'',...c,
