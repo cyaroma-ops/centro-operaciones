@@ -1863,7 +1863,9 @@ function recalcularMesesPosterioresUI(clientId){
 function verCedulaISRPM(clientId,ejercicio){
   let c=getCedulaAnualISRPM(clientId,ejercicio);
   function fila(label,obj,esMoneda){
-    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(esMoneda?fmtMoneyMX(v):v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':(esMoneda?fmtMoneyMX(obj.cierre):obj.cierre)}</td></tr>`;
+    let esPorcentaje=!esMoneda&&label.toLowerCase().includes('tasa');
+    let fmtValor=v=>v==null?'—':(esMoneda?fmtMoneyMX(v):(esPorcentaje?v+'%':v));
+    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${fmtValor(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtValor(obj.cierre)}</td></tr>`;
   }
   mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
     ${fila('Ingresos nominales del mes',c.ingresosNominalesDelMes,true)}
@@ -2607,7 +2609,8 @@ function verCedulaBebidas(clientId,ejercicio){
 
 // --- Impresión de cédulas ENE-DIC: SIEMPRE lee de los papeles ya guardados (getCedulaAnualX ya hace esto) ---
 function filaCedulaPdf(label,obj){
-  let fmt=v=>v==null?'—':(obj.tipo==='referencia'?v+'%':fmtMoneyMX(v));
+  let esCoeficiente=label.toLowerCase().includes('coeficiente');
+  let fmt=v=>v==null?'—':(obj.tipo==='referencia'?(esCoeficiente?v:v+'%'):fmtMoneyMX(v));
   return [label,...obj.valores.map(fmt),obj.cierre==null?'—':fmt(obj.cierre)];
 }
 function imprimirCedulaISRPM(clientId,ejercicio){
