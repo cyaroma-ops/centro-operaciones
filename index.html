@@ -448,12 +448,15 @@ const TABLE_MAP={
   fiscalPapelRetencionesIsr:{table:'fiscal_papel_retenciones_isr',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',salariosBaseGravada:'salarios_base_gravada',salariosBaseExenta:'salarios_base_exenta',salariosRetenido:'salarios_retenido',conceptos:'conceptos',totalRetenido:'total_retenido',principalPagado:'principal_pagado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',ajustes:'ajustes',totalPagado:'total_pagado',diferenciaPendiente:'diferencia_pendiente',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
   fiscalPapelRetencionesIva:{table:'fiscal_papel_retenciones_iva',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',conceptos:'conceptos',totalRetenido:'total_retenido',principalPagado:'principal_pagado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',ajustes:'ajustes',totalPagado:'total_pagado',diferenciaPendiente:'diferencia_pendiente',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
   fiscalPapelIsn:{table:'fiscal_papel_isn',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',totalRemuneraciones:'total_remuneraciones',numeroTrabajadores:'numero_trabajadores',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoTerceros:'impuesto_retenido_terceros',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
-  fiscalPapelExtraccion:{table:'fiscal_papel_extraccion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',materiales:'materiales',totalImpuesto:'total_impuesto',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}}
+  fiscalPapelExtraccion:{table:'fiscal_papel_extraccion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',materiales:'materiales',totalImpuesto:'total_impuesto',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
+  fiscalPapelHospedaje:{table:'fiscal_papel_hospedaje',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tipoEstablecimiento:'tipo_establecimiento',desgloseBase:'desglose_base',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
+  fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}},
+  fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en'}}
 };
-const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso'],vacationPeriods:['fechaInicio','fechaFin'],parametrosFiscales:['vigenciaDesde','vigenciaHasta'],fiscalPapelIsrPm:['fechaVencimiento','fechaPago'],fiscalPapelIva:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIsr:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIva:['fechaVencimiento','fechaPago'],fiscalPapelIsn:['fechaVencimiento','fechaPago'],fiscalPapelExtraccion:['fechaVencimiento','fechaPago']};
+const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso'],vacationPeriods:['fechaInicio','fechaFin'],parametrosFiscales:['vigenciaDesde','vigenciaHasta'],fiscalPapelIsrPm:['fechaVencimiento','fechaPago'],fiscalPapelIva:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIsr:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIva:['fechaVencimiento','fechaPago'],fiscalPapelIsn:['fechaVencimiento','fechaPago'],fiscalPapelExtraccion:['fechaVencimiento','fechaPago'],fiscalPapelHospedaje:['fechaVencimiento','fechaPago'],fiscalPapelHospedajeAnfitrion:['fechaVencimiento','fechaPago'],fiscalPapelBebidas:['fechaVencimiento','fechaPago']};
 function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
-const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor']};
-const DECIMAL_FIELDS={controlesFiscales:['saldoOriginal'],controlesMovimientos:['importe','valorPropuesto','valorConfirmado'],fiscalPapelIsrPm:['totalIngresosMes','ingresosAcumulados','inventarioAcumulable','coeficienteValor','tasaIsr','utilidadFiscalAcumulada','ptuPropuesta','ptuConfirmada','perdidaPropuesta','perdidaConfirmada','baseIsr','isrDeterminadoAcumulado','pagosProvisionalesPropuestos','pagosProvisionalesConfirmados','isrRetenidoContribuyenteMes','isrRetenidoContribuyenteAcumulado','resultadoIsrCargo','actualizacion','recargos','totalAPagar'],fiscalPapelIva:['baseGravada16','baseTasa0','baseExentos','baseNoObjeto','ivaTrasladado','acredBase16','acredBase0','acredExentosNoObjeto','ivaAcreditable','tasaIva','ivaRetenidoContribuyente','otrasCantidades','resultadoAntesAplicaciones','ivaACargoDelPeriodo','ivaAFavorGenerado','saldoFavorPropuesto','saldoFavorAplicado','ivaFinalAPagar','actualizacion','recargos','totalAPagar'],fiscalPapelRetencionesIsr:['salariosBaseGravada','salariosBaseExenta','salariosRetenido','totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente'],fiscalPapelRetencionesIva:['totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente'],fiscalPapelIsn:['totalRemuneraciones','numeroTrabajadores','tasa','impuestoCausado','impuestoRetenidoTerceros','impuestoDeterminado','actualizacion','recargos','totalAPagar'],fiscalPapelExtraccion:['totalImpuesto','actualizacion','recargos','totalAPagar']};
+const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedaje:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedajeAnfitrion:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelBebidas:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor']};
+const DECIMAL_FIELDS={controlesFiscales:['saldoOriginal'],controlesMovimientos:['importe','valorPropuesto','valorConfirmado'],fiscalPapelIsrPm:['totalIngresosMes','ingresosAcumulados','inventarioAcumulable','coeficienteValor','tasaIsr','utilidadFiscalAcumulada','ptuPropuesta','ptuConfirmada','perdidaPropuesta','perdidaConfirmada','baseIsr','isrDeterminadoAcumulado','pagosProvisionalesPropuestos','pagosProvisionalesConfirmados','isrRetenidoContribuyenteMes','isrRetenidoContribuyenteAcumulado','resultadoIsrCargo','actualizacion','recargos','totalAPagar'],fiscalPapelIva:['baseGravada16','baseTasa0','baseExentos','baseNoObjeto','ivaTrasladado','acredBase16','acredBase0','acredExentosNoObjeto','ivaAcreditable','tasaIva','ivaRetenidoContribuyente','otrasCantidades','resultadoAntesAplicaciones','ivaACargoDelPeriodo','ivaAFavorGenerado','saldoFavorPropuesto','saldoFavorAplicado','ivaFinalAPagar','actualizacion','recargos','totalAPagar'],fiscalPapelRetencionesIsr:['salariosBaseGravada','salariosBaseExenta','salariosRetenido','totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente'],fiscalPapelRetencionesIva:['totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente'],fiscalPapelIsn:['totalRemuneraciones','numeroTrabajadores','tasa','impuestoCausado','impuestoRetenidoTerceros','impuestoDeterminado','actualizacion','recargos','totalAPagar'],fiscalPapelExtraccion:['totalImpuesto','actualizacion','recargos','totalAPagar'],fiscalPapelHospedaje:['baseGravable','tasa','impuestoDeterminado','actualizacion','recargos','totalAPagar'],fiscalPapelHospedajeAnfitrion:['baseGravable','tasa','impuestoCausado','impuestoRetenidoPlataforma','impuestoACargo','actualizacion','recargos','totalAPagar'],fiscalPapelBebidas:['baseGravable','tasa','impuestoRetenidoDeterminado','actualizacion','recargos','totalAPagar']};
 function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let numFields=NUMERIC_ID_FIELDS[collectionKey]||[];let decFields=DECIMAL_FIELDS[collectionKey]||[];let item={};Object.keys(map).forEach(jsKey=>{let v=row[map[jsKey]];if(numFields.includes(jsKey)&&v!==null&&v!==undefined)v=Number(v);if(decFields.includes(jsKey)&&v!==null&&v!==undefined)v=parseFloat(v);item[jsKey]=v});return item}
 function summarizeChanges(before,after){
   before=before||{};after=after||{};
@@ -546,7 +549,8 @@ function getParametroVigente(ambito,entidadFederativa,clave,fechaISO){
     (!p.vigenciaHasta||p.vigenciaHasta>=fechaISO)
   );
   if(!candidatos.length)return null;
-  candidatos.sort((a,b)=>b.vigenciaDesde.localeCompare(a.vigenciaDesde));
+  // Desempate: si dos vigencias publicadas empiezan el mismo día, gana la creada más recientemente (nunca una elección ambigua).
+  candidatos.sort((a,b)=>b.vigenciaDesde.localeCompare(a.vigenciaDesde)||(b.creadoEn||'').localeCompare(a.creadoEn||'')||b.id-a.id);
   return candidatos[0];
 }
 function getHistorialParametro(ambito,entidadFederativa,clave){
@@ -1282,7 +1286,7 @@ function getTarifaMaterialVigente(entidadFederativa,material,fechaISO){
     p.vigenciaDesde<=fechaISO&&(!p.vigenciaHasta||p.vigenciaHasta>=fechaISO)
   );
   if(!candidatos.length)return null;
-  candidatos.sort((a,b)=>b.vigenciaDesde.localeCompare(a.vigenciaDesde));
+  candidatos.sort((a,b)=>b.vigenciaDesde.localeCompare(a.vigenciaDesde)||(b.creadoEn||'').localeCompare(a.creadoEn||'')||b.id-a.id);
   return candidatos[0];
 }
 function getMaterialesConTarifaPublicada(entidadFederativa){
@@ -1418,6 +1422,189 @@ function getCedulaAnualExtraccion(clientId,ejercicio){
   };
 }
 
+// ===================================================================
+// MÓDULO FISCAL — ETAPA 5 (COMPLEMENTO): Hospedaje, Hospedaje Anfitrión,
+// Bebidas con Contenido Alcohólico — mismo patrón TASA que ISN.
+// ===================================================================
+
+// --- Impuesto al Hospedaje: Base × tasa = impuesto determinado ---
+function getPapelHospedajeVigente(clientId,ejercicio,periodo){
+  let candidatos=(db.fiscalPapelHospedaje||[]).filter(p=>p.client===clientId&&p.ejercicio===ejercicio&&p.periodo===periodo);
+  if(!candidatos.length)return null;
+  let reemplazados=new Set(candidatos.map(p=>p.reemplazaA).filter(Boolean));
+  let vigentes=candidatos.filter(p=>!reemplazados.has(p.id));
+  vigentes.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
+  return vigentes[0]||candidatos.slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''))[0];
+}
+function calcularPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  inputs=inputs||{};
+  let fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
+  let baseGravable=Number(inputs.baseGravable)||0;
+  let tasaParam=getParametroVigente('estatal',entidadFederativa,'hospedaje_tasa',fechaRef);
+  let tasa=(tasaParam&&tasaParam.valor&&tasaParam.valor.tasa!=null)?Number(tasaParam.valor.tasa):null;
+  let impuestoDeterminado=tasa!=null?Math.round((baseGravable*(tasa/100))*100)/100:null;
+  let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
+  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoDeterminado){
+    accesorios=calcularAccesorios(impuestoDeterminado,inputs.fechaVencimiento,inputs.fechaPago);
+  }
+  let totalAPagar=impuestoDeterminado!=null?Math.round((impuestoDeterminado+accesorios.totalAccesorios)*100)/100:null;
+  return {baseGravable,tipoEstablecimiento:inputs.tipoEstablecimiento||null,desgloseBase:inputs.desgloseBase||[],tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+}
+function guardarPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
+  let calc=calcularPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inputs);
+  let anteriorVigente=getPapelHospedajeVigente(clientId,ejercicio,periodo);
+  let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
+  let nuevo=stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    baseGravable:calc.baseGravable,tipoEstablecimiento:calc.tipoEstablecimiento,desgloseBase:calc.desgloseBase,
+    tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoDeterminado:calc.impuestoDeterminado,
+    fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
+    observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
+    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString()
+  });
+  db.fiscalPapelHospedaje=db.fiscalPapelHospedaje||[];
+  db.fiscalPapelHospedaje.push(nuevo);
+  save();
+  return nuevo;
+}
+function getCedulaAnualHospedaje(clientId,ejercicio){
+  let meses=[];
+  for(let p=1;p<=12;p++)meses.push(getPapelHospedajeVigente(clientId,ejercicio,p));
+  function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  return {
+    meses,
+    baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
+    tasa:{tipo:'referencia',valores:meses.map(m=>m?m.tasa:null)},
+    impuestoDeterminado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoDeterminado||0):null),cierre:suma('impuestoDeterminado')},
+    actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
+    recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+  };
+}
+
+// --- Hospedaje Anfitrión: Base × tasa = causado − retenido por plataforma = a cargo ---
+function getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo){
+  let candidatos=(db.fiscalPapelHospedajeAnfitrion||[]).filter(p=>p.client===clientId&&p.ejercicio===ejercicio&&p.periodo===periodo);
+  if(!candidatos.length)return null;
+  let reemplazados=new Set(candidatos.map(p=>p.reemplazaA).filter(Boolean));
+  let vigentes=candidatos.filter(p=>!reemplazados.has(p.id));
+  vigentes.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
+  return vigentes[0]||candidatos.slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''))[0];
+}
+function calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  inputs=inputs||{};
+  let fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
+  let baseGravable=Number(inputs.baseGravable)||0;
+  let tasaParam=getParametroVigente('estatal',entidadFederativa,'hospedaje_anfitrion_tasa',fechaRef);
+  let tasa=(tasaParam&&tasaParam.valor&&tasaParam.valor.tasa!=null)?Number(tasaParam.valor.tasa):null;
+  let impuestoCausado=tasa!=null?Math.round((baseGravable*(tasa/100))*100)/100:null;
+  let impuestoRetenidoPlataforma=Number(inputs.impuestoRetenidoPlataforma)||0;
+  let impuestoACargo=impuestoCausado!=null?Math.max(0,Math.round((impuestoCausado-impuestoRetenidoPlataforma)*100)/100):null;
+  let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
+  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoACargo){
+    accesorios=calcularAccesorios(impuestoACargo,inputs.fechaVencimiento,inputs.fechaPago);
+  }
+  let totalAPagar=impuestoACargo!=null?Math.round((impuestoACargo+accesorios.totalAccesorios)*100)/100:null;
+  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoCausado,impuestoRetenidoPlataforma,impuestoACargo,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+}
+function guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
+  let calc=calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativa,inputs);
+  let anteriorVigente=getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo);
+  let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
+  let nuevo=stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,
+    impuestoCausado:calc.impuestoCausado,impuestoRetenidoPlataforma:calc.impuestoRetenidoPlataforma,impuestoACargo:calc.impuestoACargo,
+    fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
+    observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
+    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString()
+  });
+  db.fiscalPapelHospedajeAnfitrion=db.fiscalPapelHospedajeAnfitrion||[];
+  db.fiscalPapelHospedajeAnfitrion.push(nuevo);
+  save();
+  return nuevo;
+}
+function getCedulaAnualHospedajeAnfitrion(clientId,ejercicio){
+  let meses=[];
+  for(let p=1;p<=12;p++)meses.push(getPapelHospedajeAnfitrionVigente(clientId,ejercicio,p));
+  function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  return {
+    meses,
+    baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
+    tasa:{tipo:'referencia',valores:meses.map(m=>m?m.tasa:null)},
+    impuestoCausado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoCausado||0):null),cierre:suma('impuestoCausado')},
+    impuestoRetenidoPlataforma:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoRetenidoPlataforma||0):null),cierre:suma('impuestoRetenidoPlataforma')},
+    impuestoACargo:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoACargo||0):null),cierre:suma('impuestoACargo')},
+    actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
+    recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+  };
+}
+
+// --- Retenciones: Bebidas con Contenido Alcohólico — Base × tasa = retenido determinado ---
+function getPapelBebidasVigente(clientId,ejercicio,periodo){
+  let candidatos=(db.fiscalPapelBebidas||[]).filter(p=>p.client===clientId&&p.ejercicio===ejercicio&&p.periodo===periodo);
+  if(!candidatos.length)return null;
+  let reemplazados=new Set(candidatos.map(p=>p.reemplazaA).filter(Boolean));
+  let vigentes=candidatos.filter(p=>!reemplazados.has(p.id));
+  vigentes.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
+  return vigentes[0]||candidatos.slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''))[0];
+}
+function calcularPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  inputs=inputs||{};
+  let fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
+  let baseGravable=Number(inputs.baseGravable)||0;
+  let tasaParam=getParametroVigente('estatal',entidadFederativa,'bebidas_tasa',fechaRef);
+  let tasa=(tasaParam&&tasaParam.valor&&tasaParam.valor.tasa!=null)?Number(tasaParam.valor.tasa):null;
+  let impuestoRetenidoDeterminado=tasa!=null?Math.round((baseGravable*(tasa/100))*100)/100:null;
+  let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
+  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoRetenidoDeterminado){
+    accesorios=calcularAccesorios(impuestoRetenidoDeterminado,inputs.fechaVencimiento,inputs.fechaPago);
+  }
+  let totalAPagar=impuestoRetenidoDeterminado!=null?Math.round((impuestoRetenidoDeterminado+accesorios.totalAccesorios)*100)/100:null;
+  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoRetenidoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+}
+function guardarPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs){
+  if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
+  let calc=calcularPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs);
+  let anteriorVigente=getPapelBebidasVigente(clientId,ejercicio,periodo);
+  let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
+  let nuevo=stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoRetenidoDeterminado:calc.impuestoRetenidoDeterminado,
+    fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
+    observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
+    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString()
+  });
+  db.fiscalPapelBebidas=db.fiscalPapelBebidas||[];
+  db.fiscalPapelBebidas.push(nuevo);
+  save();
+  return nuevo;
+}
+function getCedulaAnualBebidas(clientId,ejercicio){
+  let meses=[];
+  for(let p=1;p<=12;p++)meses.push(getPapelBebidasVigente(clientId,ejercicio,p));
+  function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  return {
+    meses,
+    baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
+    tasa:{tipo:'referencia',valores:meses.map(m=>m?m.tasa:null)},
+    impuestoRetenidoDeterminado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoRetenidoDeterminado||0):null),cierre:suma('impuestoRetenidoDeterminado')},
+    actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
+    recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+  };
+}
+
+
 
 // ===================== ISR PM — Interfaz de captura =====================
 const MESES_NOMBRE=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -1441,6 +1628,12 @@ function fiscalPapelesCard(clientId){
     <button class="btn primary" onclick="abrirPapelExtraccionDesdeSelector(${clientId})">Abrir Extracción del mes</button>
     <button class="btn" onclick="verCedulaISN(${clientId},+$('#isrPmEjercicioSel').value)">Cédula anual ISN</button>
     <button class="btn" onclick="verCedulaExtraccion(${clientId},+$('#isrPmEjercicioSel').value)">Cédula anual Extracción</button>
+    <button class="btn primary" onclick="abrirPapelHospedajeDesdeSelector(${clientId})">Abrir Hospedaje del mes</button>
+    <button class="btn primary" onclick="abrirPapelHospedajeAnfitrionDesdeSelector(${clientId})">Abrir Hospedaje Anfitrión del mes</button>
+    <button class="btn primary" onclick="abrirPapelBebidasDesdeSelector(${clientId})">Abrir Bebidas del mes</button>
+    <button class="btn" onclick="verCedulaHospedaje(${clientId},+$('#isrPmEjercicioSel').value)">Cédula anual Hospedaje</button>
+    <button class="btn" onclick="verCedulaHospedajeAnfitrion(${clientId},+$('#isrPmEjercicioSel').value)">Cédula anual Hosp. Anfitrión</button>
+    <button class="btn" onclick="verCedulaBebidas(${clientId},+$('#isrPmEjercicioSel').value)">Cédula anual Bebidas</button>
   </div></div>`;
 }
 function abrirPapelISRPMDesdeSelector(clientId){
@@ -2175,6 +2368,185 @@ function verCedulaExtraccion(clientId,ejercicio){
     ${fila('Total pagado',c.totalPagado)}
   </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — un renglón por material.</div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
+
+// ===================== Impuesto al Hospedaje — Interfaz de captura =====================
+let __hospedajeState={clientId:null,ejercicio:null,periodo:null,calc:null};
+function abrirPapelHospedajeDesdeSelector(clientId){
+  let ejercicio=+$('#isrPmEjercicioSel').value,periodo=+$('#isrPmPeriodoSel').value;
+  openPapelHospedaje(clientId,ejercicio,periodo);
+}
+function openPapelHospedaje(clientId,ejercicio,periodo){
+  let existente=getPapelHospedajeVigente(clientId,ejercicio,periodo);
+  __hospedajeState={clientId,ejercicio,periodo,calc:null};
+  modal(`Impuesto al Hospedaje — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${ENTIDAD_FEDERATIVA_DEFAULT}`,`
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="hint" style="margin:0">${clientDisplay(clientId)} · ${esc(client(clientId).rfc||'')}</div>
+        ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <div class="field" style="margin:0"><label>Base gravable de hospedaje</label><input id="hospBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
+        <div class="field" style="margin:0"><label>Tipo de establecimiento/sistema <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="hospTipoEstablecimiento" value="${esc(existente&&existente.tipoEstablecimiento||'')}"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="calcularPapelHospedajeUI()">Calcular</button></div>
+      <div id="hospResultado"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
+      <div class="field full"><label>Observaciones</label><input id="hospObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+    </div>`,
+    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="guardarPapelHospedajeUI()">Guardar como Borrador</button>`);
+  if(existente)setTimeout(()=>calcularPapelHospedajeUI(),0);
+}
+function calcularPapelHospedajeUI(){
+  let {clientId,ejercicio,periodo}=__hospedajeState;
+  let inputs={baseGravable:parseFloat($('#hospBaseGravable').value)||0,tipoEstablecimiento:$('#hospTipoEstablecimiento').value.trim()||null,fechaVencimiento:$('#hospVencimiento').value||null,fechaPago:$('#hospFechaPago').value||null};
+  let calc=calcularPapelHospedaje(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  __hospedajeState.calc=calc;
+  $('#hospResultado').innerHTML=renderResultadoEstatalSimple(calc,'tasa','impuestoDeterminado','Impuesto determinado');
+}
+function guardarPapelHospedajeUI(){
+  let {clientId,ejercicio,periodo,calc}=__hospedajeState;
+  if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
+  let inputs={baseGravable:calc.baseGravable,tipoEstablecimiento:calc.tipoEstablecimiento,fechaVencimiento:$('#hospVencimiento').value||null,fechaPago:$('#hospFechaPago').value||null,observaciones:$('#hospObservaciones').value.trim()||null};
+  guardarPapelHospedaje(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  closeModal();openClient(clientId);
+}
+function verCedulaHospedaje(clientId,ejercicio){
+  let c=getCedulaAnualHospedaje(clientId,ejercicio);
+  modal(`Cédula Anual — Impuesto al Hospedaje ${ejercicio}`,renderCedulaEstatalSimpleHtml(c,[['Base gravable','baseGravable','suma'],['Tasa','tasa','referencia'],['Impuesto determinado','impuestoDeterminado','suma']]),`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+
+// ===================== Hospedaje Anfitrión — Interfaz de captura =====================
+let __hospAnfState={clientId:null,ejercicio:null,periodo:null,calc:null};
+function abrirPapelHospedajeAnfitrionDesdeSelector(clientId){
+  let ejercicio=+$('#isrPmEjercicioSel').value,periodo=+$('#isrPmPeriodoSel').value;
+  openPapelHospedajeAnfitrion(clientId,ejercicio,periodo);
+}
+function openPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
+  let existente=getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo);
+  __hospAnfState={clientId,ejercicio,periodo,calc:null};
+  modal(`Hospedaje Anfitrión — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${ENTIDAD_FEDERATIVA_DEFAULT}`,`
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="hint" style="margin:0">${clientDisplay(clientId)} · ${esc(client(clientId).rfc||'')}</div>
+        ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <div class="field" style="margin:0"><label>Base gravable</label><input id="hospAnfBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
+        <div class="field" style="margin:0"><label>Retenido y enterado por plataforma/intermediario</label><input id="hospAnfRetenidoPlataforma" type="number" step="0.01" value="${existente?existente.impuestoRetenidoPlataforma:0}"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="calcularPapelHospedajeAnfitrionUI()">Calcular</button></div>
+      <div id="hospAnfResultado"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospAnfVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospAnfFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
+      <div class="field full"><label>Observaciones</label><input id="hospAnfObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+    </div>`,
+    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="guardarPapelHospedajeAnfitrionUI()">Guardar como Borrador</button>`);
+  if(existente)setTimeout(()=>calcularPapelHospedajeAnfitrionUI(),0);
+}
+function calcularPapelHospedajeAnfitrionUI(){
+  let {clientId,ejercicio,periodo}=__hospAnfState;
+  let inputs={baseGravable:parseFloat($('#hospAnfBaseGravable').value)||0,impuestoRetenidoPlataforma:parseFloat($('#hospAnfRetenidoPlataforma').value)||0,fechaVencimiento:$('#hospAnfVencimiento').value||null,fechaPago:$('#hospAnfFechaPago').value||null};
+  let calc=calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  __hospAnfState.calc=calc;
+  $('#hospAnfResultado').innerHTML=`
+    <div class="card" style="background:var(--bg);margin-top:6px">
+      ${calc._faltantes.tasa?'<div class="hint" style="color:var(--amber)">⚠️ Sin tasa publicada para Hospedaje Anfitrión en este periodo.</div>':''}
+      <div class="prow"><span>Base gravable</span><b>${fmtMoneyMX(calc.baseGravable)}</b></div>
+      <div class="prow"><span>Tasa vigente</span><b>${calc.tasa!=null?calc.tasa+'%':'—'}</b></div>
+      <div class="prow"><span>Impuesto causado</span><b>${calc.impuestoCausado!=null?fmtMoneyMX(calc.impuestoCausado):'—'}</b></div>
+      <div class="prow"><span>Retenido por plataforma</span><b>${fmtMoneyMX(calc.impuestoRetenidoPlataforma)}</b></div>
+    </div>
+    <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>Impuesto a cargo</span><b style="color:#fff">${calc.impuestoACargo!=null?fmtMoneyMX(calc.impuestoACargo):'—'}</b></div>
+      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
+    </div>`;
+}
+function guardarPapelHospedajeAnfitrionUI(){
+  let {clientId,ejercicio,periodo,calc}=__hospAnfState;
+  if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
+  let inputs={baseGravable:calc.baseGravable,impuestoRetenidoPlataforma:calc.impuestoRetenidoPlataforma,fechaVencimiento:$('#hospAnfVencimiento').value||null,fechaPago:$('#hospAnfFechaPago').value||null,observaciones:$('#hospAnfObservaciones').value.trim()||null};
+  guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  closeModal();openClient(clientId);
+}
+function verCedulaHospedajeAnfitrion(clientId,ejercicio){
+  let c=getCedulaAnualHospedajeAnfitrion(clientId,ejercicio);
+  modal(`Cédula Anual — Hospedaje Anfitrión ${ejercicio}`,renderCedulaEstatalSimpleHtml(c,[['Base gravable','baseGravable','suma'],['Tasa','tasa','referencia'],['Impuesto causado','impuestoCausado','suma'],['Retenido por plataforma','impuestoRetenidoPlataforma','suma'],['Impuesto a cargo','impuestoACargo','suma']]),`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+
+// ===================== Bebidas con Contenido Alcohólico — Interfaz de captura =====================
+let __bebidasState={clientId:null,ejercicio:null,periodo:null,calc:null};
+function abrirPapelBebidasDesdeSelector(clientId){
+  let ejercicio=+$('#isrPmEjercicioSel').value,periodo=+$('#isrPmPeriodoSel').value;
+  openPapelBebidas(clientId,ejercicio,periodo);
+}
+function openPapelBebidas(clientId,ejercicio,periodo){
+  let existente=getPapelBebidasVigente(clientId,ejercicio,periodo);
+  __bebidasState={clientId,ejercicio,periodo,calc:null};
+  modal(`Retenciones — Bebidas con Contenido Alcohólico — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${ENTIDAD_FEDERATIVA_DEFAULT}`,`
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="hint" style="margin:0">${clientDisplay(clientId)} · ${esc(client(clientId).rfc||'')}</div>
+        ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
+      </div>
+      <div class="field"><label>Base gravable</label><input id="bebBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
+      <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="calcularPapelBebidasUI()">Calcular</button></div>
+      <div id="bebResultado"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="bebVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="bebFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
+      <div class="field full"><label>Observaciones</label><input id="bebObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+    </div>`,
+    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="guardarPapelBebidasUI()">Guardar como Borrador</button>`);
+  if(existente)setTimeout(()=>calcularPapelBebidasUI(),0);
+}
+function calcularPapelBebidasUI(){
+  let {clientId,ejercicio,periodo}=__bebidasState;
+  let inputs={baseGravable:parseFloat($('#bebBaseGravable').value)||0,fechaVencimiento:$('#bebVencimiento').value||null,fechaPago:$('#bebFechaPago').value||null};
+  let calc=calcularPapelBebidas(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  __bebidasState.calc=calc;
+  $('#bebResultado').innerHTML=renderResultadoEstatalSimple(calc,'tasa','impuestoRetenidoDeterminado','Impuesto retenido determinado');
+}
+function guardarPapelBebidasUI(){
+  let {clientId,ejercicio,periodo,calc}=__bebidasState;
+  if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
+  let inputs={baseGravable:calc.baseGravable,fechaVencimiento:$('#bebVencimiento').value||null,fechaPago:$('#bebFechaPago').value||null,observaciones:$('#bebObservaciones').value.trim()||null};
+  guardarPapelBebidas(clientId,ejercicio,periodo,ENTIDAD_FEDERATIVA_DEFAULT,inputs);
+  closeModal();openClient(clientId);
+}
+function verCedulaBebidas(clientId,ejercicio){
+  let c=getCedulaAnualBebidas(clientId,ejercicio);
+  modal(`Cédula Anual — Bebidas con Contenido Alcohólico ${ejercicio}`,renderCedulaEstatalSimpleHtml(c,[['Base gravable','baseGravable','suma'],['Tasa','tasa','referencia'],['Impuesto retenido determinado','impuestoRetenidoDeterminado','suma']]),`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+
+// --- Helpers compartidos por los 3 papeles simples (base × tasa = resultado) ---
+function renderResultadoEstatalSimple(calc,campoTasa,campoResultado,labelResultado){
+  return `
+    <div class="card" style="background:var(--bg);margin-top:6px">
+      ${calc._faltantes.tasa?'<div class="hint" style="color:var(--amber)">⚠️ Sin tasa publicada en Parámetros Fiscales para este periodo.</div>':''}
+      <div class="prow"><span>Base gravable</span><b>${fmtMoneyMX(calc.baseGravable)}</b></div>
+      <div class="prow"><span>Tasa vigente</span><b>${calc[campoTasa]!=null?calc[campoTasa]+'%':'—'}</b></div>
+    </div>
+    <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>${labelResultado}</span><b style="color:#fff">${calc[campoResultado]!=null?fmtMoneyMX(calc[campoResultado]):'—'}</b></div>
+      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
+    </div>`;
+}
+function renderCedulaEstatalSimpleHtml(c,filas){
+  function fila(label,obj,tipo){
+    let tag=tipo==='suma'?'Σ':'Ref.';let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
+    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
+  }
+  return `<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+    ${filas.map(([label,campo,tipo])=>fila(label,c[campo],tipo)).join('')}
+    <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Accesorios</td></tr>
+    ${fila('Actualización',c.actualizacion,'suma')}
+    ${fila('Recargos',c.recargos,'suma')}
+    ${fila('Total pagado',c.totalPagado,'suma')}
+  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio · Ref. = tasa, no se suma.</div>`;
+}
+
 
 
 
