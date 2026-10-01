@@ -1680,13 +1680,17 @@ function leerIngresosDelFormulario(){
 }
 function calcularPapelISRPMUI(){
   let {clientId,ejercicio,periodo}=__isrPmState;
+  let inventarioInput=$('#isrPmInventario');
+  let inventarioAcumulable;
+  if(inventarioInput){inventarioAcumulable=parseFloat(inventarioInput.value)||0}
+  else{let existentePrevio=getPapelISRPMVigente(clientId,ejercicio,periodo);inventarioAcumulable=existentePrevio?(existentePrevio.inventarioAcumulable||0):0}
   let inputs={
     ingresos:leerIngresosDelFormulario(),
-    inventarioAcumulable:parseFloat($('#isrPmInventario').value)||0,
+    inventarioAcumulable,
     fechaVencimiento:$('#isrPmVencimiento').value||null,
     fechaPago:$('#isrPmFechaPago').value||null,
   };
-  // Si ya se calculó antes en esta sesión de modal, conservar los confirmados que el usuario haya tocado
+  // Si ya se calculó antes en esta sesión, conservar los confirmados que el usuario haya tocado
   if(__isrPmState.calc){
     if($('#isrPmPtuConfirmada'))inputs.ptuConfirmada=parseFloat($('#isrPmPtuConfirmada').value);
     if($('#isrPmPerdidaConfirmada'))inputs.perdidaConfirmada=parseFloat($('#isrPmPerdidaConfirmada').value);
@@ -1705,6 +1709,7 @@ function calcularPapelISRPMUI(){
       ${calc._faltantes.tasa?'<div class="hint" style="color:var(--amber)">⚠️ Sin Tasa ISR PM publicada en Parámetros Fiscales para este periodo.</div>':''}
       <div class="prow"><span>Ingresos nominales del mes${origenTag('calculado')}</span><b>${fmtMoneyMX(calc.totalIngresosMes)}</b></div>
       <div class="prow"><span>Ingresos nominales acumulados${origenTag('calculado')}</span><b>${fmtMoneyMX(calc.ingresosAcumulados)}</b></div>
+      <div class="field" style="margin:8px 0;max-width:260px"><label style="font-size:12px">Inventario acumulable (opcional)${origenTag('manual')}</label><input id="isrPmInventario" type="number" step="0.01" value="${inventarioAcumulable}" onchange="marcarFiscalDirty();calcularPapelISRPMUI()"></div>
       <div class="prow"><span>Coeficiente de utilidad${origenTag('control')}</span><b>${calc.coeficienteValor!=null?calc.coeficienteValor:'—'}</b></div>
       <div class="prow"><span>Utilidad fiscal acumulada${origenTag('calculado')}</span><b>${calc.utilidadFiscalAcumulada!=null?fmtMoneyMX(calc.utilidadFiscalAcumulada):'—'}</b></div>
       <div style="background:#fffbf0;border:1px solid #f4d582;border-radius:8px;padding:10px;margin-top:10px">
@@ -1781,19 +1786,15 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
   $('#pageSub').textContent=`${clientDisplay(clientId)} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`;
   $('#fiscalWorkspace').innerHTML=`
     <div class="client-header">
-      <div><button class="btn" onclick="confirmarSalidaFiscal(()=>cambiarFiscalTab('federal'))">← Volver</button>
-        <h2 style="margin-top:10px">ISR Personas Morales — Pago Provisional</h2>
-        <p class="role">${esc(clientDisplay(clientId))} · ${esc(client(clientId).rfc||'')} · Ejercicio ${ejercicio} · ${MESES_NOMBRE[periodo-1]}</p>
+      <div><button class="btn" onclick="confirmarSalidaFiscal(()=>cambiarFiscalTab('federal'))">← Volver a Papeles de Trabajo</button>
+        <p class="role" style="margin-top:10px;font-size:13px">${esc(clientDisplay(clientId))} · ${esc(client(clientId).rfc||'')} · Ejercicio ${ejercicio} · ${MESES_NOMBRE[periodo-1]} · <span id="isrPmEstadoInline">${(existente?existente.estatus:'sin_iniciar')==='sin_iniciar'||!existente?'Sin iniciar':(existente.estatus==='publicado'?'Publicado':(existente.estatus==='revisado'?'Revisado':'Borrador'))}</span></p>
       </div>
-      ${estadoPillHtml(existente?existente.estatus:null)}
     </div>
 
     <div class="card" style="margin-top:14px">
       <h3>1. Ingresos ${origenTag('manual')}</h3>
-      <div id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<div class="field" style="margin:0 0 6px;display:flex;gap:8px;align-items:center"><label style="flex:1;margin:0">${esc(ing.nombre)}</label><input class="isrPmIngresoInput" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:160px" oninput="marcarFiscalDirty()"></div>`).join('')||'<div class="empty">Sin conceptos de ingreso — agrega uno abajo.</div>'}</div>
-      <button class="btn" style="margin:4px 0 10px" onclick="agregarConceptoIngresoUIRediseño(${clientId},${ejercicio},${periodo})">+ Agregar concepto</button>
-      <div class="field" style="max-width:300px"><label>Inventario acumulable (opcional) ${origenTag('manual')}</label><input id="isrPmInventario" type="number" step="0.01" value="${existente?existente.inventarioAcumulable||0:0}" oninput="marcarFiscalDirty()"></div>
-      <div style="margin-top:10px"><button class="btn primary" onclick="calcularPapelISRPMUI()">Calcular</button></div>
+      <div id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<div class="field" style="margin:0 0 6px;display:flex;gap:8px;align-items:center"><label style="flex:1;margin:0">${esc(ing.nombre)}</label><input class="isrPmIngresoInput" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:160px" oninput="marcarFiscalDirty();calcularPapelISRPMUI()"></div>`).join('')||'<div class="role" style="padding:6px 0">Sin conceptos de ingreso</div>'}</div>
+      <button class="btn" style="margin:4px 0 4px" onclick="agregarConceptoIngresoUIRediseño(${clientId},${ejercicio},${periodo})">+ Agregar concepto</button>
     </div>
 
     <div id="isrPmResultado"></div>
@@ -1807,13 +1808,14 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
       <div class="field full"><label>Observaciones</label><input id="isrPmObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
 
-    <div class="card" style="margin-top:14px;display:flex;gap:10px;position:sticky;bottom:0;background:var(--card-bg,#fff)">
+    <div class="card" style="margin-top:14px;display:flex;gap:8px;position:sticky;bottom:0;background:var(--card-bg,#fff);padding:10px 16px">
+      <button class="btn" onclick="confirmarSalidaFiscal(()=>cambiarFiscalTab('federal'))">Volver</button>
       <button class="btn primary" onclick="guardarPapelISRPMUI()">Guardar borrador</button>
       ${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelISRPM(${existente.id},'revisado');abrirPapelISRPMRediseñado(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}
       <button class="btn" onclick="imprimirPapelISRPM(${clientId},${ejercicio},${periodo})">PDF</button>
     </div>
   `;
-  if(existente)setTimeout(()=>calcularPapelISRPMUI(),0);
+  calcularPapelISRPMUI();limpiarFiscalDirty();
 }
 function agregarConceptoIngresoUIRediseño(clientId,ejercicio,periodo){
   let nombre=prompt('Nombre del nuevo concepto de ingreso (ej. Venta de alimentos):');
@@ -1852,7 +1854,7 @@ function verCedulaISRPM(clientId,ejercicio){
   function fila(label,obj,esMoneda){
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(esMoneda?fmtMoneyMX(v):v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':(esMoneda?fmtMoneyMX(obj.cierre):obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
     ${fila('Ingresos nominales del mes',c.ingresosNominalesDelMes,true)}
     ${fila('Ingresos nominales acumulados',c.ingresosNominalesAcumulados,true)}
     ${fila('Coeficiente de utilidad',c.coeficiente,false)}
@@ -1890,30 +1892,30 @@ function openPapelIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
       </div>
       <h3 style="font-size:13px;margin:10px 0 6px">IVA trasladado</h3>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="field" style="margin:0"><label>Base gravada 16%</label><input id="ivaBase16" type="number" step="0.01" value="${existente?existente.baseGravada16:0}"></div>
-        <div class="field" style="margin:0"><label>Base tasa 0%</label><input id="ivaBase0" type="number" step="0.01" value="${existente?existente.baseTasa0:0}"></div>
-        <div class="field" style="margin:0"><label>Ingresos/actos exentos</label><input id="ivaBaseExentos" type="number" step="0.01" value="${existente?existente.baseExentos:0}"></div>
-        <div class="field" style="margin:0"><label>Actos no objeto</label><input id="ivaBaseNoObjeto" type="number" step="0.01" value="${existente?existente.baseNoObjeto:0}"></div>
+        <div class="field" style="margin:0"><label>Base gravada 16%</label><input id="ivaBase16" type="number" step="0.01" value="${existente?existente.baseGravada16:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Base tasa 0%</label><input id="ivaBase0" type="number" step="0.01" value="${existente?existente.baseTasa0:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Ingresos/actos exentos</label><input id="ivaBaseExentos" type="number" step="0.01" value="${existente?existente.baseExentos:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Actos no objeto</label><input id="ivaBaseNoObjeto" type="number" step="0.01" value="${existente?existente.baseNoObjeto:0}" oninput="marcarFiscalDirty()"></div>
       </div>
       <h3 style="font-size:13px;margin:14px 0 6px">IVA acreditable</h3>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="field" style="margin:0"><label>Base pagada 16%</label><input id="ivaAcredBase16" type="number" step="0.01" value="${existente?existente.acredBase16:0}"></div>
-        <div class="field" style="margin:0"><label>Base pagada 0%</label><input id="ivaAcredBase0" type="number" step="0.01" value="${existente?existente.acredBase0:0}"></div>
-        <div class="field full" style="margin:0"><label>Exentos / no objeto (cuando corresponda)</label><input id="ivaAcredExentos" type="number" step="0.01" value="${existente?existente.acredExentosNoObjeto:0}"></div>
+        <div class="field" style="margin:0"><label>Base pagada 16%</label><input id="ivaAcredBase16" type="number" step="0.01" value="${existente?existente.acredBase16:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Base pagada 0%</label><input id="ivaAcredBase0" type="number" step="0.01" value="${existente?existente.acredBase0:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field full" style="margin:0"><label>Exentos / no objeto (cuando corresponda)</label><input id="ivaAcredExentos" type="number" step="0.01" value="${existente?existente.acredExentosNoObjeto:0}" oninput="marcarFiscalDirty()"></div>
       </div>
       <div class="hint" style="margin:8px 0">Desglose avanzado (bienes/servicios/uso o goce/inversiones) disponible próximamente — hoy captura consolidada.</div>
 
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px">
-        <div class="field" style="margin:0"><label>IVA retenido al contribuyente</label><input id="ivaRetenido" type="number" step="0.01" value="${existente?existente.ivaRetenidoContribuyente:0}"></div>
-        <div class="field" style="margin:0"><label>Otras cantidades (+/-)</label><input id="ivaOtras" type="number" step="0.01" value="${existente?existente.otrasCantidades:0}"></div>
+        <div class="field" style="margin:0"><label>IVA retenido al contribuyente</label><input id="ivaRetenido" type="number" step="0.01" value="${existente?existente.ivaRetenidoContribuyente:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Otras cantidades (+/-)</label><input id="ivaOtras" type="number" step="0.01" value="${existente?existente.otrasCantidades:0}" oninput="marcarFiscalDirty()"></div>
       </div>
 
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelIVAUI()">Calcular</button></div>
       <div id="ivaResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="ivaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="ivaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="ivaObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="ivaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="ivaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="ivaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelIVAUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelIVAUI(),0);
@@ -1978,7 +1980,7 @@ function verCedulaIVA(clientId,ejercicio){
   function fila(label,obj){
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Base gravada 16%',c.baseGravada16)}
     ${fila('IVA trasladado',c.ivaTrasladado)}
     ${fila('IVA acreditable',c.ivaAcreditable)}
@@ -2007,12 +2009,12 @@ function filaConceptoRetHtml(prefix,idx,c,catalogo){
   let esManual=item&&item.tipoCalculo==='manual';
   return `<div class="field full" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px" data-row="${prefix}-${idx}">
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-      <select class="${prefix}-concepto" data-idx="${idx}" style="flex:1" onchange="refrescarFilaConcepto('${prefix}',${idx})">${opciones}</select>
+      <select class="${prefix}-concepto" data-idx="${idx}" style="flex:1" onchange="marcarFiscalDirty();refrescarFilaConcepto('${prefix}',${idx})">${opciones}</select>
       <button class="btn" onclick="quitarFilaConcepto('${prefix}',${idx})" aria-label="Quitar">✕</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-      <div><label style="font-size:11px;color:var(--muted)">Base</label><input class="${prefix}-base" data-idx="${idx}" type="number" step="0.01" value="${c.base||0}"></div>
-      ${esManual?`<div><label style="font-size:11px;color:var(--muted)">Retenido (manual)</label><input class="${prefix}-manual" data-idx="${idx}" type="number" step="0.01" value="${c.retenidoConfirmado||0}"></div>`:`<div><label style="font-size:11px;color:var(--muted)">Retenido (calculado)</label><input class="${prefix}-confirmado" data-idx="${idx}" type="number" step="0.01" value="${c.retenidoConfirmado!=null?c.retenidoConfirmado:(c.retenidoPropuesto||0)}"></div>`}
+      <div><label style="font-size:11px;color:var(--muted)">Base</label><input class="${prefix}-base" data-idx="${idx}" type="number" step="0.01" value="${c.base||0}" oninput="marcarFiscalDirty()"></div>
+      ${esManual?`<div><label style="font-size:11px;color:var(--muted)">Retenido (manual)</label><input class="${prefix}-manual" data-idx="${idx}" type="number" step="0.01" value="${c.retenidoConfirmado||0}" oninput="marcarFiscalDirty()"></div>`:`<div><label style="font-size:11px;color:var(--muted)">Retenido (calculado)</label><input class="${prefix}-confirmado" data-idx="${idx}" type="number" step="0.01" value="${c.retenidoConfirmado!=null?c.retenidoConfirmado:(c.retenidoPropuesto||0)}" oninput="marcarFiscalDirty()"></div>`}
     </div>
   </div>`;
 }
@@ -2030,9 +2032,9 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
         <b style="font-size:12.5px">Salarios y asimilados — captura 100% manual</b>
         <div class="hint" style="margin:4px 0 8px">Centro de Operaciones no calcula nómina.</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div><label style="font-size:11px;color:var(--muted)">Base gravada</label><input id="retIsrSalBaseGravada" type="number" step="0.01" value="${existente?existente.salariosBaseGravada:0}"></div>
-          <div><label style="font-size:11px;color:var(--muted)">Base exenta</label><input id="retIsrSalBaseExenta" type="number" step="0.01" value="${existente?existente.salariosBaseExenta:0}"></div>
-          <div><label style="font-size:11px;color:var(--muted)">ISR retenido</label><input id="retIsrSalRetenido" type="number" step="0.01" value="${existente?existente.salariosRetenido:0}"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Base gravada</label><input id="retIsrSalBaseGravada" type="number" step="0.01" value="${existente?existente.salariosBaseGravada:0}" oninput="marcarFiscalDirty()"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Base exenta</label><input id="retIsrSalBaseExenta" type="number" step="0.01" value="${existente?existente.salariosBaseExenta:0}" oninput="marcarFiscalDirty()"></div>
+          <div><label style="font-size:11px;color:var(--muted)">ISR retenido</label><input id="retIsrSalRetenido" type="number" step="0.01" value="${existente?existente.salariosRetenido:0}" oninput="marcarFiscalDirty()"></div>
         </div>
       </div>
 
@@ -2046,9 +2048,9 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesISRUI()">Calcular</button></div>
       <div id="retIsrResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="retIsrVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIsrFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="retIsrObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="retIsrVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIsrFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="retIsrObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesISR(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelRetencionesISRUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelRetencionesISRUI(),0);
@@ -2060,12 +2062,14 @@ function agregarFilaConcepto(prefix,ambito){
   state.conceptosForm.push({catalogoId:catalogo[0].id,base:0,retenidoConfirmado:0});
   let idx=state.conceptosForm.length-1;
   $(`#${prefix}ConceptosList`).insertAdjacentHTML('beforeend',filaConceptoRetHtml(prefix,idx,state.conceptosForm[idx],catalogo));
+  marcarFiscalDirty();
 }
 function quitarFilaConcepto(prefix,idx){
   let state=prefix==='retIsr'?__retIsrState:__retIvaState;
   state.conceptosForm[idx]=null;
   let row=$(`[data-row="${prefix}-${idx}"]`);
   if(row)row.remove();
+  marcarFiscalDirty();
 }
 function refrescarFilaConcepto(prefix,idx){} // el recálculo real ocurre al dar "Calcular"
 function leerConceptosDelFormulario(prefix,ambito){
@@ -2157,7 +2161,7 @@ function guardarPapelRetencionesISRUI(){
 function verCedulaRetencionesISR(clientId,ejercicio){
   let c=getCedulaAnualRetencionesISR(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Salarios',c.salarios)}
     ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
     ${fila('Total retenido',c.totalRetenido)}
@@ -2197,9 +2201,9 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesIVAUI()">Calcular</button></div>
       <div id="retIvaResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="retIvaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIvaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="retIvaObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="retIvaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIvaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="retIvaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelRetencionesIVAUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelRetencionesIVAUI(),0);
@@ -2233,7 +2237,7 @@ function guardarPapelRetencionesIVAUI(){
 function verCedulaRetencionesIVA(clientId,ejercicio){
   let c=getCedulaAnualRetencionesIVA(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
     ${fila('Total retenido',c.totalRetenido)}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Control de pago / accesorios</td></tr>
@@ -2262,17 +2266,17 @@ function openPapelISN(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
         ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="field" style="margin:0"><label>Total remuneraciones pagadas</label><input id="isnTotalRemuneraciones" type="number" step="0.01" value="${existente?existente.totalRemuneraciones:0}"></div>
-        <div class="field" style="margin:0"><label>Impuesto retenido por terceros</label><input id="isnRetenidoTerceros" type="number" step="0.01" value="${existente?existente.impuestoRetenidoTerceros:0}"></div>
+        <div class="field" style="margin:0"><label>Total remuneraciones pagadas</label><input id="isnTotalRemuneraciones" type="number" step="0.01" value="${existente?existente.totalRemuneraciones:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Impuesto retenido por terceros</label><input id="isnRetenidoTerceros" type="number" step="0.01" value="${existente?existente.impuestoRetenidoTerceros:0}" oninput="marcarFiscalDirty()"></div>
       </div>
-      <div class="field" style="margin-top:10px"><label>Número de trabajadores <span style="font-weight:400;color:var(--muted);font-size:11px">(informativo, no entra a la determinación)</span></label><input id="isnNumeroTrabajadores" type="number" value="${existente&&existente.numeroTrabajadores!=null?existente.numeroTrabajadores:''}"></div>
+      <div class="field" style="margin-top:10px"><label>Número de trabajadores <span style="font-weight:400;color:var(--muted);font-size:11px">(informativo, no entra a la determinación)</span></label><input id="isnNumeroTrabajadores" type="number" value="${existente&&existente.numeroTrabajadores!=null?existente.numeroTrabajadores:''}" oninput="marcarFiscalDirty()"></div>
 
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelISNUI()">Calcular</button></div>
       <div id="isnResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="isnVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="isnFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="isnObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="isnVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="isnFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="isnObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelISN(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelISNUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelISNUI(),0);
@@ -2321,7 +2325,7 @@ function verCedulaISN(clientId,ejercicio){
     let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — ISN ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — ISN ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Total remuneraciones',c.totalRemuneraciones,'suma')}
     ${fila('Tasa vigente',c.tasa,'referencia')}
     ${fila('Impuesto determinado',c.impuestoDeterminado,'suma')}
@@ -2342,9 +2346,9 @@ function filaMaterialHtml(idx,m,materialesDisponibles){
   let opciones=materialesDisponibles.map(mat=>`<option value="${esc(mat)}" ${mat===m.material?'selected':''}>${esc(mat)}</option>`).join('');
   return `<div class="field full" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px" data-materialrow="${idx}">
     <div style="display:flex;gap:8px;align-items:center">
-      <select class="extMaterial" data-idx="${idx}" style="flex:1">${opciones||'<option value="">Sin materiales con tarifa publicada</option>'}</select>
+      <select class="extMaterial" data-idx="${idx}" style="flex:1" onchange="marcarFiscalDirty()">${opciones||'<option value="">Sin materiales con tarifa publicada</option>'}</select>
       <label style="margin:0;font-size:11px;color:var(--muted);white-space:nowrap">m³ extraídos</label>
-      <input class="extM3" data-idx="${idx}" type="number" step="0.01" value="${m.m3Extraidos||0}" style="width:140px">
+      <input class="extM3" data-idx="${idx}" type="number" step="0.01" value="${m.m3Extraidos||0}" style="width:140px" oninput="marcarFiscalDirty()">
       <button class="btn" onclick="quitarFilaMaterial(${idx})" aria-label="Quitar">✕</button>
     </div>
   </div>`;
@@ -2366,9 +2370,9 @@ function openPapelExtraccion(clientId,ejercicio,periodo){__fiscalModalOpen=true;
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelExtraccionUI()">Calcular</button></div>
       <div id="extraccionResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="extraccionVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="extraccionFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="extraccionObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="extraccionVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="extraccionFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="extraccionObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelExtraccion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelExtraccionUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelExtraccionUI(),0);
@@ -2379,11 +2383,13 @@ function agregarFilaMaterial(){
   __extraccionState.materialesForm.push({material:materialesDisponibles[0],m3Extraidos:0});
   let idx=__extraccionState.materialesForm.length-1;
   $('#extraccionMaterialesList').insertAdjacentHTML('beforeend',filaMaterialHtml(idx,__extraccionState.materialesForm[idx],materialesDisponibles));
+  marcarFiscalDirty();
 }
 function quitarFilaMaterial(idx){
   __extraccionState.materialesForm[idx]=null;
   let row=$(`[data-materialrow="${idx}"]`);
   if(row)row.remove();
+  marcarFiscalDirty();
 }
 function leerMaterialesDelFormulario(){
   return $$('.extMaterial').map(sel=>{
@@ -2428,7 +2434,7 @@ function guardarPapelExtraccionUI(){
 function verCedulaExtraccion(clientId,ejercicio){
   let c=getCedulaAnualExtraccion(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Extracción de Materiales ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Material</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Extracción de Materiales ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Material</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${c.porMaterial.map(pm=>fila(esc(pm.nombre),pm)).join('')||'<tr><td colspan="14" class="empty">Sin materiales capturados este ejercicio</td></tr>'}
     ${fila('Total impuesto',c.totalImpuesto)}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Accesorios</td></tr>
@@ -2454,14 +2460,14 @@ function openPapelHospedaje(clientId,ejercicio,periodo){__fiscalModalOpen=true;l
         ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="field" style="margin:0"><label>Base gravable de hospedaje</label><input id="hospBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
-        <div class="field" style="margin:0"><label>Tipo de establecimiento/sistema <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="hospTipoEstablecimiento" value="${esc(existente&&existente.tipoEstablecimiento||'')}"></div>
+        <div class="field" style="margin:0"><label>Base gravable de hospedaje</label><input id="hospBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Tipo de establecimiento/sistema <span style="font-weight:400;color:var(--muted);font-size:11px">(opcional)</span></label><input id="hospTipoEstablecimiento" value="${esc(existente&&existente.tipoEstablecimiento||'')}" oninput="marcarFiscalDirty()"></div>
       </div>
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelHospedajeUI()">Calcular</button></div>
       <div id="hospResultado"></div>
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="hospObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="hospObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedaje(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelHospedajeUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelHospedajeUI(),0);
@@ -2501,14 +2507,14 @@ function openPapelHospedajeAnfitrion(clientId,ejercicio,periodo){__fiscalModalOp
         ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-        <div class="field" style="margin:0"><label>Base gravable</label><input id="hospAnfBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
-        <div class="field" style="margin:0"><label>Retenido y enterado por plataforma/intermediario</label><input id="hospAnfRetenidoPlataforma" type="number" step="0.01" value="${existente?existente.impuestoRetenidoPlataforma:0}"></div>
+        <div class="field" style="margin:0"><label>Base gravable</label><input id="hospAnfBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}" oninput="marcarFiscalDirty()"></div>
+        <div class="field" style="margin:0"><label>Retenido y enterado por plataforma/intermediario</label><input id="hospAnfRetenidoPlataforma" type="number" step="0.01" value="${existente?existente.impuestoRetenidoPlataforma:0}" oninput="marcarFiscalDirty()"></div>
       </div>
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelHospedajeAnfitrionUI()">Calcular</button></div>
       <div id="hospAnfResultado"></div>
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospAnfVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospAnfFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="hospAnfObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="hospAnfVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospAnfFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="hospAnfObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedajeAnfitrion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelHospedajeAnfitrionUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelHospedajeAnfitrionUI(),0);
@@ -2559,12 +2565,12 @@ function openPapelBebidas(clientId,ejercicio,periodo){__fiscalModalOpen=true;lim
         <div class="hint" style="margin:0">${clientDisplay(clientId)} · ${esc(client(clientId).rfc||'')}</div>
         ${existente?`<span class="pill ${existente.estatus==='publicado'?'p-green':(existente.estatus==='revisado'?'p-blue':'p-gray')}">${existente.estatus}</span>`:''}
       </div>
-      <div class="field"><label>Base gravable</label><input id="bebBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}"></div>
+      <div class="field"><label>Base gravable</label><input id="bebBaseGravable" type="number" step="0.01" value="${existente?existente.baseGravable:0}" oninput="marcarFiscalDirty()"></div>
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelBebidasUI()">Calcular</button></div>
       <div id="bebResultado"></div>
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="bebVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="bebFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
-      <div class="field full"><label>Observaciones</label><input id="bebObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento</label><input id="bebVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="bebFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
+      <div class="field full"><label>Observaciones</label><input id="bebObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelBebidas(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelBebidasUI()">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelBebidasUI(),0);
@@ -2758,7 +2764,7 @@ function renderCedulaEstatalSimpleHtml(c,filas){
     let tag=tipo==='suma'?'Σ':'Ref.';let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  return `<div style="overflow-x:auto"><table class="table" style="min-width:1400px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  return `<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${filas.map(([label,campo,tipo])=>fila(label,c[campo],tipo)).join('')}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Accesorios</td></tr>
     ${fila('Actualización',c.actualizacion,'suma')}
@@ -3786,15 +3792,15 @@ function cambiarFiscalTab(tab){
 }
 function fiscalCardHtml(opts){
   // opts: {ambito,nombre,estatus,lineas:[[label,valor]],onAbrir,onCedula}
-  return `<div class="card fiscal-paper-card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div><small style="color:var(--muted);text-transform:uppercase;font-size:10.5px;letter-spacing:.03em">${esc(opts.ambito)}</small><h3 style="margin:2px 0 8px">${esc(opts.nombre)}</h3></div>
+  return `<div class="card fiscal-paper-card" style="padding:14px 16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="display:flex;align-items:baseline;gap:8px"><h3 style="margin:0;font-size:13.5px">${esc(opts.nombre)}</h3><small style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.03em">${esc(opts.ambito)}</small></div>
       ${estadoPillHtml(opts.estatus)}
     </div>
-    ${opts.lineas.map(([l,v])=>`<div class="prow"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn primary" onclick="${opts.onAbrir}">Abrir papel</button>
-      <button class="btn" onclick="${opts.onCedula}">Cédula anual</button>
+    ${opts.lineas.map(([l,v])=>`<div class="prow" style="padding:3px 0;font-size:12.5px"><span>${esc(l)}</span><b>${v}</b></div>`).join('')}
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn primary" style="padding:6px 12px;font-size:12px" onclick="${opts.onAbrir}">Abrir papel</button>
+      <button class="btn" style="padding:6px 12px;font-size:12px" onclick="${opts.onCedula}">Cédula anual</button>
     </div>
   </div>`;
 }
@@ -3857,10 +3863,10 @@ function mostrarCedulaFullPage(titulo,contenidoHtml,botonesHtml){
   __fiscalWorkspaceState.modo='cedula';
   showPage('fiscalWorkspace');
   $('#pageTitle').textContent=titulo;
-  $('#pageSub').textContent=`${clientDisplay(__fiscalWorkspaceState.clientId)} · Cédula anual`;
+  $('#pageSub').textContent=`${clientDisplay(__fiscalWorkspaceState.clientId)} · ${esc(client(__fiscalWorkspaceState.clientId).rfc||'')} · Cédula anual`;
   $('#fiscalWorkspace').innerHTML=`
     <div class="client-header">
-      <div><button class="btn" onclick="volverDesdeCedula()">← Volver</button><h2 style="margin-top:10px">${esc(titulo)}</h2></div>
+      <div><button class="btn" onclick="volverDesdeCedula()">← Volver</button></div>
       <div>${botonesHtml}</div>
     </div>
     <div class="card" style="margin-top:10px">${contenidoHtml}</div>
@@ -3940,7 +3946,7 @@ function renderResumenFiscal(){
         </tr>`;
       }).join('')}</tbody>
     </table></div></div>
-    <div class="hint" style="margin-top:10px">Haz clic en cualquier celda mensual para abrir el papel de trabajo correspondiente. "Pendiente" solo aplica a los papeles que manejan diferencia pendiente explícita (Retenciones); en los demás se muestra "—" para no inventar una regla que no existe en su determinación.</div>
+    <div class="hint" style="margin-top:10px">Haz clic en cualquier celda mensual para abrir el papel de trabajo correspondiente. "—" indica que ese impuesto no maneja una diferencia pendiente propia.</div>
   `;
 }
 function resumenFiscalAbrirCelda(tipo,clientId,ejercicio,periodo){
@@ -3953,11 +3959,27 @@ function fiscalControlesCard(clientId){
   return `<div class="card" style="margin-top:15px"><h3>Fiscal — Controles</h3><div class="hint" style="margin-bottom:10px">Saldos y datos fiscales persistentes de este cliente — se conservan entre ejercicios, no se recapturan cada mes.</div><div class="grid cols2">${CONTROL_TIPOS.map(ct=>{
     let controles=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo===ct.tipo).slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
     let vigente=controles.find(c=>!controles.some(o=>o.reemplazaA===c.id))||controles[0];
-    let saldo=vigente&&ct.tieneSaldo?getSaldoControl(vigente.id):null;
-    let valorMostrado=vigente?(ct.tieneSaldo?fmtMoneyMX(saldo):(vigente.datos&&vigente.datos.coeficiente!=null?vigente.datos.coeficiente:'—')):null;
+    let cuerpo='<b style="color:var(--muted);font-size:14px">Sin registrar</b>';
+    if(vigente){
+      if(ct.tieneSaldo){
+        let remanente=getSaldoControl(vigente.id);
+        let original=Number(vigente.saldoOriginal)||0;
+        let aplicado=Math.max(0,Math.round((original-remanente)*100)/100);
+        cuerpo=`<b>${fmtMoneyMX(remanente)}</b><div class="role">disponible${vigente.ejercicio?' · Ejercicio '+vigente.ejercicio:''}</div>
+          <div style="display:flex;gap:14px;margin-top:6px;font-size:11.5px;color:var(--muted)">
+            <span>Original: <b style="color:inherit">${fmtMoneyMX(original)}</b></span>
+            <span>Aplicado: <b style="color:inherit">${fmtMoneyMX(aplicado)}</b></span>
+          </div>`;
+      }else{
+        let coef=vigente.datos&&vigente.datos.coeficiente!=null?vigente.datos.coeficiente:'—';
+        let movs=getMovimientosControl(vigente.id);
+        let origenMov=movs.find(m=>m.tipoMovimiento==='generacion'&&m.observacion);
+        cuerpo=`<b>${coef}</b><div class="role">${vigente.ejercicio?'Ejercicio '+vigente.ejercicio:''}${origenMov?' · '+esc(origenMov.observacion):''}</div>`;
+      }
+    }
     return `<div class="statbox" style="align-items:flex-start;text-align:left">
       <small>${ct.ambito} · ${esc(ct.label)}</small>
-      ${vigente?`<b>${valorMostrado}</b>${vigente.ejercicio?`<div class="role">Ejercicio ${vigente.ejercicio}</div>`:''}`:'<b style="color:var(--muted);font-size:14px">Sin registrar</b>'}
+      ${cuerpo}
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
         <button class="btn" onclick="openControlModal(${clientId},'${ct.tipo}')">${vigente?'Nueva vigencia / recalibrar':'Registrar'}</button>
         ${vigente?`<button class="btn" onclick="verHistorialControl(${vigente.id})">Historial</button>`:''}
@@ -4082,7 +4104,7 @@ function renameCatalogItem(oldName){
   item.name=x;stamp(item);save();
 }
 function removeCatalogByName(name){if(!confirm(`¿Seguro que quieres eliminar "${name}" del catálogo?\n\nEsto no afecta ninguna obligación que ya se haya creado con este concepto, pero ya no estará disponible para asignarlo a clientes en el futuro.`))return;db.catalog=db.catalog.filter(c=>c.name!==name);save()}
-function openClient(id){if(!isAdmin && !visibleClients().find(c=>c.id===id)){alert('No tienes acceso a este cliente.');return}let c=client(id),os=db.obligations.filter(o=>o.client===id),pct=os.length?Math.round(os.filter(o=>o.state==='Concluida').length/os.length*100):0;$('#clientDetail').innerHTML=`<div class="client-header"><div><button class="btn" onclick="showPage('clients')">← Clientes</button><h2>${esc(c.nombreComercial||c.name)}</h2><p class="role">${c.nombreComercial?esc(c.name)+' · ':''}${esc(c.rfc)} · ${regimenesOf(c).join(', ')}</p></div>${isAdmin?`<button class="btn" onclick="openClientModal(${c.id})">Editar cliente</button>`:''}</div><div class="grid cols2" style="margin-bottom:15px"><div class="card fiscal-entry-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="abrirFiscalWorkspace(${c.id})"><div><h3 style="margin:0 0 4px">📁 Papeles de Trabajo</h3><p class="role" style="margin:0">Determinaciones mensuales y cédulas fiscales</p></div><button class="btn primary">Abrir</button></div><div class="card fiscal-entry-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="abrirResumenFiscal(${c.id})"><div><h3 style="margin:0 0 4px">📊 Resumen Fiscal</h3><p class="role" style="margin:0">Situación fiscal consolidada del ejercicio</p></div><button class="btn primary">Ver resumen</button></div></div><div class="grid profile-grid"><div class="statbox"><small>Cumplimiento</small><b>${pct}%</b><div class="progress"><span style="width:${pct}%"></span></div></div><div class="statbox"><small>Contador</small><b>${esc(person(c.accountant).name)}</b></div><div class="statbox"><small>FIEL</small><b>${c.fiel?fmtDate(c.fiel):'Sin fecha'}</b>${pillDate(c.fiel)}</div><div class="statbox"><small>CSD</small><b>${c.csd?fmtDate(c.csd):'Sin fecha'}</b>${pillDate(c.csd)}</div></div><div class="grid cols2"><div class="card"><h3>Obligaciones del periodo</h3>${tableObl(os)}</div><div class="card"><h3>Qué falta por hacer</h3>${os.map(o=>{let done=o.checks.filter(Boolean).length;return `<div style="margin-bottom:15px;cursor:pointer" onclick="openWorkflow(${o.id})"><div style="display:flex;justify-content:space-between"><b>${esc(o.name)}</b><span>${done}/${steps.length}</span></div><div class="progress"><span style="width:${done/steps.length*100}%"></span></div>${o.checks.map((v,i)=>!v?`<div class="role">☐ ${steps[i]}</div>`:'').join('')}</div>`}).join('')||'<div class="empty">Sin obligaciones</div>'}</div></div><div class="grid cols2"><div class="card"><h3>Equipo asignado</h3><p><b>Supervisor:</b> ${esc(person(c.supervisor).name)}</p><p><b>Contador:</b> ${esc(person(c.accountant).name)}</p><p><b>Auxiliar:</b> ${esc(personNames(c.assistant))}</p><p><b>Nóminas y Facturación:</b> ${esc(personNames(c.payroll))}</p><p><b>Auxiliar de Nóminas y Facturación:</b> ${esc(personNames(c.payrollAssistant))}</p></div><div class="card"><h3>Obligaciones activas</h3><div class="hint" style="margin-bottom:8px">Lo que este cliente tiene marcado como aplicable (no todo el catálogo, solo lo suyo).</div>${(c.obligationTypes&&c.obligationTypes.length)?c.obligationTypes.map(name=>{let jur=getCatalogItem(name)?.jurisdiction||'Federal';return `<span class="pill ${jur==='Estatal'?'p-amber':'p-blue'}" style="margin:0 6px 6px 0;display:inline-block">${esc(name)}</span>`}).join(''):'<div class="empty">Sin obligaciones marcadas todavía</div>'}</div></div><div class="grid cols2"><div class="card"><h3>Correos de contacto</h3><button class="btn primary" style="margin-bottom:10px" onclick="openInfoRequestModal(${c.id})">✉️ Solicitar información</button>${(c.emails&&c.emails.length)?c.emails.map(em=>`<p>✉️ ${esc(em)}</p>`).join(''):'<div class="empty">Sin correos capturados</div>'}</div><div class="card"><h3>Historial</h3><div class="timeline">${db.history.filter(h=>h.client===id).map(h=>`<div class="time-item"><b>${esc(h.text)}</b><div class="role">${h.date}</div></div>`).join('')||'<div class="empty">Sin movimientos</div>'}</div></div></div><div class="card" style="margin-top:15px"><h3>Notas internas</h3><div class="hint" style="margin-bottom:8px">Espacio para dejarle contexto al equipo sobre este cliente (ej. "siempre entrega tarde, recordarle con anticipación"). Solo tú puedes borrar tus propias notas.</div><div id="clientNotesList">${renderNotesList(id,null)}</div><div class="note-add-box"><textarea id="noteInputClient${id}" placeholder="Escribe una nota..." rows="2"></textarea><button class="btn primary" onclick="addClientNote(${id})">Agregar</button></div></div>`;showPage('clientDetail')}
+function openClient(id){if(!isAdmin && !visibleClients().find(c=>c.id===id)){alert('No tienes acceso a este cliente.');return}let c=client(id),os=db.obligations.filter(o=>o.client===id),pct=os.length?Math.round(os.filter(o=>o.state==='Concluida').length/os.length*100):0;$('#clientDetail').innerHTML=`<div class="client-header"><div><button class="btn" onclick="showPage('clients')">← Clientes</button><h2>${esc(c.nombreComercial||c.name)}</h2><p class="role">${c.nombreComercial?esc(c.name)+' · ':''}${esc(c.rfc)} · ${regimenesOf(c).join(', ')}</p></div>${isAdmin?`<button class="btn" onclick="openClientModal(${c.id})">Editar cliente</button>`:''}</div><div class="grid cols2" style="margin-bottom:15px"><div class="card fiscal-entry-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="abrirFiscalWorkspace(${c.id})"><div style="display:flex;gap:12px;align-items:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;flex-shrink:0;color:var(--nav)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg><div><h3 style="margin:0 0 4px">Papeles de Trabajo</h3><p class="role" style="margin:0">Determinaciones mensuales y cédulas fiscales</p></div></div><button class="btn primary">Abrir</button></div><div class="card fiscal-entry-card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="abrirResumenFiscal(${c.id})"><div style="display:flex;gap:12px;align-items:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;flex-shrink:0;color:var(--nav)"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg><div><h3 style="margin:0 0 4px">Resumen Fiscal</h3><p class="role" style="margin:0">Situación fiscal consolidada del ejercicio</p></div></div><button class="btn primary">Ver resumen</button></div></div><div class="grid profile-grid"><div class="statbox"><small>Cumplimiento</small><b>${pct}%</b><div class="progress"><span style="width:${pct}%"></span></div></div><div class="statbox"><small>Contador</small><b>${esc(person(c.accountant).name)}</b></div><div class="statbox"><small>FIEL</small><b>${c.fiel?fmtDate(c.fiel):'Sin fecha'}</b>${pillDate(c.fiel)}</div><div class="statbox"><small>CSD</small><b>${c.csd?fmtDate(c.csd):'Sin fecha'}</b>${pillDate(c.csd)}</div></div><div class="grid cols2"><div class="card"><h3>Obligaciones del periodo</h3>${tableObl(os)}</div><div class="card"><h3>Qué falta por hacer</h3>${os.map(o=>{let done=o.checks.filter(Boolean).length;return `<div style="margin-bottom:15px;cursor:pointer" onclick="openWorkflow(${o.id})"><div style="display:flex;justify-content:space-between"><b>${esc(o.name)}</b><span>${done}/${steps.length}</span></div><div class="progress"><span style="width:${done/steps.length*100}%"></span></div>${o.checks.map((v,i)=>!v?`<div class="role">☐ ${steps[i]}</div>`:'').join('')}</div>`}).join('')||'<div class="empty">Sin obligaciones</div>'}</div></div><div class="grid cols2"><div class="card"><h3>Equipo asignado</h3><p><b>Supervisor:</b> ${esc(person(c.supervisor).name)}</p><p><b>Contador:</b> ${esc(person(c.accountant).name)}</p><p><b>Auxiliar:</b> ${esc(personNames(c.assistant))}</p><p><b>Nóminas y Facturación:</b> ${esc(personNames(c.payroll))}</p><p><b>Auxiliar de Nóminas y Facturación:</b> ${esc(personNames(c.payrollAssistant))}</p></div><div class="card"><h3>Obligaciones activas</h3><div class="hint" style="margin-bottom:8px">Lo que este cliente tiene marcado como aplicable (no todo el catálogo, solo lo suyo).</div>${(c.obligationTypes&&c.obligationTypes.length)?c.obligationTypes.map(name=>{let jur=getCatalogItem(name)?.jurisdiction||'Federal';return `<span class="pill ${jur==='Estatal'?'p-amber':'p-blue'}" style="margin:0 6px 6px 0;display:inline-block">${esc(name)}</span>`}).join(''):'<div class="empty">Sin obligaciones marcadas todavía</div>'}</div></div><div class="grid cols2"><div class="card"><h3>Correos de contacto</h3><button class="btn primary" style="margin-bottom:10px" onclick="openInfoRequestModal(${c.id})">✉️ Solicitar información</button>${(c.emails&&c.emails.length)?c.emails.map(em=>`<p>✉️ ${esc(em)}</p>`).join(''):'<div class="empty">Sin correos capturados</div>'}</div><div class="card"><h3>Historial</h3><div class="timeline">${db.history.filter(h=>h.client===id).map(h=>`<div class="time-item"><b>${esc(h.text)}</b><div class="role">${h.date}</div></div>`).join('')||'<div class="empty">Sin movimientos</div>'}</div></div></div><div class="card" style="margin-top:15px"><h3>Notas internas</h3><div class="hint" style="margin-bottom:8px">Espacio para dejarle contexto al equipo sobre este cliente (ej. "siempre entrega tarde, recordarle con anticipación"). Solo tú puedes borrar tus propias notas.</div><div id="clientNotesList">${renderNotesList(id,null)}</div><div class="note-add-box"><textarea id="noteInputClient${id}" placeholder="Escribe una nota..." rows="2"></textarea><button class="btn primary" onclick="addClientNote(${id})">Agregar</button></div></div>`;showPage('clientDetail')}
 function modal(title,body,foot){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;$('#modalFoot').innerHTML=foot;$('#modal').classList.add('show')}function closeModal(){$('#modal').classList.remove('show');__fiscalModalOpen=false}function options(arr,val,key='id',label='name'){return arr.map(x=>`<option value="${esc(x[key])}" ${x[key]==val?'selected':''}>${esc(x[label])}</option>`).join('')}
 function personObligations(id){return db.obligations.filter(o=>{if(o.owner===id)return true;let c=db.clients.find(x=>x.id===o.client);return c&&assistantIds(c).includes(id)})}
 function personPayroll(id){return db.payroll.filter(p=>{if(p.responsable===id)return true;let c=db.clients.find(x=>x.id===p.client);return c&&(payrollIds(c).includes(id)||payrollAssistantIds(c).includes(id))})}
