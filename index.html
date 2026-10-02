@@ -456,7 +456,7 @@ const TABLE_MAP={
   staffRoles:{table:'staff_roles',key:'id',cols:{id:'id',name:'name'}},
   notes:{table:'notes',key:'id',cols:{id:'id',client:'client_id',obligation:'obligation_id',text:'text',author:'author_id'}},
   regimenesFiscales:{table:'regimenes_fiscales',key:'id',cols:{id:'id',name:'name'}},
-  parametrosFiscales:{table:'parametros_fiscales',key:'id',cols:{id:'id',ambito:'ambito',entidadFederativa:'entidad_federativa',clave:'clave',descripcion:'descripcion',valor:'valor',vigenciaDesde:'vigencia_desde',vigenciaHasta:'vigencia_hasta',estatus:'estatus',fuente:'fuente',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',revisadoPor:'revisado_por',revisadoEn:'revisado_en',publicadoPor:'publicado_por',publicadoEn:'publicado_en'}},
+  parametrosFiscales:{table:'parametros_fiscales',key:'id',cols:{id:'id',ambito:'ambito',entidadFederativa:'entidad_federativa',clave:'clave',descripcion:'descripcion',valor:'valor',vigenciaDesde:'vigencia_desde',vigenciaHasta:'vigencia_hasta',estatus:'estatus',fuente:'fuente',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',revisadoPor:'revisado_por',revisadoEn:'revisado_en',publicadoPor:'publicado_por',publicadoEn:'publicado_en',anuladoPor:'anulado_por',anuladoEn:'anulado_en'}},
   controlesFiscales:{table:'controles_fiscales',key:'id',cols:{id:'id',client:'client_id',tipo:'tipo',ejercicio:'ejercicio',datos:'datos',saldoOriginal:'saldo_original',estatus:'estatus',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en'}},
   controlesMovimientos:{table:'controles_fiscales_movimientos',key:'id',cols:{id:'id',control:'control_id',periodo:'periodo',tipoMovimiento:'tipo_movimiento',importe:'importe',papelTipo:'papel_tipo',papelId:'papel_id',valorPropuesto:'valor_propuesto',valorConfirmado:'valor_confirmado',fueAjustado:'fue_ajustado_por_usuario',usuario:'usuario_id',fecha:'fecha',observacion:'observacion'}},
   fiscalConceptosIngreso:{table:'fiscal_conceptos_ingreso',key:'id',cols:{id:'id',client:'client_id',nombre:'nombre',estatus:'estatus',creadoPor:'creado_por',creadoEn:'creado_en'}},
@@ -4059,13 +4059,191 @@ function guardarCapturaMasivaTablaMaestra(clave){
   closeModal();save();
   alert(`Se guardaron ${guardados} mes(es) como Borrador. Revísalos y publícalos desde la lista de Parámetros Fiscales.`);
 }
+function esVigenciaSustitutiva(clave){
+  let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
+  // Series por periodo (INPC/Recargos) NO son vigencia sustitutiva — cada mes es independiente,
+  // nunca "cierra" al mes siguiente. Todo lo demás (tasas, UMA, etc.) sí lo es.
+  return !cat||(cat.tipoSimple!=='periodo_valor'&&cat.tipoSimple!=='periodo_tasa');
+}
 function avanzarEstatusParam(id,nuevoEstatus){
   if(!isAdmin){alert('Solo un administrador puede publicar Parámetros Fiscales.');return}
   let p=(db.parametrosFiscales||[]).find(x=>x.id===id);if(!p)return;
   p.estatus=nuevoEstatus;
   if(nuevoEstatus==='revisado'){p.revisadoPor=currentStaff?currentStaff.id:null;p.revisadoEn=new Date().toISOString()}
-  if(nuevoEstatus==='publicado'){p.publicadoPor=currentStaff?currentStaff.id:null;p.publicadoEn=new Date().toISOString()}
+  if(nuevoEstatus==='publicado'){
+    p.publicadoPor=currentStaff?currentStaff.id:null;p.publicadoEn=new Date().toISOString();
+    // Cerrar cualquier OTRA vigencia publicada y abierta del mismo concepto que haya quedado
+    // "vigente" sin fecha de cierre — sin importar en qué orden se crearon o publicaron los registros.
+    if(esVigenciaSustitutiva(p.clave)){
+      let otrasAbiertas=(db.parametrosFiscales||[]).filter(o=>o.id!==p.id&&o.ambito===p.ambito&&(p.ambito!=='estatal'||o.entidadFederativa===p.entidadFederativa)&&o.clave===p.clave&&o.estatus==='publicado'&&!o.vigenciaHasta&&o.vigenciaDesde<p.vigenciaDesde);
+      otrasAbiertas.forEach(o=>{
+        let d=new Date(p.vigenciaDesde+'T00:00:00');d.setDate(d.getDate()-1);
+        o.vigenciaHasta=toISODate(d);
+      });
+    }
+  }
   save();
+}
+// --- ¿Este parámetro ya fue usado por algún papel guardado? ---
+// Tasas (ISR PM, IVA, ISN, Hospedaje, Hospedaje Anfitrión, Bebidas): trazabilidad EXACTA, ya que cada
+// papel guarda el id del parámetro que usó. UMA/INPC/Recargos no tienen esa referencia directa (nunca
+// la tuvieron, no se agrega ahora para no tocar los motores) — se usa un criterio conservador por fecha:
+// si existe algún papel ya capturado cuyo periodo cae dentro de la vigencia de este registro, se
+// considera "con uso" (preferible sobre-proteger a permitir una edición que reescriba historia).
+function parametroTieneUso(p){
+  let tablasConParamId=[
+    ['fiscalPapelIsrPm','tasaIsrParamId'],['fiscalPapelIva','tasaIvaParamId'],
+    ['fiscalPapelIsn','tasaParamId'],['fiscalPapelHospedaje','tasaParamId'],
+    ['fiscalPapelHospedajeAnfitrion','tasaParamId'],['fiscalPapelBebidas','tasaParamId']
+  ];
+  for(let [tabla,campo] of tablasConParamId){
+    if((db[tabla]||[]).some(x=>x[campo]===p.id))return true;
+  }
+  if(!esVigenciaSustitutiva(p.clave)){
+    // Serie por periodo (INPC/Recargos): "uso" = existe un papel cuyo periodo coincide con el periodo de este registro.
+    let periodo=p.valor&&p.valor.periodo;
+    if(!periodo)return false;
+    let fecha=`${periodo}-01`;
+    return todosLosPapelesFiscales().some(x=>`${x.ejercicio}-${String(x.periodo).padStart(2,'0')}`===periodo&&(x.actualizacion>0||x.recargos>0));
+  }
+  // UMA u otro valor simple sin FK directo: ¿hay algún papel capturado dentro de su rango de vigencia?
+  let desde=p.vigenciaDesde,hasta=p.vigenciaHasta||'9999-12-31';
+  return todosLosPapelesFiscales().some(x=>{
+    let f=`${x.ejercicio}-${String(x.periodo).padStart(2,'0')}-01`;
+    return f>=desde&&f<=hasta;
+  });
+}
+function todosLosPapelesFiscales(){
+  return [].concat(db.fiscalPapelIsrPm||[],db.fiscalPapelIva||[],db.fiscalPapelIsn||[],db.fiscalPapelHospedaje||[],db.fiscalPapelHospedajeAnfitrion||[],db.fiscalPapelBebidas||[],db.fiscalPapelExtraccion||[],db.fiscalPapelRetencionesIsr||[],db.fiscalPapelRetencionesIva||[]);
+}
+
+// ===================== Mantenimiento de Parámetros Fiscales — mecanismo único y reutilizable =====================
+function campoValorEdicionHtml(clave,valor){
+  let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
+  valor=valor||{};
+  if(cat&&cat.tipoSimple==='tasa')return `<div class="field"><label>Tasa (%)</label><input id="pmEdValor" class="money-input-pct" type="number" step="0.01" value="${valor.tasa!=null?valor.tasa:''}"></div>`;
+  if(cat&&cat.tipoSimple==='valor')return `<div class="field"><label>Valor</label><input id="pmEdValor" type="number" step="0.000001" value="${valor.valor!=null?valor.valor:''}"></div>`;
+  if(cat&&cat.tipoSimple==='periodo_valor')return `<div class="field"><label>Periodo</label><input id="pmEdPeriodo" type="month" value="${valor.periodo||''}"></div><div class="field"><label>Valor</label><input id="pmEdValor" type="number" step="0.000001" value="${valor.valor!=null?valor.valor:''}"></div>`;
+  if(cat&&cat.tipoSimple==='periodo_tasa')return `<div class="field"><label>Periodo</label><input id="pmEdPeriodo" type="month" value="${valor.periodo||''}"></div><div class="field"><label>Tasa (%)</label><input id="pmEdValor" type="number" step="0.01" value="${valor.tasa!=null?valor.tasa:''}"></div>`;
+  return `<div class="field full"><label>Valor (JSON — este concepto usa una estructura particular)</label><textarea id="pmEdValorJson" rows="3" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px">${esc(JSON.stringify(valor,null,2))}</textarea></div>`;
+}
+function leerValorEdicion(clave){
+  let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
+  if(cat&&cat.tipoSimple==='tasa')return {tasa:parseFloat($('#pmEdValor').value)||0};
+  if(cat&&cat.tipoSimple==='valor')return {valor:parseFloat($('#pmEdValor').value)||0};
+  if(cat&&cat.tipoSimple==='periodo_valor')return {periodo:$('#pmEdPeriodo').value,valor:parseFloat($('#pmEdValor').value)||0};
+  if(cat&&cat.tipoSimple==='periodo_tasa')return {periodo:$('#pmEdPeriodo').value,tasa:parseFloat($('#pmEdValor').value)||0};
+  try{return JSON.parse($('#pmEdValorJson').value)}catch(e){alert('El valor no es un JSON válido.');return null}
+}
+function formularioMantenimientoParametroHtml(p,modo){
+  return `<div class="form-grid">
+    ${campoValorEdicionHtml(p.clave,p.valor)}
+    <div class="field"><label>Vigencia desde</label><input id="pmEdDesde" type="date" value="${p.vigenciaDesde||''}"></div>
+    <div class="field"><label>Vigencia hasta <span style="font-weight:400;color:var(--muted);font-size:11px">(vacío = indefinida)</span></label><input id="pmEdHasta" type="date" value="${p.vigenciaHasta||''}"></div>
+    <div class="field full"><label>Fuente</label><input id="pmEdFuente" value="${esc(p.fuente||'')}"></div>
+    <div class="field full"><label>Observaciones</label><input id="pmEdObservaciones" value="${esc(p.observaciones||'')}"></div>
+    ${modo==='corregir'?`<div class="field full"><label>Motivo de la corrección <span style="color:var(--red)">*</span></label><input id="pmEdMotivo" placeholder="ej. Error de captura del valor"></div>`:''}
+    ${modo==='anular'?`<div class="field full"><label>Motivo de la anulación <span style="color:var(--red)">*</span></label><input id="pmEdMotivo" placeholder="ej. Se registró por duplicado"></div>`:''}
+  </div>`;
+}
+function menuMantenimientoParametroHtml(p){
+  if(!isAdmin)return '';
+  let tieneUso=parametroTieneUso(p);
+  let opciones='';
+  if(p.estatus==='borrador'){
+    opciones=`<button onclick="this.closest('details').removeAttribute('open');avanzarEstatusParam(${p.id},'revisado');${window.__fiscalParamsDetailRefresh||''}">Marcar Revisado</button>`
+      +(tieneUso?'':`<button onclick="this.closest('details').removeAttribute('open');editarParametroUI(${p.id})">Editar</button><button class="danger" onclick="this.closest('details').removeAttribute('open');eliminarParametroUI(${p.id})">Eliminar</button>`);
+  }else if(p.estatus==='revisado'){
+    opciones=`<button onclick="this.closest('details').removeAttribute('open');avanzarEstatusParam(${p.id},'publicado');${window.__fiscalParamsDetailRefresh||''}">Publicar</button>`
+      +(tieneUso?'':`<button onclick="this.closest('details').removeAttribute('open');editarParametroUI(${p.id})">Editar</button><button class="danger" onclick="this.closest('details').removeAttribute('open');eliminarParametroUI(${p.id})">Eliminar</button>`);
+  }else if(p.estatus==='publicado'){
+    opciones=`<button onclick="this.closest('details').removeAttribute('open');corregirParametroUI(${p.id})">Corregir / Nueva versión</button><button class="danger" onclick="this.closest('details').removeAttribute('open');anularParametroUI(${p.id})">Anular</button>`;
+  }else if(p.estatus==='anulado'){
+    return '<span class="pill p-gray">Anulado</span>';
+  }
+  if(!opciones)return '';
+  return `<details class="concepto-menu"><summary aria-label="Más opciones" title="Más opciones">⋯</summary><div class="concepto-menu-panel">${opciones}</div></details>`;
+}
+function refrescarVistaDetalleParametro(p){
+  // Reabre la misma vista de detalle desde la que se originó la acción, para ver el resultado al instante.
+  if(esVigenciaSustitutiva(p.clave)&&CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===p.clave&&c.clave==='uma_diaria')){verSerieAnualConcepto(p.ambito,p.entidadFederativa||'',p.clave);return}
+  if(!esVigenciaSustitutiva(p.clave)){let periodo=(p.valor&&p.valor.periodo)?p.valor.periodo.slice(0,4):'';verSerieMensualEjercicio(p.ambito,p.entidadFederativa||'',p.clave,periodo);return}
+  verHistorialParam(p.ambito,p.entidadFederativa||'',p.clave);
+}
+function editarParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  if(p.estatus==='publicado'){alert('Este parámetro ya está publicado — usa "Corregir / Nueva versión" o "Anular" en vez de editarlo directamente.');return}
+  if(parametroTieneUso(p)){alert('Este parámetro ya fue utilizado por un papel guardado — no puede editarse directamente.');return}
+  modal(`Editar — ${esc(labelAmigableParametro(p.clave))}`,formularioMantenimientoParametroHtml(p,'editar'),
+    `<button class="btn" onclick="${window.__fiscalParamsDetailRefresh||'closeModal()'}">Cancelar</button><button class="btn primary" onclick="guardarEdicionParametroUI(${paramId})">Guardar</button>`);
+}
+function guardarEdicionParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  if(p.estatus==='publicado'||parametroTieneUso(p)){alert('Este parámetro ya no puede editarse directamente — actualiza la vista.');return}
+  let valor=leerValorEdicion(p.clave);if(valor===null)return;
+  p.valor=valor;
+  p.vigenciaDesde=$('#pmEdDesde').value||p.vigenciaDesde;
+  p.vigenciaHasta=$('#pmEdHasta').value||null;
+  p.fuente=$('#pmEdFuente').value.trim()||null;
+  p.observaciones=$('#pmEdObservaciones').value.trim()||null;
+  let eraRevisado=p.estatus==='revisado';
+  if(eraRevisado){p.estatus='borrador';p.revisadoPor=null;p.revisadoEn=null} // editar un Revisado exige nueva revisión — nunca conservar el estado engañosamente
+  save();closeModal();
+  if(eraRevisado)alert('Como el parámetro estaba Revisado, al editarlo regresó a Borrador — necesita revisarse de nuevo.');
+  refrescarVistaDetalleParametro(p);
+}
+function eliminarParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  if(p.estatus==='publicado'){alert('Un parámetro publicado no se elimina — usa "Anular".');return}
+  if(parametroTieneUso(p)){alert('Este parámetro ya fue utilizado por un papel guardado — no puede eliminarse.');return}
+  if(!confirm('¿Eliminar este registro? Nunca fue publicado ni utilizado, así que es seguro.'))return;
+  db.parametrosFiscales=(db.parametrosFiscales||[]).filter(x=>x.id!==paramId);
+  save();closeModal();
+  renderFiscalParams();
+}
+function corregirParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  if(p.estatus!=='publicado'){alert('"Corregir / Nueva versión" es solo para parámetros ya publicados — este está en '+p.estatus+'; puedes editarlo directamente.');return}
+  modal(`Corregir — ${esc(labelAmigableParametro(p.clave))} — Nueva versión`,`<div class="hint" style="margin-bottom:10px">Este parámetro ya está publicado — no se modifica directamente. Se creará una nueva versión; el registro actual quedará conservado y marcado como Reemplazado, con trazabilidad completa.</div>${formularioMantenimientoParametroHtml(p,'corregir')}`,
+    `<button class="btn" onclick="${window.__fiscalParamsDetailRefresh||'closeModal()'}">Cancelar</button><button class="btn primary" onclick="guardarCorreccionParametroUI(${paramId})">Guardar como nueva versión</button>`);
+}
+function guardarCorreccionParametroUI(paramId){
+  let anterior=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!anterior)return;
+  let valor=leerValorEdicion(anterior.clave);if(valor===null)return;
+  let motivo=$('#pmEdMotivo').value.trim();
+  if(!motivo){alert('El motivo de la corrección es obligatorio.');return}
+  let desde=$('#pmEdDesde').value||anterior.vigenciaDesde;
+  let hasta=$('#pmEdHasta').value||null;
+  let observacionesBase=$('#pmEdObservaciones').value.trim();
+  let nuevo=stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),ambito:anterior.ambito,entidadFederativa:anterior.entidadFederativa,clave:anterior.clave,
+    descripcion:anterior.descripcion,valor,vigenciaDesde:desde,vigenciaHasta:hasta,estatus:'borrador',
+    fuente:$('#pmEdFuente').value.trim()||null,observaciones:`Motivo de corrección: ${motivo}`+(observacionesBase?` — ${observacionesBase}`:''),
+    reemplazaA:paramId,
+    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),revisadoPor:null,revisadoEn:null,publicadoPor:null,publicadoEn:null
+  });
+  db.parametrosFiscales=db.parametrosFiscales||[];
+  db.parametrosFiscales.push(nuevo);
+  save();closeModal();
+  alert('Se creó la nueva versión como Borrador. Revísala y publícala cuando esté lista — el registro anterior se conserva y queda marcado como Reemplazado.');
+  refrescarVistaDetalleParametro(anterior);
+}
+function anularParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  if(p.estatus!=='publicado'){alert('Solo se anulan parámetros publicados. Este está en '+p.estatus+' — puedes eliminarlo o editarlo directamente si no tiene uso.');return}
+  modal(`Anular — ${esc(labelAmigableParametro(p.clave))}`,`<div class="hint" style="margin-bottom:10px">Anular NO elimina el registro — lo conserva con su historial completo, pero el motor dejará de seleccionarlo hacia adelante. Los papeles que ya lo usaron no se ven afectados.</div><div class="form-grid"><div class="field full"><label>Motivo de la anulación <span style="color:var(--red)">*</span></label><input id="pmAnMotivo" placeholder="ej. Se capturó por duplicado"></div></div>`,
+    `<button class="btn" onclick="${window.__fiscalParamsDetailRefresh||'closeModal()'}">Cancelar</button><button class="btn primary" style="background:var(--red,#c0392b)" onclick="guardarAnulacionParametroUI(${paramId})">Anular</button>`);
+}
+function guardarAnulacionParametroUI(paramId){
+  let p=(db.parametrosFiscales||[]).find(x=>x.id===paramId);if(!p)return;
+  let motivo=$('#pmAnMotivo').value.trim();
+  if(!motivo){alert('El motivo de la anulación es obligatorio.');return}
+  p.estatus='anulado';
+  p.observaciones=(p.observaciones?p.observaciones+' — ':'')+`Anulado: ${motivo}`;
+  p.anuladoPor=currentStaff?currentStaff.id:null;
+  p.anuladoEn=new Date().toISOString();
+  save();closeModal();
+  refrescarVistaDetalleParametro(p);
 }
 function accionesEstatusParamHtml(p){
   if(!isAdmin)return '';
@@ -4073,10 +4251,18 @@ function accionesEstatusParamHtml(p){
   if(p.estatus==='revisado')return `<button class="btn primary" onclick="avanzarEstatusParam(${p.id},'publicado');${window.__fiscalParamsDetailRefresh||''}">Publicar</button>`;
   return '';
 }
+// --- Pill de estatus consciente de "Reemplazado": si OTRO registro del mismo grupo lo señala vía
+// reemplazaA, se muestra como Reemplazado sin importar qué estatus crudo haya quedado grabado ---
+function pillEstatusParametro(p,grupo){
+  let reemplazado=grupo.some(o=>o.reemplazaA===p.id);
+  if(reemplazado)return '<span class="pill p-gray">Reemplazado</span>';
+  if(p.estatus==='anulado')return '<span class="pill p-gray">Anulado</span>';
+  return `<span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span>`;
+}
 function verHistorialParam(ambito,entidad,clave){
   let hist=getHistorialParametro(ambito,entidad||null,clave);
   window.__fiscalParamsDetailRefresh=`verHistorialParam('${ambito}','${esc(entidad||'')}','${esc(clave)}')`;
-  modal(`${esc(labelAmigableParametro(clave))} — Vigencias`,`<div class="table-wrap"><table class="table"><thead><tr><th>Vigencia</th><th>Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${hist.map(p=>`<tr><td>${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}</td><td style="font-size:12.5px">${formatearValorParametro(clave,p.valor)}</td><td><span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(p)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Sin historial</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+  modal(`${esc(labelAmigableParametro(clave))} — Vigencias`,`<div class="table-wrap"><table class="table"><thead><tr><th>Vigencia</th><th>Valor</th><th>Estatus</th><th>Fuente</th><th>Observaciones</th><th></th></tr></thead><tbody>${hist.map(p=>`<tr><td>${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}</td><td style="font-size:12.5px">${formatearValorParametro(clave,p.valor)}</td><td>${pillEstatusParametro(p,hist)}</td><td>${esc(p.fuente||'')}</td><td style="font-size:11.5px;color:var(--muted)">${esc(p.observaciones||'')}</td><td style="width:30px">${menuMantenimientoParametroHtml(p)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Sin historial</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 // --- Series mensuales (INPC, Recargos, o cualquier futura con el mismo patrón): agrupadas por ejercicio en la vista principal ---
 function verSerieMensualConcepto(ambito,entidad,clave){
@@ -4110,9 +4296,9 @@ function verSerieMensualEjercicio(ambito,entidad,clave,ejercicio){
     let periodo=`${ejercicio}-${String(i+1).padStart(2,'0')}`;
     let delMes=registros.filter(p=>p.valor.periodo===periodo).sort((a,b)=>b.id-a.id);
     let actual=delMes[0];
-    if(!actual)return `<tr><td>${nombreMes}</td><td colspan="3" class="role">Sin capturar</td></tr>`;
+    if(!actual)return `<tr><td>${nombreMes}</td><td colspan="4" class="role">Sin capturar</td></tr>`;
     let val=esTasa?actual.valor.tasa+'%':actual.valor.valor;
-    return `<tr><td>${nombreMes}</td><td style="text-align:right"><b>${val}</b></td><td><span class="pill ${actual.estatus==='publicado'?'p-green':(actual.estatus==='revisado'?'p-blue':'p-gray')}">${actual.estatus}</span></td><td>${esc(actual.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(actual)}</td></tr>`;
+    return `<tr><td>${nombreMes}</td><td style="text-align:right"><b>${val}</b></td><td>${pillEstatusParametro(actual,delMes)}</td><td>${esc(actual.fuente||'')}</td><td style="width:30px">${menuMantenimientoParametroHtml(actual)}</td></tr>`;
   }).join('');
   modal(`${esc(labelAmigableParametro(clave))} — ${ejercicio}`,`<div class="table-wrap"><table class="table"><thead><tr><th>Mes</th><th style="text-align:right">Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="verSerieMensualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')">← Volver a ejercicios</button><button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
@@ -4123,7 +4309,7 @@ function verSerieAnualConcepto(ambito,entidad,clave){
   modal(`${esc(labelAmigableParametro(clave))} — valores por ejercicio`,`<div class="table-wrap"><table class="table"><thead><tr><th>Ejercicio</th><th style="text-align:right">Valor</th><th>Vigencia</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${todos.map(p=>{
     let ejercicio=(p.vigenciaDesde||'').slice(0,4);
     let vig=`${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}`;
-    return `<tr><td>${ejercicio}</td><td style="text-align:right"><b>${formatearValorParametro(clave,p.valor)}</b></td><td>${vig}</td><td><span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(p)}</td></tr>`;
+    return `<tr><td>${ejercicio}</td><td style="text-align:right"><b>${formatearValorParametro(clave,p.valor)}</b></td><td>${vig}</td><td>${pillEstatusParametro(p,todos)}</td><td>${esc(p.fuente||'')}</td><td style="width:30px">${menuMantenimientoParametroHtml(p)}</td></tr>`;
   }).join('')||'<tr><td colspan="6" class="empty">Sin registros</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 
