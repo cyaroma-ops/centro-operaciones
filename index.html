@@ -642,8 +642,11 @@ function getControlVigente(clientId,tipo,ejercicio){
   if(!candidatos.length)return null;
   let reemplazados=new Set(candidatos.map(c=>c.reemplazaA).filter(Boolean));
   let vigentes=candidatos.filter(c=>!reemplazados.has(c.id));
-  vigentes.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
-  return vigentes[0]||candidatos.slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''))[0];
+  // Desempate confiable por id cuando dos registros comparten el mismo creadoEn (posible si se registran
+  // en el mismo milisegundo) — nunca una elección ambigua.
+  let orden=(a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||'')||b.id-a.id;
+  vigentes.sort(orden);
+  return vigentes[0]||candidatos.slice().sort(orden)[0];
 }
 // --- Coeficiente de utilidad: se resuelve por PERIODO EFECTIVO de aplicación, nunca por "ejercicio = ejercicio del papel" ---
 // Varias vigencias de coeficiente coexisten (origen 2023 aplica ene-feb 2025; origen 2024 aplica
@@ -4209,7 +4212,7 @@ function renderFiscalWorkspaceTabContent(){
         onAbrir:abrir[def.tipo],onCedula:cedula[def.tipo]});
     }).join('')}</div>`;
   }else if(tab==='controles'){
-    el.innerHTML=fiscalControlesCard(clientId);
+    el.innerHTML=fiscalControlesCard(clientId,ejercicio,periodo);
   }
 }
 
@@ -4340,12 +4343,19 @@ function imprimirResumenFiscal(clientId,ejercicio){
 }
 
 
-function fiscalControlesCard(clientId){
-  return `<div class="card" style="margin-top:15px"><h3>Fiscal — Controles</h3><div class="hint" style="margin-bottom:10px">Saldos y datos fiscales persistentes de este cliente — se conservan entre ejercicios, no se recapturan cada mes.</div><div class="grid cols2">${CONTROL_TIPOS.map(ct=>{
+function fiscalControlesCard(clientId,ejercicio,periodo){
+  // El coeficiente se resuelve para el PERIODO SELECCIONADO en el workspace (no "hoy") — mostrar
+  // "hoy" ignoraría el ejercicio/periodo que el contador está revisando y mostraría el registro
+  // equivocado para periodos pasados o futuros.
+  let fechaRefPeriodo=(ejercicio&&periodo)?`${ejercicio}-${String(periodo).padStart(2,'0')}-01`:toISODate(new Date());
+  return `<div class="card" style="margin-top:15px"><h3>Fiscal — Controles</h3><div class="hint" style="margin-bottom:10px">Saldos y datos fiscales persistentes de este cliente — se conservan entre ejercicios, no se recapturan cada mes.${ejercicio&&periodo?` El Coeficiente de utilidad se muestra para el periodo seleccionado arriba (${MESES_NOMBRE[periodo-1]} ${ejercicio}).`:''}</div><div class="grid cols2">${CONTROL_TIPOS.map(ct=>{
     let controles=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo===ct.tipo).slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
     let vigente=controles.find(c=>!controles.some(o=>o.reemplazaA===c.id))||controles[0];
     let cuerpo='<b style="color:var(--muted);font-size:14px">Sin registrar</b>';
-    if(vigente){
+    let esCoeficiente=!ct.tieneSaldo;
+    let coefPeriodo=esCoeficiente?getCoeficienteVigente(clientId,fechaRefPeriodo):null;
+    if(esCoeficiente&&!coefPeriodo){vigente=null} // sin vigencia aplicable a ESTE periodo — no mostrar "Sin registrar" como si nunca se hubiera capturado nada
+    if(vigente||coefPeriodo){
       if(ct.tieneSaldo){
         let remanente=getSaldoControl(vigente.id);
         let original=Number(vigente.saldoOriginal)||0;
@@ -4356,12 +4366,12 @@ function fiscalControlesCard(clientId){
             <span>Aplicado: <b style="color:inherit">${fmtMoneyMX(aplicado)}</b></span>
           </div>`;
       }else{
-        let coefHoy=getCoeficienteVigente(clientId,toISODate(new Date()));
-        let coef=coefHoy&&coefHoy.datos&&coefHoy.datos.coeficiente!=null?coefHoy.datos.coeficiente:'—';
-        let movs=coefHoy?getMovimientosControl(coefHoy.id):[];
+        let coef=coefPeriodo&&coefPeriodo.datos&&coefPeriodo.datos.coeficiente!=null?coefPeriodo.datos.coeficiente:'—';
+        let movs=coefPeriodo?getMovimientosControl(coefPeriodo.id):[];
         let origenMov=movs.find(m=>m.tipoMovimiento==='generacion'&&m.observacion);
-        let aplicaDesde=coefHoy&&coefHoy.datos&&coefHoy.datos.aplicarDesde?fmtDate(coefHoy.datos.aplicarDesde):null;
-        cuerpo=`<b>${coef}</b><div class="role">${coefHoy&&coefHoy.ejercicio?'Origen '+coefHoy.ejercicio:''}${aplicaDesde?' · aplica desde '+aplicaDesde:''}${origenMov?' · '+esc(origenMov.observacion):''}</div>`;
+        let aplicaDesde=coefPeriodo&&coefPeriodo.datos&&coefPeriodo.datos.aplicarDesde?fmtDate(coefPeriodo.datos.aplicarDesde):null;
+        cuerpo=`<b>${coef}</b><div class="role">${coefPeriodo&&coefPeriodo.ejercicio?'Origen '+coefPeriodo.ejercicio:''}${aplicaDesde?' · aplica desde '+aplicaDesde:''}${origenMov?' · '+esc(origenMov.observacion):''}</div>`;
+        vigente=coefPeriodo; // para que los botones de abajo (Nueva vigencia/Historial) operen sobre el registro correcto de ESTE periodo
       }
     }
     return `<div class="statbox" style="align-items:flex-start;text-align:left">
@@ -4369,7 +4379,7 @@ function fiscalControlesCard(clientId){
       ${cuerpo}
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
         <button class="btn" onclick="openControlModal(${clientId},'${ct.tipo}')">${vigente?'Nueva vigencia / recalibrar':'Registrar'}</button>
-        ${vigente?`<button class="btn" onclick="verHistorialControl(${vigente.id})">Historial</button>`:''}
+        ${vigente?(esCoeficiente?`<button class="btn" onclick="verHistorialCoeficiente(${clientId})">Historial</button>`:`<button class="btn" onclick="verHistorialControl(${vigente.id})">Historial</button>`):''}
       </div>
     </div>`;
   }).join('')}</div></div>`;
@@ -4397,7 +4407,7 @@ function saveControl(clientId,tipo){
     let coef=parseFloat($('#cfCoeficiente').value);
     if(isNaN(coef)){alert('Captura el coeficiente de utilidad.');return}
     let aplicarDesde=$('#cfAplicarDesde').value||`${ejercicio}-01-01`;
-    datos={coeficiente:coef,aplicarDesde};
+    datos={coeficiente:coef,aplicarDesde,fuente:$('#cfFuente').value.trim()||null,observaciones:$('#cfObservaciones').value.trim()||null};
   }else if(tipo==='isr_perdida_fiscal'){
     ejercicio=+$('#cfEjercicio').value;
     let original=parseFloat($('#cfPerdidaOriginal').value)||0;
@@ -4433,6 +4443,45 @@ function verHistorialControl(controlId){
   let movs=getMovimientosControl(controlId);
   let saldo=getSaldoControl(controlId);
   modal('Historial del control',`<p><b>Saldo original:</b> ${fmtMoneyMX(control.saldoOriginal)} &nbsp; <b>Disponible hoy:</b> ${fmtMoneyMX(saldo)}</p><div class="table-wrap"><table class="table"><thead><tr><th>Periodo</th><th>Tipo</th><th>Importe</th><th>Papel relacionado</th><th>Usuario</th><th>Observación</th></tr></thead><tbody>${movs.map(m=>`<tr><td>${esc(m.periodo)}</td><td>${esc(m.tipoMovimiento)}</td><td>${fmtMoneyMX(m.importe)}</td><td>${m.papelTipo?esc(m.papelTipo)+' #'+esc(String(m.papelId)):'—'}</td><td>${esc(person(m.usuario).name)}</td><td>${esc(m.observacion||'')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Sin movimientos</td></tr>'}</tbody></table></div><div style="margin-top:10px">${isAdmin?`<button class="btn" onclick="registrarAjusteControl(${controlId})">+ Registrar ajuste manual</button>`:''}</div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+// Historial REAL del Coeficiente de utilidad: identidad/origen/vigencia de cada registro — nunca
+// movimientos monetarios (el coeficiente no tiene saldo, es un valor de referencia por periodo).
+function verHistorialCoeficiente(clientId){
+  let todos=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo==='isr_coeficiente_utilidad');
+  if(!todos.length){alert('Este cliente no tiene ningún coeficiente de utilidad registrado todavía.');return}
+  let reemplazados=new Set(todos.map(c=>c.reemplazaA).filter(Boolean));
+  // Orden cronológico por vigencia real (aplicarDesde), no por fecha de captura — así se ve la línea
+  // de tiempo tal como la usan los papeles, no el orden en que el contador los fue registrando.
+  let conFecha=todos.map(c=>({
+    control:c,
+    aplicarDesde:(c.datos&&c.datos.aplicarDesde)?c.datos.aplicarDesde:`${c.ejercicio}-01-01`,
+    superseded:reemplazados.has(c.id) // fue recalibrado por una versión posterior del MISMO origen (corrección, no una vigencia nueva)
+  })).sort((a,b)=>a.aplicarDesde.localeCompare(b.aplicarDesde));
+  // Vigentes-no-recalibradas, en orden, para derivar "aplicar hasta" = un día antes de que empiece la siguiente
+  let vigentesOrdenadas=conFecha.filter(x=>!x.superseded);
+  function hastaDe(item){
+    let idx=vigentesOrdenadas.findIndex(x=>x.control.id===item.control.id);
+    if(idx===-1||idx===vigentesOrdenadas.length-1)return null; // la más reciente: vigente indefinidamente, hasta que exista una nueva
+    let siguienteDesde=vigentesOrdenadas[idx+1].aplicarDesde;
+    let d=new Date(siguienteDesde+'T00:00:00');d.setDate(d.getDate()-1);
+    return toISODate(d);
+  }
+  let filas=conFecha.map(item=>{
+    let c=item.control;
+    let hasta=item.superseded?null:hastaDe(item);
+    return `<tr${item.superseded?' style="opacity:.55"':''}>
+      <td>${c.ejercicio}</td>
+      <td><b>${c.datos&&c.datos.coeficiente!=null?c.datos.coeficiente:'—'}</b></td>
+      <td>${fmtDate(item.aplicarDesde)}</td>
+      <td>${hasta?fmtDate(hasta):(item.superseded?'—':'Vigente')}</td>
+      <td>${esc(c.datos&&c.datos.fuente||'')}</td>
+      <td>${esc(c.datos&&c.datos.observaciones||'')}</td>
+      <td>${esc(person(c.creadoPor).name)}</td>
+      <td>${c.creadoEn?fmtDate(c.creadoEn.slice(0,10)):''}</td>
+      <td>${item.superseded?'<span class="pill p-gray">Reemplazado</span>':'<span class="pill p-green">Vigente</span>'}</td>
+    </tr>`;
+  }).join('');
+  modal('Historial del Coeficiente de Utilidad',`<div class="hint" style="margin-bottom:10px">Cada ejercicio de origen puede tener su propia vigencia — varios registros coexisten, cada uno cubre su propio rango de fechas. "Reemplazado" significa que esa captura del mismo origen fue corregida por una versión posterior (no una vigencia nueva).</div><div class="table-wrap"><table class="table"><thead><tr><th>Origen</th><th>Coeficiente</th><th>Aplicar desde</th><th>Aplicar hasta</th><th>Fuente</th><th>Observaciones</th><th>Usuario</th><th>Fecha de captura</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 function registrarAjusteControl(controlId){
   if(!isAdmin){alert('Solo un administrador puede registrar ajustes.');return}
