@@ -4469,19 +4469,136 @@ function verHistorialCoeficiente(clientId){
   let filas=conFecha.map(item=>{
     let c=item.control;
     let hasta=item.superseded?null:hastaDe(item);
+    let tieneUso=coeficienteTieneUso(c.id);
+    let menu=item.superseded?'':`<details class="concepto-menu"><summary aria-label="Más opciones" title="Más opciones">⋯</summary><div class="concepto-menu-panel">
+      ${tieneUso
+        ?`<button onclick="this.closest('details').removeAttribute('open');corregirCoeficienteUI(${c.id},${clientId})">Corregir / Nueva versión</button>`
+        :`<button onclick="this.closest('details').removeAttribute('open');editarCoeficienteSinUsoUI(${c.id},${clientId})">Editar</button>
+          <button class="danger" onclick="this.closest('details').removeAttribute('open');eliminarCoeficienteUI(${c.id},${clientId})">Eliminar</button>`}
+    </div></details>`;
     return `<tr${item.superseded?' style="opacity:.55"':''}>
       <td>${c.ejercicio}</td>
       <td><b>${c.datos&&c.datos.coeficiente!=null?c.datos.coeficiente:'—'}</b></td>
       <td>${fmtDate(item.aplicarDesde)}</td>
       <td>${hasta?fmtDate(hasta):(item.superseded?'—':'Vigente')}</td>
       <td>${esc(c.datos&&c.datos.fuente||'')}</td>
-      <td>${esc(c.datos&&c.datos.observaciones||'')}</td>
+      <td>${esc(c.datos&&c.datos.observaciones||'')}${c.datos&&c.datos.motivoCorreccion?`<div class="role" style="margin-top:2px">Motivo: ${esc(c.datos.motivoCorreccion)}</div>`:''}</td>
       <td>${esc(person(c.creadoPor).name)}</td>
       <td>${c.creadoEn?fmtDate(c.creadoEn.slice(0,10)):''}</td>
       <td>${item.superseded?'<span class="pill p-gray">Reemplazado</span>':'<span class="pill p-green">Vigente</span>'}</td>
+      <td style="width:30px">${isAdmin?menu:''}</td>
     </tr>`;
   }).join('');
-  modal('Historial del Coeficiente de Utilidad',`<div class="hint" style="margin-bottom:10px">Cada ejercicio de origen puede tener su propia vigencia — varios registros coexisten, cada uno cubre su propio rango de fechas. "Reemplazado" significa que esa captura del mismo origen fue corregida por una versión posterior (no una vigencia nueva).</div><div class="table-wrap"><table class="table"><thead><tr><th>Origen</th><th>Coeficiente</th><th>Aplicar desde</th><th>Aplicar hasta</th><th>Fuente</th><th>Observaciones</th><th>Usuario</th><th>Fecha de captura</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+  modal('Historial del Coeficiente de Utilidad',`<div class="hint" style="margin-bottom:10px">Cada ejercicio de origen puede tener su propia vigencia — varios registros coexisten, cada uno cubre su propio rango de fechas. "Reemplazado" significa que esa captura del mismo origen fue corregida por una versión posterior (no una vigencia nueva).</div><div class="table-wrap"><table class="table"><thead><tr><th>Origen</th><th>Coeficiente</th><th>Aplicar desde</th><th>Aplicar hasta</th><th>Fuente</th><th>Observaciones</th><th>Usuario</th><th>Fecha de captura</th><th>Estado</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+// --- ¿Este registro de coeficiente ya fue usado por algún papel ISR PM guardado? ---
+function coeficienteTieneUso(controlId){
+  return (db.fiscalPapelIsrPm||[]).some(p=>p.coeficienteControlId===controlId);
+}
+// --- ¿Ya existe OTRA vigencia activa (no reemplazada) de este cliente con la MISMA fecha "aplicar desde"? ---
+// Ese es el único solapamiento realmente ambiguo (el resolutor no podría saber cuál de las dos usar).
+function coeficienteConflictoVigencia(clientId,aplicarDesde,excluirControlId){
+  let todos=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo==='isr_coeficiente_utilidad'&&c.id!==excluirControlId);
+  let reemplazados=new Set(todos.map(c=>c.reemplazaA).filter(Boolean));
+  return todos.find(c=>!reemplazados.has(c.id)&&((c.datos&&c.datos.aplicarDesde)||`${c.ejercicio}-01-01`)===aplicarDesde);
+}
+// --- Formulario compartido (editar en sitio / corregir como nueva versión) ---
+function formularioCoeficienteHtml(c,modoCorreccion){
+  let d=c.datos||{};
+  return `<div class="form-grid">
+    <div class="field"><label>Ejercicio de origen</label><input id="coefEdEjercicio" type="number" value="${c.ejercicio}"></div>
+    <div class="field"><label>Coeficiente de utilidad</label><input id="coefEdCoeficiente" type="number" step="0.0001" value="${d.coeficiente!=null?d.coeficiente:''}"></div>
+    <div class="field full"><label>Aplicar desde</label><input id="coefEdAplicarDesde" type="date" value="${d.aplicarDesde||c.ejercicio+'-01-01'}"></div>
+    <div class="field full"><label>Fuente / referencia</label><input id="coefEdFuente" value="${esc(d.fuente||'')}"></div>
+    <div class="field full"><label>Observaciones</label><input id="coefEdObservaciones" value="${esc(d.observaciones||'')}"></div>
+    ${modoCorreccion?`<div class="field full"><label>Motivo de la corrección <span style="color:var(--red)">*</span></label><input id="coefEdMotivo" placeholder="ej. Error de captura: se registró 2024 en vez de 2023"></div>`:''}
+  </div>`;
+}
+function editarCoeficienteSinUsoUI(controlId,clientId){
+  let c=(db.controlesFiscales||[]).find(x=>x.id===controlId);if(!c)return;
+  if(coeficienteTieneUso(controlId)){alert('Este registro ya fue utilizado por un papel — usa "Corregir / Nueva versión" en vez de editarlo directamente.');verHistorialCoeficiente(clientId);return}
+  modal('Editar coeficiente (sin uso todavía)',formularioCoeficienteHtml(c,false),
+    `<button class="btn" onclick="verHistorialCoeficiente(${clientId})">Cancelar</button><button class="btn primary" onclick="guardarEdicionCoeficienteSinUsoUI(${controlId},${clientId})">Guardar</button>`);
+}
+function guardarEdicionCoeficienteSinUsoUI(controlId,clientId){
+  let c=(db.controlesFiscales||[]).find(x=>x.id===controlId);if(!c)return;
+  if(coeficienteTieneUso(controlId)){alert('Este registro ya fue utilizado por un papel desde que abriste este formulario — usa "Corregir / Nueva versión".');verHistorialCoeficiente(clientId);return}
+  let ejercicio=+$('#coefEdEjercicio').value;
+  let coef=parseFloat($('#coefEdCoeficiente').value);
+  if(isNaN(coef)){alert('Captura el coeficiente de utilidad.');return}
+  let aplicarDesde=$('#coefEdAplicarDesde').value||`${ejercicio}-01-01`;
+  let conflicto=coeficienteConflictoVigencia(clientId,aplicarDesde,controlId);
+  if(conflicto&&!confirm(`Ya existe otra vigencia (origen ${conflicto.ejercicio}) que también aplica desde ${fmtDate(aplicarDesde)}. Esto crea una fecha de inicio ambigua entre dos orígenes distintos.\n\n¿Guardar de todas formas?`))return;
+  c.ejercicio=ejercicio;
+  c.datos={coeficiente:coef,aplicarDesde,fuente:$('#coefEdFuente').value.trim()||null,observaciones:$('#coefEdObservaciones').value.trim()||null};
+  save();
+  verHistorialCoeficiente(clientId);
+}
+function eliminarCoeficienteUI(controlId,clientId){
+  if(coeficienteTieneUso(controlId)){alert('Este registro ya fue utilizado por un papel — no puede eliminarse, solo corregirse como nueva versión.');return}
+  if(!confirm('Este coeficiente nunca fue utilizado por ningún papel. ¿Eliminarlo por completo?\n\nEsto no afecta ninguna determinación ya guardada, porque nunca se usó.'))return;
+  db.controlesFiscales=(db.controlesFiscales||[]).filter(c=>c.id!==controlId);
+  save();
+  verHistorialCoeficiente(clientId);
+}
+function corregirCoeficienteUI(controlId,clientId){
+  let c=(db.controlesFiscales||[]).find(x=>x.id===controlId);if(!c)return;
+  modal('Corregir Coeficiente de Utilidad — Nueva versión',`<div class="hint" style="margin-bottom:10px">Este registro ya fue usado por uno o más papeles — no se modifica directamente. Se creará una nueva versión; el registro actual quedará conservado y marcado como Reemplazado, con trazabilidad completa.</div>${formularioCoeficienteHtml(c,true)}`,
+    `<button class="btn" onclick="verHistorialCoeficiente(${clientId})">Cancelar</button><button class="btn primary" onclick="guardarCorreccionCoeficienteUI(${controlId},${clientId})">Guardar como nueva versión</button>`);
+}
+function guardarCorreccionCoeficienteUI(controlId,clientId){
+  let anterior=(db.controlesFiscales||[]).find(x=>x.id===controlId);if(!anterior)return;
+  let ejercicio=+$('#coefEdEjercicio').value;
+  let coef=parseFloat($('#coefEdCoeficiente').value);
+  if(isNaN(coef)){alert('Captura el coeficiente de utilidad.');return}
+  let aplicarDesde=$('#coefEdAplicarDesde').value||`${ejercicio}-01-01`;
+  let motivo=$('#coefEdMotivo').value.trim();
+  if(!motivo){alert('El motivo de la corrección es obligatorio.');return}
+  let conflicto=coeficienteConflictoVigencia(clientId,aplicarDesde,controlId);
+  if(conflicto&&!confirm(`Ya existe otra vigencia (origen ${conflicto.ejercicio}) que también aplica desde ${fmtDate(aplicarDesde)}. Esto crea una fecha de inicio ambigua entre dos orígenes distintos.\n\n¿Guardar de todas formas?`))return;
+  let anteriorAplicarDesde=(anterior.datos&&anterior.datos.aplicarDesde)||`${anterior.ejercicio}-01-01`;
+  let nuevo=stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,tipo:'isr_coeficiente_utilidad',ejercicio,
+    datos:{coeficiente:coef,aplicarDesde,fuente:$('#coefEdFuente').value.trim()||null,observaciones:$('#coefEdObservaciones').value.trim()||null,motivoCorreccion:motivo},
+    saldoOriginal:null,estatus:'activo',reemplazaA:controlId,
+    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString()
+  });
+  db.controlesFiscales=db.controlesFiscales||[];
+  db.controlesFiscales.push(nuevo);
+  save();
+  closeModal();
+  // ¿Esta corrección puede afectar papeles ya guardados? Desde la fecha MÁS TEMPRANA entre la vigencia
+  // anterior y la nueva — cubre tanto "se movió la fecha hacia atrás" como "hacia adelante".
+  let fechaComparacion=anteriorAplicarDesde<aplicarDesde?anteriorAplicarDesde:aplicarDesde;
+  let primerAfectado=primerPeriodoAfectadoPorCoeficiente(clientId,fechaComparacion);
+  if(primerAfectado){
+    if(confirm(`Esta corrección afecta papeles existentes desde ${MESES_NOMBRE[primerAfectado.periodo-1]} ${primerAfectado.ejercicio}.\n¿Deseas recalcular los periodos afectados ahora?\n\n(Puedes hacerlo después desde el propio papel si prefieres revisarlo primero.)`)){
+      recalcularTodosLosPeriodosAfectados(clientId,primerAfectado);
+      alert('Periodos recalculados correctamente.');
+    }
+  }
+  verHistorialCoeficiente(clientId);
+}
+// --- Encuentra el primer periodo (ejercicio+mes) ya capturado que cae en o después de la fecha dada ---
+function primerPeriodoAfectadoPorCoeficiente(clientId,fechaComparacion){
+  let papeles=(db.fiscalPapelIsrPm||[]).filter(p=>p.client===clientId);
+  let reemplazados=new Set(papeles.map(p=>p.reemplazaA).filter(Boolean));
+  let vigentes=papeles.filter(p=>!reemplazados.has(p.id));
+  let candidatos=vigentes.map(p=>({ejercicio:p.ejercicio,periodo:p.periodo,fecha:`${p.ejercicio}-${String(p.periodo).padStart(2,'0')}-01`})).filter(x=>x.fecha>=fechaComparacion);
+  if(!candidatos.length)return null;
+  candidatos.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  return candidatos[0];
+}
+// --- Recalcula, EJERCICIO POR EJERCICIO, todos los periodos afectados — reutiliza recalcularMesesPosteriores, no crea otro motor ---
+function recalcularTodosLosPeriodosAfectados(clientId,primerAfectado){
+  let papeles=(db.fiscalPapelIsrPm||[]).filter(p=>p.client===clientId);
+  let reemplazados=new Set(papeles.map(p=>p.reemplazaA).filter(Boolean));
+  let vigentes=papeles.filter(p=>!reemplazados.has(p.id));
+  let ejerciciosAfectados=[...new Set(vigentes.filter(p=>p.ejercicio>primerAfectado.ejercicio||(p.ejercicio===primerAfectado.ejercicio&&p.periodo>=primerAfectado.periodo)).map(p=>p.ejercicio))].sort((a,b)=>a-b);
+  ejerciciosAfectados.forEach(ej=>{
+    let desdePeriodo=ej===primerAfectado.ejercicio?primerAfectado.periodo:1;
+    recalcularMesesPosteriores(clientId,ej,desdePeriodo);
+  });
 }
 function registrarAjusteControl(controlId){
   if(!isAdmin){alert('Solo un administrador puede registrar ajustes.');return}
