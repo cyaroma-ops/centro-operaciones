@@ -106,6 +106,15 @@ body.dark-mode .cal-chip{color:var(--nav)}*{box-sizing:border-box}body{margin:0;
 .cedula-table{border-collapse:collapse;width:100%;table-layout:fixed;background:var(--card)}
 .cedula-table th,.cedula-table td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;font-size:11.3px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cedula-table th{font-size:9.5px;text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:700}
+.concepto-menu{position:relative;display:inline-block}
+.concepto-menu summary{list-style:none;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--muted);opacity:.35;font-size:15px;line-height:1}
+.concepto-menu summary::-webkit-details-marker{display:none}
+.concepto-menu:hover summary,.concepto-menu summary:focus-visible,.concepto-menu[open] summary{opacity:1;background:var(--bg)}
+.concepto-menu-panel{position:absolute;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:170px;padding:4px;display:flex;flex-direction:column}
+.concepto-menu-panel button{all:unset;cursor:pointer;padding:8px 10px;font-size:12.5px;border-radius:6px;white-space:nowrap}
+.concepto-menu-panel button:hover,.concepto-menu-panel button:focus-visible{background:var(--bg)}
+.concepto-menu-panel button.danger{color:var(--red,#c0392b)}
+@media (hover:none){.concepto-menu summary{opacity:.6}}
 .cedula-table td.lbl,.cedula-table th:first-child{text-align:left;white-space:normal}
 .cedula-table col.lbl-col{width:17%}
 .cedula-table col.mes-col{width:5.6%}
@@ -1850,7 +1859,11 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
     <div class="card" style="margin-top:14px">
       <h3 style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span>1. Ingresos</span>${origenTag('manual')}</h3>
       <table style="width:100%;border-collapse:collapse" id="isrPmIngresosTabla">
-        <tbody id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<tr class="isrPmIngresoRow"><td style="padding:4px 0;border-bottom:1px solid var(--line)">${esc(ing.nombre)}</td><td style="padding:4px 0;border-bottom:1px solid var(--line);text-align:right;width:180px"><input class="isrPmIngresoInput money-input" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:100%;text-align:right;border:none;background:transparent;font-size:13px;padding:2px 4px" oninput="marcarFiscalDirty();calcularPapelISRPMUI()"></td><td style="padding:4px 0;border-bottom:1px solid var(--line);width:28px">${isAdmin?`<button class="btn" style="padding:2px 7px;font-size:11px" title="Desactivar este concepto (no afecta lo ya guardado)" onclick="desactivarConceptoIngresoUI(${ing.conceptoId},${clientId},${ejercicio},${periodo})">✕</button>`:''}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:6px 0;color:var(--muted)">Sin conceptos de ingreso</td></tr>'}</tbody>
+        <tbody id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<tr class="isrPmIngresoRow"><td style="padding:4px 0;border-bottom:1px solid var(--line)">${esc(ing.nombre)}</td><td style="padding:4px 0;border-bottom:1px solid var(--line);text-align:right;width:180px"><input class="isrPmIngresoInput money-input" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:100%;text-align:right;border:none;background:transparent;font-size:13px;padding:2px 4px" oninput="marcarFiscalDirty();calcularPapelISRPMUI()"></td><td style="padding:4px 0;border-bottom:1px solid var(--line);width:26px">${isAdmin?`<details class="concepto-menu"><summary aria-label="Más opciones para ${esc(ing.nombre)}" title="Más opciones">⋯</summary><div class="concepto-menu-panel">
+      <button onclick="this.closest('details').removeAttribute('open');editarConceptoIngresoUI(${ing.conceptoId},${clientId},${ejercicio},${periodo})">Editar concepto</button>
+      <button onclick="this.closest('details').removeAttribute('open');desactivarConceptoIngresoUI(${ing.conceptoId},${clientId},${ejercicio},${periodo})">Desactivar concepto</button>
+      ${!conceptoIngresoTieneHistorial(ing.conceptoId)?`<button class="danger" onclick="this.closest('details').removeAttribute('open');eliminarConceptoIngresoUI(${ing.conceptoId},${clientId},${ejercicio},${periodo})">Eliminar concepto</button>`:''}
+    </div></details>`:''}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:6px 0;color:var(--muted)">Sin conceptos de ingreso</td></tr>'}</tbody>
         <tfoot><tr style="border-top:2px solid var(--nav)"><td style="padding:8px 0;font-weight:700">TOTAL INGRESOS NOMINALES DEL MES</td><td style="padding:8px 0;text-align:right;font-weight:700;font-size:14px" id="isrPmTotalIngresosDisplay">${fmtMoneyMX(ingresosPrevios.reduce((s,i)=>s+(Number(i.importe)||0),0))}</td><td></td></tr></tfoot>
       </table>
       <button class="btn" style="margin:10px 0 0" onclick="agregarConceptoIngresoUIRediseño(${clientId},${ejercicio},${periodo})">+ Agregar concepto</button>
@@ -1871,6 +1884,7 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
       <button class="btn" onclick="confirmarSalidaFiscal(()=>cambiarFiscalTab('federal'))">Volver</button>
       <button class="btn primary" onclick="guardarPapelISRPMUI()">Guardar borrador</button>
       ${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelISRPM(${existente.id},'revisado');abrirPapelISRPMRediseñado(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}
+      ${isAdmin?`<button class="btn" onclick="recalcularMesesPosterioresUI(${clientId},${ejercicio},${periodo})" title="Si este mes cambió, recalcula los meses posteriores para que el acumulado quede correcto">🔄 Recalcular meses posteriores</button>`:''}
       <button class="btn" onclick="imprimirPapelISRPM(${clientId},${ejercicio},${periodo})">PDF</button>
     </div>
   `;
@@ -1885,6 +1899,32 @@ function agregarConceptoIngresoUIRediseño(clientId,ejercicio,periodo){
 function desactivarConceptoIngresoUI(conceptoId,clientId,ejercicio,periodo){
   if(!confirm('¿Desactivar este concepto de ingreso?\n\nYa NO aparecerá disponible para capturar en periodos futuros. Los papeles ya guardados que lo usaron conservan su historial completo, sin cambios.\n\n¿Continuar?'))return;
   inactivarConceptoIngreso(conceptoId);
+  save();
+  abrirPapelISRPMRediseñado(clientId,ejercicio,periodo);
+}
+// ¿Este concepto aparece en algún papel ya guardado, en CUALQUIER ejercicio? Si no, eliminarlo de verdad es seguro.
+function conceptoIngresoTieneHistorial(conceptoId){
+  return (db.fiscalPapelIsrPm||[]).some(p=>(p.ingresos||[]).some(i=>i.conceptoId===conceptoId));
+}
+function editarConceptoIngresoUI(conceptoId,clientId,ejercicio,periodo){
+  let concepto=(db.fiscalConceptosIngreso||[]).find(c=>c.id===conceptoId);
+  if(!concepto)return;
+  let nuevoNombre=prompt('Nuevo nombre del concepto:',concepto.nombre);
+  if(!nuevoNombre||!nuevoNombre.trim())return;
+  nuevoNombre=nuevoNombre.trim();
+  if(nuevoNombre===concepto.nombre)return;
+  if((db.fiscalConceptosIngreso||[]).some(c=>c.client===clientId&&c.id!==conceptoId&&c.nombre.toLowerCase()===nuevoNombre.toLowerCase()&&c.estatus==='activo')){alert('Ya existe otro concepto activo con ese nombre.');return}
+  // Solo se renombra el catálogo (de aquí en adelante). Los papeles YA guardados conservan el nombre
+  // que capturaron en su momento (snapshot histórico) — no se tocan, por eso nunca se pierde el contexto
+  // de lo que de verdad se declaró ese mes.
+  concepto.nombre=nuevoNombre;
+  save();
+  abrirPapelISRPMRediseñado(clientId,ejercicio,periodo);
+}
+function eliminarConceptoIngresoUI(conceptoId,clientId,ejercicio,periodo){
+  if(conceptoIngresoTieneHistorial(conceptoId)){alert('Este concepto ya tiene movimientos guardados — no puede eliminarse, solo desactivarse.');return}
+  if(!confirm('Este concepto nunca tuvo movimientos capturados. ¿Eliminarlo por completo?\n\nEsto no afecta ningún papel, porque nunca se usó.'))return;
+  db.fiscalConceptosIngreso=(db.fiscalConceptosIngreso||[]).filter(c=>c.id!==conceptoId);
   save();
   abrirPapelISRPMRediseñado(clientId,ejercicio,periodo);
 }
@@ -1908,11 +1948,18 @@ function recalcularMesesPosteriores(clientId,ejercicio,desdePeriodo){
   }
   return actualizados;
 }
-function recalcularMesesPosterioresUI(clientId){
+function recalcularMesesPosterioresUI(clientId,ejercicioParam,periodoParam){
   if(!isAdmin){alert('Solo un administrador puede recalcular papeles fiscales.');return}
-  let ejercicio=+$('#isrPmEjercicioSel').value,periodo=+$('#isrPmPeriodoSel').value;
+  let ejercicio=ejercicioParam!=null?ejercicioParam:+$('#isrPmEjercicioSel').value;
+  let periodo=periodoParam!=null?periodoParam:+$('#isrPmPeriodoSel').value;
+  if(!confirm(`Esto recalculará ${MESES_NOMBRE[periodo-1]} ${ejercicio} en adelante con los parámetros/controles vigentes hoy (por ejemplo, un coeficiente registrado después de capturar estos meses). Los importes de ingresos capturados NO cambian, solo la determinación. ¿Continuar?`))return;
   let actualizados=recalcularMesesPosteriores(clientId,ejercicio,periodo);
-  alert(actualizados.length?`Se recalcularon los periodos: ${actualizados.map(p=>MESES_NOMBRE[p-1]).join(', ')}.`:'No había papeles capturados en meses posteriores para recalcular.');
+  if(actualizados.length){
+    alert(`Se recalcularon los periodos: ${actualizados.map(p=>MESES_NOMBRE[p-1]).join(', ')}.`);
+    abrirPapelISRPMRediseñado(clientId,ejercicio,periodo);
+  }else{
+    alert('No había papeles capturados en este periodo ni en los posteriores para recalcular.');
+  }
 }
 function verCedulaISRPM(clientId,ejercicio){
   let c=getCedulaAnualISRPM(clientId,ejercicio);
@@ -2921,7 +2968,10 @@ document.addEventListener('click',function(e){
   if(!nwrap){const np=$('#notifPanel');if(np)np.classList.remove('show')}
 });
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){const p=$('#globalSearchResults');if(p)p.classList.remove('show');const np=$('#notifPanel');if(np)np.classList.remove('show')}
+  if(e.key==='Escape'){const p=$('#globalSearchResults');if(p)p.classList.remove('show');const np=$('#notifPanel');if(np)np.classList.remove('show');$$('.concepto-menu[open]').forEach(d=>d.removeAttribute('open'))}
+});
+document.addEventListener('click',function(e){
+  $$('.concepto-menu[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open')});
 });
 function scopedHistory(){
   const ids=new Set(visibleClients().map(c=>c.id));
