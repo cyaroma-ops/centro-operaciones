@@ -103,6 +103,13 @@ body.dark-mode .cal-chip{color:var(--nav)}*{box-sizing:border-box}body{margin:0;
   .table input[type="checkbox"]{width:19px;height:19px}
   .btn{padding:11px 14px}
 }.table{border-collapse:collapse;width:100%;min-width:820px;background:var(--card)}.table th,.table td{padding:12px 11px;border-bottom:1px solid var(--line);text-align:left}.table th{font-size:11px;text-transform:uppercase;color:var(--muted);background:var(--bg)}.table tr:hover td{background:var(--bg)}.pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.p-green{background:#e9f8f1;color:#17895a}.p-amber{background:#fff5db;color:#9b6810}.p-red{background:#ffebec;color:#b92e38}.p-blue{background:#eaf2ff;color:#145bac}.p-gray{background:#edf1f6;color:#607086}
+.cedula-table{border-collapse:collapse;width:100%;table-layout:fixed;background:var(--card)}
+.cedula-table th,.cedula-table td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;font-size:11.3px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cedula-table th{font-size:9.5px;text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:700}
+.cedula-table td.lbl,.cedula-table th:first-child{text-align:left;white-space:normal}
+.cedula-table col.lbl-col{width:17%}
+.cedula-table col.mes-col{width:5.6%}
+.cedula-table col.cierre-col{width:16.3%}
 .p-orange{background:#ffe8d6;color:#b5590c}
 .alert.orange{border-color:#e07b1f;background:#fff3e8}.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px}.filters input,.filters select,.field input,.field select,.field textarea{border:1px solid #d9e1ec;background:#fff;border-radius:9px;padding:10px 11px;color:var(--ink)}.filters input{min-width:240px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:600}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.form-grid .full{grid-column:1/-1}.modal-bg{display:none;position:fixed;inset:0;background:rgba(7,26,50,.55);z-index:50;align-items:center;justify-content:center;padding:18px}.modal-bg.show{display:flex}.modal{background:var(--card);width:min(860px,100%);max-height:92vh;overflow:auto;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.modal-head,.modal-foot{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-foot{border-top:1px solid var(--line);border-bottom:0;justify-content:flex-end}.modal-body{padding:20px}.x{border:0;background:var(--line);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer}.checklist{display:grid;gap:8px}.check-item{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);padding:10px;border-radius:9px}.check-item.done{background:#f0fbf6;border-color:#c7eedb}.check-item input{margin-top:3px}.timeline{border-left:2px solid #d9e3f0;margin-left:8px;padding-left:19px}.time-item{position:relative;margin:0 0 15px}.time-item:before{content:"";position:absolute;left:-25px;top:4px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px #eaf2ff}
 .time-item.overdue:before{background:var(--red);box-shadow:0 0 0 4px #ffe3e3}.kanban{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:13px;overflow:auto}.lane{background:var(--bg);border-radius:12px;padding:11px;min-height:340px}.lane h4{margin:2px 3px 11px}.task-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:9px;box-shadow:0 4px 12px rgba(38,62,92,.05);cursor:pointer}.task-card b{display:block}.task-card small{color:var(--muted)}.profile-grid{grid-template-columns:1fr 1fr 1fr 1fr}.statbox{border:1px solid var(--line);border-radius:10px;padding:12px}.statbox small{color:var(--muted)}.statbox b{display:block;margin-top:5px}.tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin:15px 0}.tab{border:0;background:transparent;padding:10px 12px;color:var(--muted);cursor:pointer}.tab.active{color:var(--blue);border-bottom:2px solid var(--blue);font-weight:700}.role{font-size:11px;color:var(--muted)}.person{display:flex;align-items:center;gap:10px}.empty{text-align:center;color:var(--muted);padding:30px}.hint{font-size:12px;color:var(--muted);background:var(--card);border-radius:8px;padding:10px}.seg{display:flex;gap:5px;background:var(--line);padding:4px;border-radius:9px}.seg button{border:0;background:transparent;padding:7px 10px;border-radius:7px;cursor:pointer}.seg button.active{background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -1858,7 +1865,7 @@ function agregarConceptoIngresoUIRediseño(clientId,ejercicio,periodo){
 
 function recalcularMesesPosteriores(clientId,ejercicio,desdePeriodo){
   let actualizados=[];
-  for(let p=desdePeriodo+1;p<=12;p++){
+  for(let p=desdePeriodo;p<=12;p++){
     let existente=getPapelISRPMVigente(clientId,ejercicio,p);
     if(!existente)continue;
     let inputs={
@@ -1888,7 +1895,7 @@ function verCedulaISRPM(clientId,ejercicio){
     let fmtValor=v=>v==null?'—':(esMoneda?fmtMoneyMX(v):(esPorcentaje?v+'%':v));
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${fmtValor(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtValor(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
     ${fila('Ingresos nominales del mes',c.ingresosNominalesDelMes,true)}
     ${fila('Ingresos nominales acumulados',c.ingresosNominalesAcumulados,true)}
     ${fila('Coeficiente de utilidad',c.coeficiente,false)}
@@ -2045,7 +2052,7 @@ function verCedulaIVA(clientId,ejercicio){
   function fila(label,obj){
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Base gravada 16%',c.baseGravada16)}
     ${fila('IVA trasladado',c.ivaTrasladado)}
     ${fila('IVA acreditable',c.ivaAcreditable)}
@@ -2229,7 +2236,7 @@ function guardarPapelRetencionesISRUI(){
 function verCedulaRetencionesISR(clientId,ejercicio){
   let c=getCedulaAnualRetencionesISR(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Salarios',c.salarios)}
     ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
     ${fila('Total retenido',c.totalRetenido)}
@@ -2307,7 +2314,7 @@ function guardarPapelRetencionesIVAUI(){
 function verCedulaRetencionesIVA(clientId,ejercicio){
   let c=getCedulaAnualRetencionesIVA(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
     ${fila('Total retenido',c.totalRetenido)}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Control de pago / accesorios</td></tr>
@@ -2400,7 +2407,7 @@ function verCedulaISN(clientId,ejercicio){
     let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — ISN ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — ISN ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Total remuneraciones',c.totalRemuneraciones,'suma')}
     ${fila('Tasa vigente',c.tasa,'referencia')}
     ${fila('Impuesto determinado',c.impuestoDeterminado,'suma')}
@@ -2509,7 +2516,7 @@ function guardarPapelExtraccionUI(){
 function verCedulaExtraccion(clientId,ejercicio){
   let c=getCedulaAnualExtraccion(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
-  mostrarCedulaFullPage(`Cédula Anual — Extracción de Materiales ${ejercicio}`,`<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Material</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — Extracción de Materiales ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Material</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${c.porMaterial.map(pm=>fila(esc(pm.nombre),pm)).join('')||'<tr><td colspan="14" class="empty">Sin materiales capturados este ejercicio</td></tr>'}
     ${fila('Total impuesto',c.totalImpuesto)}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Accesorios</td></tr>
@@ -2843,7 +2850,7 @@ function renderCedulaEstatalSimpleHtml(c,filas){
     let tag=tipo==='suma'?'Σ':'Ref.';let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
-  return `<div style="overflow-x:auto"><table class="table" style="width:100%;min-width:900px"><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
+  return `<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${filas.map(([label,campo,tipo])=>fila(label,c[campo],tipo)).join('')}
     <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Accesorios</td></tr>
     ${fila('Actualización',c.actualizacion,'suma')}
@@ -3438,15 +3445,21 @@ async function generarPdfCedulaFiscal(config){
     }
 
     drawHeader();
+    // Anchos verificados con medición real de jsPDF (getTextWidth): a 6.8pt, un importe de hasta
+    // $99,999,999.99 mide ~16.5mm — con 1mm de padding por lado caben en 18.65mm sin partirse.
+    // Nunca se quitan columnas ni decimales; se ajusta tipografía/ancho para que todo quepa.
+    let numCols=config.encabezados.length-1;
+    let colStylesNum={};
+    for(let i=1;i<=numCols;i++)colStylesNum[i]={cellWidth:18.65,halign:'right'};
     doc.autoTable({
       startY:28,
       head:[config.encabezados],
       body:config.filas,
       theme:'grid',
-      styles:{fontSize:7.5,cellPadding:1.8},
-      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',fontSize:7.5},
-      columnStyles:{0:{cellWidth:48,fontStyle:'bold'}},
-      margin:{left:10,right:10},
+      styles:{fontSize:6.8,cellPadding:{top:1.6,bottom:1.6,left:1,right:1},overflow:'hidden'},
+      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',fontSize:7,halign:'center'},
+      columnStyles:Object.assign({0:{cellWidth:38,fontStyle:'bold',fontSize:7,halign:'left',overflow:'linebreak'}},colStylesNum),
+      margin:{left:8,right:8},
       didDrawPage:drawHeader,
       didParseCell:function(data){
         if(data.section==='head'&&data.column.index===config.encabezados.length-1){data.cell.styles.fillColor=[201,169,97]}
