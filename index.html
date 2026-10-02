@@ -896,8 +896,28 @@ function getCedulaAnualISRPM(clientId,ejercicio){
   for(let p=1;p<=12;p++)meses.push(getPapelISRPMVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
   function ultimo(campo){for(let i=11;i>=0;i--){if(meses[i])return meses[i][campo]}return null}
+  // Desglose por concepto dinámico: deriva EXCLUSIVAMENTE de los ingresos ya persistidos en cada
+  // papel mensual (nunca recalcula, nunca inventa). Un mes sin el concepto pero CON papel capturado
+  // muestra $0.00 (la determinación de ese mes existe); un mes sin papel capturado muestra "—".
+  // Orden estable: el orden de creación del catálogo del cliente (incluye inactivos, para no perder
+  // conceptos que solo existen en el historial).
+  let nombrePorConcepto=new Map();
+  meses.forEach(m=>{if(m)(m.ingresos||[]).forEach(i=>{if(!nombrePorConcepto.has(i.conceptoId))nombrePorConcepto.set(i.conceptoId,i.nombre)})});
+  let ordenCatalogo=getConceptosIngreso(clientId,true).sort((a,b)=>a.id-b.id).map(c=>c.id);
+  let idsOrdenados=ordenCatalogo.filter(id=>nombrePorConcepto.has(id));
+  nombrePorConcepto.forEach((nombre,id)=>{if(!idsOrdenados.includes(id))idsOrdenados.push(id)});
+  let conceptosDesglose=idsOrdenados.map(conceptoId=>{
+    let valores=meses.map(m=>{
+      if(!m)return null;
+      let ing=(m.ingresos||[]).find(i=>i.conceptoId===conceptoId);
+      return ing?Number(ing.importe||0):0;
+    });
+    let cierre=Math.round(valores.reduce((s,v)=>s+(Number(v)||0),0)*100)/100;
+    return {conceptoId,nombre:nombrePorConcepto.get(conceptoId),tipo:'suma',valores,cierre};
+  });
   return {
     meses,
+    conceptosDesglose,
     ingresosNominalesDelMes:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalIngresosMes||0):null),cierre:suma('totalIngresosMes')},
     ingresosNominalesAcumulados:{tipo:'ultimo',valores:meses.map(m=>m?Number(m.ingresosAcumulados||0):null),cierre:ultimo('ingresosAcumulados')},
     coeficiente:{tipo:'referencia',valores:meses.map(m=>m?m.coeficienteValor:null)},
@@ -1830,8 +1850,8 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
     <div class="card" style="margin-top:14px">
       <h3 style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span>1. Ingresos</span>${origenTag('manual')}</h3>
       <table style="width:100%;border-collapse:collapse" id="isrPmIngresosTabla">
-        <tbody id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<tr class="isrPmIngresoRow"><td style="padding:4px 0;border-bottom:1px solid var(--line)">${esc(ing.nombre)}</td><td style="padding:4px 0;border-bottom:1px solid var(--line);text-align:right;width:180px"><input class="isrPmIngresoInput money-input" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:100%;text-align:right;border:none;background:transparent;font-size:13px;padding:2px 4px" oninput="marcarFiscalDirty();calcularPapelISRPMUI()"></td></tr>`).join('')||'<tr><td colspan="2" style="padding:6px 0;color:var(--muted)">Sin conceptos de ingreso</td></tr>'}</tbody>
-        <tfoot><tr style="border-top:2px solid var(--nav)"><td style="padding:8px 0;font-weight:700">TOTAL INGRESOS NOMINALES DEL MES</td><td style="padding:8px 0;text-align:right;font-weight:700;font-size:14px" id="isrPmTotalIngresosDisplay">${fmtMoneyMX(ingresosPrevios.reduce((s,i)=>s+(Number(i.importe)||0),0))}</td></tr></tfoot>
+        <tbody id="isrPmIngresos">${ingresosPrevios.map((ing,idx)=>`<tr class="isrPmIngresoRow"><td style="padding:4px 0;border-bottom:1px solid var(--line)">${esc(ing.nombre)}</td><td style="padding:4px 0;border-bottom:1px solid var(--line);text-align:right;width:180px"><input class="isrPmIngresoInput money-input" data-concepto="${ing.conceptoId}" data-nombre="${esc(ing.nombre)}" type="number" step="0.01" value="${ing.importe||0}" style="width:100%;text-align:right;border:none;background:transparent;font-size:13px;padding:2px 4px" oninput="marcarFiscalDirty();calcularPapelISRPMUI()"></td><td style="padding:4px 0;border-bottom:1px solid var(--line);width:28px">${isAdmin?`<button class="btn" style="padding:2px 7px;font-size:11px" title="Desactivar este concepto (no afecta lo ya guardado)" onclick="desactivarConceptoIngresoUI(${ing.conceptoId},${clientId},${ejercicio},${periodo})">✕</button>`:''}</td></tr>`).join('')||'<tr><td colspan="3" style="padding:6px 0;color:var(--muted)">Sin conceptos de ingreso</td></tr>'}</tbody>
+        <tfoot><tr style="border-top:2px solid var(--nav)"><td style="padding:8px 0;font-weight:700">TOTAL INGRESOS NOMINALES DEL MES</td><td style="padding:8px 0;text-align:right;font-weight:700;font-size:14px" id="isrPmTotalIngresosDisplay">${fmtMoneyMX(ingresosPrevios.reduce((s,i)=>s+(Number(i.importe)||0),0))}</td><td></td></tr></tfoot>
       </table>
       <button class="btn" style="margin:10px 0 0" onclick="agregarConceptoIngresoUIRediseño(${clientId},${ejercicio},${periodo})">+ Agregar concepto</button>
     </div>
@@ -1861,6 +1881,12 @@ function agregarConceptoIngresoUIRediseño(clientId,ejercicio,periodo){
   if(!nombre)return;
   let c=addConceptoIngreso(clientId,nombre);
   if(c){save();abrirPapelISRPMRediseñado(clientId,ejercicio,periodo)}
+}
+function desactivarConceptoIngresoUI(conceptoId,clientId,ejercicio,periodo){
+  if(!confirm('¿Desactivar este concepto de ingreso?\n\nYa NO aparecerá disponible para capturar en periodos futuros. Los papeles ya guardados que lo usaron conservan su historial completo, sin cambios.\n\n¿Continuar?'))return;
+  inactivarConceptoIngreso(conceptoId);
+  save();
+  abrirPapelISRPMRediseñado(clientId,ejercicio,periodo);
 }
 
 function recalcularMesesPosteriores(clientId,ejercicio,desdePeriodo){
@@ -1896,6 +1922,7 @@ function verCedulaISRPM(clientId,ejercicio){
     return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${fmtValor(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtValor(obj.cierre)}</td></tr>`;
   }
   mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
+    ${c.conceptosDesglose.length?`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Desglose de ingresos por concepto</td></tr>${c.conceptosDesglose.map(cd=>fila(cd.nombre,cd,true)).join('')}`:''}
     ${fila('Ingresos nominales del mes',c.ingresosNominalesDelMes,true)}
     ${fila('Ingresos nominales acumulados',c.ingresosNominalesAcumulados,true)}
     ${fila('Coeficiente de utilidad',c.coeficiente,false)}
@@ -2692,6 +2719,7 @@ function imprimirCedulaISRPM(clientId,ejercicio){
     titulo:'Cédula Anual — ISR Pago Provisional',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Cierre/Ref.'],
     filas:[
+      ...c.conceptosDesglose.map(cd=>filaCedulaPdf(cd.nombre,cd)),
       filaCedulaPdf('Ingresos nominales del mes',c.ingresosNominalesDelMes),
       filaCedulaPdf('Ingresos nominales acumulados',c.ingresosNominalesAcumulados),
       filaCedulaPdf('Coeficiente de utilidad',c.coeficiente),
