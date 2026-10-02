@@ -3847,20 +3847,83 @@ function formatearValorParametro(clave,valor){
   if(valor.tarifa!=null)return `${esc(valor.material||'')}: ${valor.tarifa} (${valor.referencia||''})`;
   return esc(JSON.stringify(valor));
 }
+// --- Clasifica una clave en su familia de presentación, SIN tocar datos. Usa el catálogo existente
+// (extensible) como señal; cualquier clave fuera de catálogo cae a "tasas"/"otros", nunca se pierde. ---
+function familiaParametro(clave){
+  let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
+  if(!cat)return 'tasas';
+  if(cat.tipoSimple==='periodo_valor'||cat.tipoSimple==='periodo_tasa')return 'serie_mensual';
+  if(clave==='uma_diaria')return 'serie_anual';
+  return 'tasas';
+}
 function renderFiscalParams(){
   let el=$('#fiscalParamsList');if(!el)return;
-  let items=(db.parametrosFiscales||[]).slice().sort((a,b)=>(b.vigenciaDesde||'').localeCompare(a.vigenciaDesde||'')||(b.id-a.id));
+  let items=db.parametrosFiscales||[];
   if(!items.length){el.innerHTML='<div class="empty">Sin parámetros capturados todavía.</div>';return}
-  el.innerHTML=`<div class="table-wrap"><table class="table"><thead><tr><th>Ámbito</th><th>Concepto</th><th>Valor</th><th>Vigencia</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${items.map(p=>{
-    let vig=`${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}`;
-    let estColor=p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray');
-    let accionesEstatus='';
-    if(isAdmin){
-      if(p.estatus==='borrador')accionesEstatus=`<button class="btn" onclick="avanzarEstatusParam(${p.id},'revisado')">Marcar Revisado</button>`;
-      else if(p.estatus==='revisado')accionesEstatus=`<button class="btn primary" onclick="avanzarEstatusParam(${p.id},'publicado')">Publicar</button>`;
+  // Agrupar por clave (y por entidad cuando es estatal) — un "concepto" por grupo, sin importar cuántas vigencias/meses tenga.
+  let grupos=new Map(); // key: ambito|entidad|clave -> {ambito,entidad,clave,familia,registros:[]}
+  items.forEach(p=>{
+    let key=`${p.ambito}|${p.entidadFederativa||''}|${p.clave}`;
+    if(!grupos.has(key))grupos.set(key,{ambito:p.ambito,entidad:p.entidadFederativa||null,clave:p.clave,familia:familiaParametro(p.clave),registros:[]});
+    grupos.get(key).registros.push(p);
+  });
+  let gruposArr=[...grupos.values()];
+  function tarjetaConcepto(g){
+    let vigentes=g.registros.filter(r=>r.estatus==='publicado'&&(!r.vigenciaHasta||r.vigenciaHasta>=toISODate(new Date())));
+    let pendientes=g.registros.filter(r=>r.estatus!=='publicado').length;
+    let label=labelAmigableParametro(g.clave);
+    let valorMostrado='—';
+    if(g.familia==='tasas'){
+      // Preferir el vigente PUBLICADO; si todavía no hay ninguno publicado, mostrar el más reciente
+      // capturado (aunque sea borrador) — mejor dar una vista previa que no mostrar nada.
+      let actual=(vigentes.sort((a,b)=>(b.vigenciaDesde||'').localeCompare(a.vigenciaDesde||''))[0])
+        ||g.registros.slice().sort((a,b)=>(b.vigenciaDesde||'').localeCompare(a.vigenciaDesde||'')||b.id-a.id)[0];
+      valorMostrado=actual?formatearValorParametro(g.clave,actual.valor):'—';
+    }else{
+      valorMostrado=`${g.registros.length} registro${g.registros.length===1?'':'s'} capturado${g.registros.length===1?'':'s'}`;
     }
-    return `<tr><td>${p.ambito==='estatal'?esc(p.entidadFederativa||'Estatal'):'Federal'}</td><td><b>${esc(labelAmigableParametro(p.clave))}</b>${p.descripcion?`<div class="role">${esc(p.descripcion)}</div>`:''}</td><td style="max-width:220px;white-space:normal;font-size:12.5px">${formatearValorParametro(p.clave,p.valor)}</td><td>${vig}</td><td><span class="pill ${estColor}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatus} <button class="btn" onclick="verHistorialParam('${p.ambito}','${esc(p.entidadFederativa||'')}','${esc(p.clave)}')">Historial</button></td></tr>`;
-  }).join('')}</tbody></table></div>`;
+    let accion=g.familia==='serie_mensual'?`verSerieMensualConcepto('${g.ambito}','${esc(g.entidad||'')}','${esc(g.clave)}')`
+      :g.familia==='serie_anual'?`verSerieAnualConcepto('${g.ambito}','${esc(g.entidad||'')}','${esc(g.clave)}')`
+      :`verHistorialParam('${g.ambito}','${esc(g.entidad||'')}','${esc(g.clave)}')`;
+    let accionLabel=g.familia==='tasas'?'Ver vigencias':'Ver serie';
+    return `<div class="card" style="padding:14px 16px;margin-bottom:0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><h3 style="margin:0;font-size:13.5px">${esc(label)}</h3><div class="role" style="margin-top:2px">${g.familia==='tasas'?valorMostrado:valorMostrado}</div></div>
+        ${pendientes>0?`<span class="pill p-amber" title="Registros en Borrador o Revisado, pendientes de publicar">${pendientes} pendiente${pendientes===1?'':'s'}</span>`:''}
+      </div>
+      <button class="btn" style="margin-top:10px" onclick="${accion}">${accionLabel}</button>
+    </div>`;
+  }
+  let federal=gruposArr.filter(g=>g.ambito==='federal');
+  let estatalPorEntidad=new Map();
+  gruposArr.filter(g=>g.ambito==='estatal').forEach(g=>{
+    let ent=g.entidad||'Sin entidad especificada';
+    if(!estatalPorEntidad.has(ent))estatalPorEntidad.set(ent,[]);
+    estatalPorEntidad.get(ent).push(g);
+  });
+  let fedIndices=federal.filter(g=>g.familia==='serie_anual'||g.clave==='uma_diaria');
+  let fedAccesorios=federal.filter(g=>g.clave==='recargos_mensual');
+  let fedIndicesSeries=federal.filter(g=>g.familia==='serie_mensual'&&g.clave!=='recargos_mensual');
+  let fedTasas=federal.filter(g=>g.familia==='tasas');
+  el.innerHTML=`
+    <div style="margin-bottom:22px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px">Federal — Índices y Unidades</h3>
+      <div class="grid cols2">${[...fedIndices,...fedIndicesSeries].map(tarjetaConcepto).join('')||'<div class="role">Sin registros</div>'}</div>
+    </div>
+    <div style="margin-bottom:22px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px">Federal — Accesorios</h3>
+      <div class="grid cols2">${fedAccesorios.map(tarjetaConcepto).join('')||'<div class="role">Sin registros</div>'}</div>
+    </div>
+    <div style="margin-bottom:22px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px">Federal — Tasas y Parámetros Fiscales</h3>
+      <div class="grid cols2">${fedTasas.map(tarjetaConcepto).join('')||'<div class="role">Sin registros</div>'}</div>
+    </div>
+    ${[...estatalPorEntidad.keys()].map(ent=>`
+    <div style="margin-bottom:22px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px">Estatal — ${esc(ent)}</h3>
+      <div class="grid cols2">${estatalPorEntidad.get(ent).map(tarjetaConcepto).join('')}</div>
+    </div>`).join('')}
+  `;
 }
 function openParamModal(claveForzada){
   if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return}
@@ -4004,9 +4067,64 @@ function avanzarEstatusParam(id,nuevoEstatus){
   if(nuevoEstatus==='publicado'){p.publicadoPor=currentStaff?currentStaff.id:null;p.publicadoEn=new Date().toISOString()}
   save();
 }
+function accionesEstatusParamHtml(p){
+  if(!isAdmin)return '';
+  if(p.estatus==='borrador')return `<button class="btn" onclick="avanzarEstatusParam(${p.id},'revisado');${window.__fiscalParamsDetailRefresh||''}">Marcar Revisado</button>`;
+  if(p.estatus==='revisado')return `<button class="btn primary" onclick="avanzarEstatusParam(${p.id},'publicado');${window.__fiscalParamsDetailRefresh||''}">Publicar</button>`;
+  return '';
+}
 function verHistorialParam(ambito,entidad,clave){
   let hist=getHistorialParametro(ambito,entidad||null,clave);
-  modal(`Historial — ${esc(clave)}`,`<div class="table-wrap"><table class="table"><thead><tr><th>Vigencia</th><th>Valor</th><th>Estatus</th><th>Fuente</th></tr></thead><tbody>${hist.map(p=>`<tr><td>${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}</td><td style="font-size:11.5px">${esc(JSON.stringify(p.valor))}</td><td><span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Sin historial</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+  window.__fiscalParamsDetailRefresh=`verHistorialParam('${ambito}','${esc(entidad||'')}','${esc(clave)}')`;
+  modal(`${esc(labelAmigableParametro(clave))} — Vigencias`,`<div class="table-wrap"><table class="table"><thead><tr><th>Vigencia</th><th>Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${hist.map(p=>`<tr><td>${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}</td><td style="font-size:12.5px">${formatearValorParametro(clave,p.valor)}</td><td><span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(p)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Sin historial</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+// --- Series mensuales (INPC, Recargos, o cualquier futura con el mismo patrón): agrupadas por ejercicio en la vista principal ---
+function verSerieMensualConcepto(ambito,entidad,clave){
+  let todos=(db.parametrosFiscales||[]).filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave);
+  let porEjercicio=new Map();
+  todos.forEach(p=>{
+    let ej=(p.valor&&p.valor.periodo)?p.valor.periodo.slice(0,4):(p.vigenciaDesde||'').slice(0,4);
+    if(!ej)return;
+    if(!porEjercicio.has(ej))porEjercicio.set(ej,[]);
+    porEjercicio.get(ej).push(p);
+  });
+  let ejercicios=[...porEjercicio.keys()].sort((a,b)=>b.localeCompare(a));
+  modal(`${esc(labelAmigableParametro(clave))} — por ejercicio`,`<div class="grid cols2">${ejercicios.map(ej=>{
+    let capturados=porEjercicio.get(ej).length;
+    let pendientes=porEjercicio.get(ej).filter(p=>p.estatus!=='publicado').length;
+    return `<div class="card" style="padding:12px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><h3 style="margin:0;font-size:13.5px">${ej}</h3><div class="role">${capturados} de 12 meses capturados</div></div>
+        ${pendientes>0?`<span class="pill p-amber">${pendientes} pendiente${pendientes===1?'':'s'}</span>`:''}
+      </div>
+      <button class="btn" style="margin-top:8px" onclick="verSerieMensualEjercicio('${ambito}','${esc(entidad)}','${esc(clave)}','${ej}')">Ver serie</button>
+    </div>`;
+  }).join('')||'<div class="role">Sin registros todavía</div>'}</div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+function verSerieMensualEjercicio(ambito,entidad,clave,ejercicio){
+  let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
+  let esTasa=cat&&cat.tipoSimple==='periodo_tasa';
+  let registros=(db.parametrosFiscales||[]).filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave&&p.valor&&p.valor.periodo&&p.valor.periodo.startsWith(ejercicio));
+  window.__fiscalParamsDetailRefresh=`verSerieMensualEjercicio('${ambito}','${esc(entidad)}','${esc(clave)}','${ejercicio}')`;
+  let filas=MESES_NOMBRE.map((nombreMes,i)=>{
+    let periodo=`${ejercicio}-${String(i+1).padStart(2,'0')}`;
+    let delMes=registros.filter(p=>p.valor.periodo===periodo).sort((a,b)=>b.id-a.id);
+    let actual=delMes[0];
+    if(!actual)return `<tr><td>${nombreMes}</td><td colspan="3" class="role">Sin capturar</td></tr>`;
+    let val=esTasa?actual.valor.tasa+'%':actual.valor.valor;
+    return `<tr><td>${nombreMes}</td><td style="text-align:right"><b>${val}</b></td><td><span class="pill ${actual.estatus==='publicado'?'p-green':(actual.estatus==='revisado'?'p-blue':'p-gray')}">${actual.estatus}</span></td><td>${esc(actual.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(actual)}</td></tr>`;
+  }).join('');
+  modal(`${esc(labelAmigableParametro(clave))} — ${ejercicio}`,`<div class="table-wrap"><table class="table"><thead><tr><th>Mes</th><th style="text-align:right">Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="verSerieMensualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')">← Volver a ejercicios</button><button class="btn" onclick="closeModal()">Cerrar</button>`);
+}
+// --- Series anuales (UMA): agrupadas por el año de su vigencia desde ---
+function verSerieAnualConcepto(ambito,entidad,clave){
+  let todos=(db.parametrosFiscales||[]).filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave).sort((a,b)=>(b.vigenciaDesde||'').localeCompare(a.vigenciaDesde||''));
+  window.__fiscalParamsDetailRefresh=`verSerieAnualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')`;
+  modal(`${esc(labelAmigableParametro(clave))} — valores por ejercicio`,`<div class="table-wrap"><table class="table"><thead><tr><th>Ejercicio</th><th style="text-align:right">Valor</th><th>Vigencia</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${todos.map(p=>{
+    let ejercicio=(p.vigenciaDesde||'').slice(0,4);
+    let vig=`${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}`;
+    return `<tr><td>${ejercicio}</td><td style="text-align:right"><b>${formatearValorParametro(clave,p.valor)}</b></td><td>${vig}</td><td><span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span></td><td>${esc(p.fuente||'')}</td><td style="white-space:nowrap">${accionesEstatusParamHtml(p)}</td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="empty">Sin registros</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 
 // ===================== Controles Fiscales — UI (dentro del expediente del cliente) =====================
