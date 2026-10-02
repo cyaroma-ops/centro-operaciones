@@ -4254,7 +4254,12 @@ function accionesEstatusParamHtml(p){
 // --- Pill de estatus consciente de "Reemplazado": si OTRO registro del mismo grupo lo señala vía
 // reemplazaA, se muestra como Reemplazado sin importar qué estatus crudo haya quedado grabado ---
 function pillEstatusParametro(p,grupo){
-  let reemplazado=grupo.some(o=>o.reemplazaA===p.id);
+  // "Reemplazado" es SOLO para una corrección real del MISMO registro (⋯ → Corregir/Nueva versión),
+  // nunca para la sucesión normal de vigencias (ej. UMA 2025 sucede a UMA 2024 cuando termina su año).
+  // crearParametroFiscal enlaza reemplazaA en AMBOS casos (es la misma relación "antecesor
+  // cronológico"), así que la distinción real es la fecha de inicio: una corrección repite o adelanta
+  // la vigencia desde del registro que corrige; una sucesión natural siempre empieza DESPUÉS.
+  let reemplazado=grupo.some(o=>o.reemplazaA===p.id&&o.vigenciaDesde<=p.vigenciaDesde);
   if(reemplazado)return '<span class="pill p-gray">Reemplazado</span>';
   if(p.estatus==='anulado')return '<span class="pill p-gray">Anulado</span>';
   return `<span class="pill ${p.estatus==='publicado'?'p-green':(p.estatus==='revisado'?'p-blue':'p-gray')}">${p.estatus}</span>`;
