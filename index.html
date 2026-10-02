@@ -2789,10 +2789,10 @@ function filaCedulaPdf(label,obj){
   let fmt=v=>v==null?'—':(obj.tipo==='referencia'?(esCoeficiente?v:v+'%'):fmtMoneyMX(v));
   return [label,...obj.valores.map(fmt),obj.cierre==null?'—':fmt(obj.cierre)];
 }
-function imprimirCedulaISRPM(clientId,ejercicio){
+function construirConfigCedulaISRPM(clientId,ejercicio){
   let c=getCedulaAnualISRPM(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — ISR Pago Provisional',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Cierre/Ref.'],
     filas:[
@@ -2814,12 +2814,16 @@ function imprimirCedulaISRPM(clientId,ejercicio){
     ],
     notaPie:'Σ = suma · Últ. = último valor del periodo (no se suma) · Ref. = constante. Ver leyenda completa en pantalla.',
     nombreArchivo:`Cedula_ISR_PM_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaIVA(clientId,ejercicio){
+function imprimirCedulaISRPM(clientId,ejercicio){
+  let config=construirConfigCedulaISRPM(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaIVA(clientId,ejercicio){
   let c=getCedulaAnualIVA(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — IVA Mensual',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2831,12 +2835,16 @@ function imprimirCedulaIVA(clientId,ejercicio){
     ],
     notaPie:`Saldo a favor disponible HOY (del Control, no de esta suma): ${fmtMoneyMX(c.saldoDisponibleHoy.cierre)}`,
     nombreArchivo:`Cedula_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaRetencionesISR(clientId,ejercicio){
+function imprimirCedulaIVA(clientId,ejercicio){
+  let config=construirConfigCedulaIVA(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaRetencionesISR(clientId,ejercicio){
   let c=getCedulaAnualRetencionesISR(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Retenciones ISR',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2847,12 +2855,16 @@ function imprimirCedulaRetencionesISR(clientId,ejercicio){
       filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
     ],
     nombreArchivo:`Cedula_Retenciones_ISR_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaRetencionesIVA(clientId,ejercicio){
+function imprimirCedulaRetencionesISR(clientId,ejercicio){
+  let config=construirConfigCedulaRetencionesISR(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaRetencionesIVA(clientId,ejercicio){
   let c=getCedulaAnualRetencionesIVA(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Retenciones IVA',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2862,12 +2874,16 @@ function imprimirCedulaRetencionesIVA(clientId,ejercicio){
       filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
     ],
     nombreArchivo:`Cedula_Retenciones_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaISN(clientId,ejercicio){
+function imprimirCedulaRetencionesIVA(clientId,ejercicio){
+  let config=construirConfigCedulaRetencionesIVA(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaISN(clientId,ejercicio){
   let c=getCedulaAnualISN(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — ISN',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2876,12 +2892,16 @@ function imprimirCedulaISN(clientId,ejercicio){
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
     nombreArchivo:`Cedula_ISN_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaExtraccion(clientId,ejercicio){
+function imprimirCedulaISN(clientId,ejercicio){
+  let config=construirConfigCedulaISN(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaExtraccion(clientId,ejercicio){
   let c=getCedulaAnualExtraccion(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Extracción de Materiales',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Material',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2890,12 +2910,16 @@ function imprimirCedulaExtraccion(clientId,ejercicio){
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
     nombreArchivo:`Cedula_Extraccion_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaHospedaje(clientId,ejercicio){
+function imprimirCedulaExtraccion(clientId,ejercicio){
+  let config=construirConfigCedulaExtraccion(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaHospedaje(clientId,ejercicio){
   let c=getCedulaAnualHospedaje(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Impuesto al Hospedaje',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2904,12 +2928,16 @@ function imprimirCedulaHospedaje(clientId,ejercicio){
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
     nombreArchivo:`Cedula_Hospedaje_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaHospedajeAnfitrion(clientId,ejercicio){
+function imprimirCedulaHospedaje(clientId,ejercicio){
+  let config=construirConfigCedulaHospedaje(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaHospedajeAnfitrion(clientId,ejercicio){
   let c=getCedulaAnualHospedajeAnfitrion(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Hospedaje Anfitrión',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2919,12 +2947,16 @@ function imprimirCedulaHospedajeAnfitrion(clientId,ejercicio){
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
     nombreArchivo:`Cedula_Hospedaje_Anfitrion_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
 }
-function imprimirCedulaBebidas(clientId,ejercicio){
+function imprimirCedulaHospedajeAnfitrion(clientId,ejercicio){
+  let config=construirConfigCedulaHospedajeAnfitrion(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
+}
+function construirConfigCedulaBebidas(clientId,ejercicio){
   let c=getCedulaAnualBebidas(clientId,ejercicio);
   let cl=client(clientId);
-  generarPdfCedulaFiscal({
+  return {
     titulo:'Cédula Anual — Bebidas con Contenido Alcohólico',cliente:clientDisplay(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:[
@@ -2933,7 +2965,11 @@ function imprimirCedulaBebidas(clientId,ejercicio){
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
     nombreArchivo:`Cedula_Bebidas_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
-  });
+  };
+}
+function imprimirCedulaBebidas(clientId,ejercicio){
+  let config=construirConfigCedulaBebidas(clientId,ejercicio);
+  if(config)generarPdfCedulaFiscal(config);
 }
 
 // --- Helpers compartidos por los 3 papeles simples (base × tasa = resultado) ---
@@ -3430,168 +3466,365 @@ async function exportVacationsPDF(){
 // en el resto de la app — no se duplica el motor). Siempre lee de la
 // determinación YA PERSISTIDA; nunca recalcula al imprimir.
 // ===================================================================
-async function generarPdfPapelFiscal(config){
-  try{
-    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
-    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',typeof window.jspdf!=='undefined'&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable!=='undefined');
-    const {jsPDF}=window.jspdf;
-    let doc=new jsPDF();
-    const NAVY=[7,59,118];
-    const pageW=doc.internal.pageSize.getWidth();
-    const pageH=doc.internal.pageSize.getHeight();
-    let logo=getLogoDataUrl();
-
-    function drawHeader(){
-      doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);
-      doc.rect(0,0,pageW,26,'F');
-      if(logo){try{doc.addImage(logo,'PNG',12,5,30,15)}catch(e){}}
-      doc.setTextColor(255,255,255);
-      doc.setFontSize(13);doc.setFont(undefined,'bold');
-      doc.text(config.titulo,pageW-12,12,{align:'right'});
-      doc.setFontSize(8.5);doc.setFont(undefined,'normal');
-      doc.text(config.subtitulo||'',pageW-12,18,{align:'right'});
-      doc.setTextColor(0,0,0);
-    }
-    function drawFooter(){
-      let n=doc.internal.getNumberOfPages();
-      for(let i=1;i<=n;i++){
-        doc.setPage(i);
-        doc.setFontSize(8);doc.setTextColor(150);doc.setFont(undefined,'normal');
-        doc.text('Roma & Associates — Documento confidencial — Generado automáticamente, consulta la determinación guardada en el sistema',12,pageH-8);
-        doc.text(`Página ${i} de ${n}`,pageW-12,pageH-8,{align:'right'});
-      }
-      doc.setTextColor(0);
-    }
-
-    drawHeader();
-    let y=34;
-
-    // Encabezado de identificación (cliente, RFC, régimen, ejercicio/periodo, obligación, estado)
+async function cargarLibreriasPdf(){
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
+  await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',typeof window.jspdf!=='undefined'&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable!=='undefined');
+}
+// --- Dibuja el contenido de UN papel mensual sobre un doc YA ABIERTO en la página actual (portrait).
+// No crea el doc, no guarda, no dibuja pie de página (eso lo hace quien orqueste el documento final,
+// una sola vez al terminar, para que "Página X de Y" sea siempre correcto). Usado tanto por el PDF
+// individual como por el Expediente consolidado — MISMOS datos, MISMA función, nunca se recalcula. ---
+function dibujarPapelFiscalEnDoc(doc,config){
+  const NAVY=[7,59,118];
+  let logo=getLogoDataUrl();
+  function pageW(){return doc.internal.pageSize.getWidth()}
+  function drawHeader(){
+    let w=pageW();
+    doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);
+    doc.rect(0,0,w,26,'F');
+    if(logo){try{doc.addImage(logo,'PNG',12,5,30,15)}catch(e){}}
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(13);doc.setFont(undefined,'bold');
+    doc.text(config.titulo,w-12,12,{align:'right'});
+    doc.setFontSize(8.5);doc.setFont(undefined,'normal');
+    doc.text(config.subtitulo||'',w-12,18,{align:'right'});
+    doc.setTextColor(0,0,0);
+  }
+  drawHeader();
+  let y=34;
+  doc.autoTable({
+    startY:y,
+    body:[
+      ['Cliente',config.cliente||'—','RFC',config.rfc||'—'],
+      ['Régimen',config.regimen||'—','Ejercicio / Periodo',config.subtitulo||'—'],
+      ['Estatus',config.estatus||'borrador','Elaboró',config.elaboroNombre||'—'],
+      ['Revisó',config.revisoNombre||'— (sin revisar)','Fecha de elaboración',config.fechaCreacion||'—']
+    ],
+    theme:'plain',
+    styles:{fontSize:9,cellPadding:2},
+    columnStyles:{0:{fontStyle:'bold',textColor:NAVY},2:{fontStyle:'bold',textColor:NAVY}},
+    margin:{left:12,right:12},
+    didDrawPage:drawHeader
+  });
+  y=doc.lastAutoTable.finalY+8;
+  (config.secciones||[]).forEach(seccion=>{
+    if(y>250){doc.addPage('a4','portrait');drawHeader();y=34}
+    doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(0);
+    doc.text(seccion.titulo,12,y);y+=3;
     doc.autoTable({
       startY:y,
-      body:[
-        ['Cliente',config.cliente||'—','RFC',config.rfc||'—'],
-        ['Régimen',config.regimen||'—','Ejercicio / Periodo',config.subtitulo||'—'],
-        ['Estatus',config.estatus||'borrador','Elaboró',config.elaboroNombre||'—'],
-        ['Revisó',config.revisoNombre||'— (sin revisar)','Fecha de elaboración',config.fechaCreacion||'—']
-      ],
-      theme:'plain',
-      styles:{fontSize:9,cellPadding:2},
-      columnStyles:{0:{fontStyle:'bold',textColor:NAVY},2:{fontStyle:'bold',textColor:NAVY}},
+      body:seccion.filas,
+      theme:'grid',
+      styles:{fontSize:9,cellPadding:2.5},
+      columnStyles:{0:{cellWidth:110},1:{halign:'right',fontStyle:seccion.negritas?'bold':'normal'}},
       margin:{left:12,right:12},
-      didDrawPage:drawHeader
+      didDrawPage:drawHeader,
+      didParseCell:function(data){
+        if(seccion.negritaUltima&&data.row.index===seccion.filas.length-1){
+          data.cell.styles.fontStyle='bold';
+          data.cell.styles.fillColor=[251,248,240];
+        }
+      }
     });
     y=doc.lastAutoTable.finalY+8;
-
-    (config.secciones||[]).forEach(seccion=>{
-      if(y>250){doc.addPage();drawHeader();y=34}
-      doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(0);
-      doc.text(seccion.titulo,12,y);y+=3;
-      doc.autoTable({
-        startY:y,
-        body:seccion.filas,
-        theme:'grid',
-        styles:{fontSize:9,cellPadding:2.5},
-        columnStyles:{0:{cellWidth:110},1:{halign:'right',fontStyle:seccion.negritas?'bold':'normal'}},
-        margin:{left:12,right:12},
-        didDrawPage:drawHeader,
-        didParseCell:function(data){
-          if(seccion.negritaUltima&&data.row.index===seccion.filas.length-1){
-            data.cell.styles.fontStyle='bold';
-            data.cell.styles.fillColor=[251,248,240];
-          }
-        }
-      });
-      y=doc.lastAutoTable.finalY+8;
-    });
-
-    if(config.observaciones){
-      if(y>255){doc.addPage();drawHeader();y=34}
-      doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Observaciones',12,y);y+=5;
-      doc.setFontSize(9);doc.setFont(undefined,'normal');
-      let lineas=doc.splitTextToSize(config.observaciones,pageW-24);
-      doc.text(lineas,12,y);y+=lineas.length*4+6;
-    }
-
-    drawFooter();
+  });
+  if(config.observaciones){
+    if(y>255){doc.addPage('a4','portrait');drawHeader();y=34}
+    doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text('Observaciones',12,y);y+=5;
+    doc.setFontSize(9);doc.setFont(undefined,'normal');
+    let lineas=doc.splitTextToSize(config.observaciones,pageW()-24);
+    doc.text(lineas,12,y);y+=lineas.length*4+6;
+  }
+}
+function dibujarPiePaginaGenerico(doc,textoIzquierda){
+  let n=doc.internal.getNumberOfPages();
+  for(let i=1;i<=n;i++){
+    doc.setPage(i);
+    let w=doc.internal.pageSize.getWidth(),h=doc.internal.pageSize.getHeight();
+    doc.setFontSize(8);doc.setTextColor(150);doc.setFont(undefined,'normal');
+    doc.text(textoIzquierda,12,h-8);
+    doc.text(`Página ${i} de ${n}`,w-12,h-8,{align:'right'});
+  }
+  doc.setTextColor(0);
+}
+async function generarPdfPapelFiscal(config){
+  try{
+    await cargarLibreriasPdf();
+    const {jsPDF}=window.jspdf;
+    let doc=new jsPDF();
+    dibujarPapelFiscalEnDoc(doc,config);
+    dibujarPiePaginaGenerico(doc,'Roma & Associates — Documento confidencial — Generado automáticamente, consulta la determinación guardada en el sistema');
     doc.save(config.nombreArchivo||'papel_fiscal.pdf');
   }catch(e){console.error(e);alert('No se pudo generar el PDF. Revisa tu conexión a internet e intenta de nuevo.')}
 }
 
 // --- Generador genérico de PDF para cédulas ENE-DIC (tabla ancha, meses como columnas) ---
+// --- Dibuja el contenido de UNA cédula anual sobre un doc YA ABIERTO en la página actual (landscape).
+// Misma lógica que generarPdfCedulaFiscal, extraída para reutilizarse tal cual en el Expediente. ---
+function dibujarCedulaFiscalEnDoc(doc,config){
+  const NAVY=[7,59,118];
+  let logo=getLogoDataUrl();
+  function pageW(){return doc.internal.pageSize.getWidth()}
+  function drawHeader(){
+    let w=pageW();
+    doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);
+    doc.rect(0,0,w,22,'F');
+    if(logo){try{doc.addImage(logo,'PNG',10,4,26,13)}catch(e){}}
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(12);doc.setFont(undefined,'bold');
+    doc.text(config.titulo,w-10,10,{align:'right'});
+    doc.setFontSize(8);doc.setFont(undefined,'normal');
+    doc.text(`${config.cliente||''} · ${config.rfc||''} · Ejercicio ${config.ejercicio||''}`,w-10,16,{align:'right'});
+    doc.setTextColor(0,0,0);
+  }
+  drawHeader();
+  let numCols=config.encabezados.length-1;
+  let colStylesNum={};
+  for(let i=1;i<=numCols;i++)colStylesNum[i]={cellWidth:18.65,halign:'right'};
+  doc.autoTable({
+    startY:28,
+    head:[config.encabezados],
+    body:config.filas,
+    theme:'grid',
+    styles:{fontSize:6.8,cellPadding:{top:1.6,bottom:1.6,left:1,right:1},overflow:'hidden'},
+    headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',fontSize:7,halign:'center'},
+    columnStyles:Object.assign({0:{cellWidth:38,fontStyle:'bold',fontSize:7,halign:'left',overflow:'linebreak'}},colStylesNum),
+    margin:{left:8,right:8},
+    didDrawPage:drawHeader,
+    didParseCell:function(data){
+      if(data.section==='head'&&data.column.index===config.encabezados.length-1){data.cell.styles.fillColor=[201,169,97]}
+      if(data.section==='body'&&data.column.index===config.encabezados.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[251,248,240]}
+    }
+  });
+  if(config.notaPie){
+    let y=doc.lastAutoTable.finalY+6;
+    doc.setFontSize(8);doc.setTextColor(100);doc.text(config.notaPie,10,y);
+  }
+}
 async function generarPdfCedulaFiscal(config){
   try{
-    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
-    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',typeof window.jspdf!=='undefined'&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable!=='undefined');
+    await cargarLibreriasPdf();
     const {jsPDF}=window.jspdf;
     let doc=new jsPDF({orientation:'landscape'});
-    const NAVY=[7,59,118];
-    const pageW=doc.internal.pageSize.getWidth();
-    const pageH=doc.internal.pageSize.getHeight();
-    let logo=getLogoDataUrl();
-
-    function drawHeader(){
-      doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);
-      doc.rect(0,0,pageW,22,'F');
-      if(logo){try{doc.addImage(logo,'PNG',10,4,26,13)}catch(e){}}
-      doc.setTextColor(255,255,255);
-      doc.setFontSize(12);doc.setFont(undefined,'bold');
-      doc.text(config.titulo,pageW-10,10,{align:'right'});
-      doc.setFontSize(8);doc.setFont(undefined,'normal');
-      doc.text(`${config.cliente||''} · ${config.rfc||''} · Ejercicio ${config.ejercicio||''}`,pageW-10,16,{align:'right'});
-      doc.setTextColor(0,0,0);
-    }
-    function drawFooter(){
-      let n=doc.internal.getNumberOfPages();
-      for(let i=1;i<=n;i++){
-        doc.setPage(i);
-        doc.setFontSize(7.5);doc.setTextColor(150);doc.setFont(undefined,'normal');
-        doc.text('Roma & Associates — Documento confidencial — Concentrado de los papeles mensuales, no es la declaración anual',10,pageH-6);
-        doc.text(`Página ${i} de ${n}`,pageW-10,pageH-6,{align:'right'});
-      }
-      doc.setTextColor(0);
-    }
-
-    drawHeader();
-    // Anchos verificados con medición real de jsPDF (getTextWidth): a 6.8pt, un importe de hasta
-    // $99,999,999.99 mide ~16.5mm — con 1mm de padding por lado caben en 18.65mm sin partirse.
-    // Nunca se quitan columnas ni decimales; se ajusta tipografía/ancho para que todo quepa.
-    let numCols=config.encabezados.length-1;
-    let colStylesNum={};
-    for(let i=1;i<=numCols;i++)colStylesNum[i]={cellWidth:18.65,halign:'right'};
-    doc.autoTable({
-      startY:28,
-      head:[config.encabezados],
-      body:config.filas,
-      theme:'grid',
-      styles:{fontSize:6.8,cellPadding:{top:1.6,bottom:1.6,left:1,right:1},overflow:'hidden'},
-      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',fontSize:7,halign:'center'},
-      columnStyles:Object.assign({0:{cellWidth:38,fontStyle:'bold',fontSize:7,halign:'left',overflow:'linebreak'}},colStylesNum),
-      margin:{left:8,right:8},
-      didDrawPage:drawHeader,
-      didParseCell:function(data){
-        if(data.section==='head'&&data.column.index===config.encabezados.length-1){data.cell.styles.fillColor=[201,169,97]}
-        if(data.section==='body'&&data.column.index===config.encabezados.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[251,248,240]}
-      }
-    });
-    if(config.notaPie){
-      let y=doc.lastAutoTable.finalY+6;
-      doc.setFontSize(8);doc.setTextColor(100);doc.text(config.notaPie,10,y);
-    }
-    drawFooter();
+    dibujarCedulaFiscalEnDoc(doc,config);
+    dibujarPiePaginaGenerico(doc,'Roma & Associates — Documento confidencial — Concentrado de los papeles mensuales, no es la declaración anual');
     doc.save(config.nombreArchivo||'cedula_fiscal.pdf');
   }catch(e){console.error(e);alert('No se pudo generar el PDF. Revisa tu conexión a internet e intenta de nuevo.')}
 }
 
+// ===================== EXPEDIENTE FISCAL PDF CONSOLIDADO =====================
+// Regla: UNA DETERMINACIÓN → UN REGISTRO → VARIAS REPRESENTACIONES. Este expediente NO recalcula
+// nada — cada sección reutiliza EXACTAMENTE la misma construirConfigXxx/dibujarXxxEnDoc que ya usa
+// el botón PDF individual y la pantalla. Un mismo doc jsPDF recibe todas las secciones con
+// doc.addPage(formato,orientación) explícito por sección (mixto: portrait para portada/resumen/papeles,
+// landscape para cédulas Ene-Dic). El pie de página (num. de página / total) se dibuja una sola vez al
+// final, sobre el documento completo, para que "Página X de Y" sea siempre exacto.
+const ESTATAL_CONSTRUCTORES_PAPEL={
+  isn:construirConfigPapelISN,extraccion:construirConfigPapelExtraccion,hospedaje:construirConfigPapelHospedaje,
+  hospedaje_anfitrion:construirConfigPapelHospedajeAnfitrion,bebidas:construirConfigPapelBebidas
+};
+const ESTATAL_CONSTRUCTORES_CEDULA={
+  isn:construirConfigCedulaISN,extraccion:construirConfigCedulaExtraccion,hospedaje:construirConfigCedulaHospedaje,
+  hospedaje_anfitrion:construirConfigCedulaHospedajeAnfitrion,bebidas:construirConfigCedulaBebidas
+};
+function dibujarPortadaExpediente(doc,{titulo,cliente,rfc,regimen,subtitulo,estatusResumen}){
+  const NAVY=[7,59,118];
+  let w=doc.internal.pageSize.getWidth(),h=doc.internal.pageSize.getHeight();
+  let logo=getLogoDataUrl();
+  doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);doc.rect(0,0,w,h,'F');
+  if(logo){try{doc.addImage(logo,'PNG',w/2-20,40,40,20)}catch(e){}}
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(22);doc.setFont(undefined,'bold');
+  doc.text(titulo,w/2,90,{align:'center'});
+  doc.setFontSize(13);doc.setFont(undefined,'normal');
+  doc.text(subtitulo,w/2,100,{align:'center'});
+  doc.setFontSize(10.5);
+  let y=130;
+  const linea=(label,valor)=>{doc.setFont(undefined,'bold');doc.text(label,w/2-45,y);doc.setFont(undefined,'normal');doc.text(valor||'—',w/2+45,y,{align:'right'});y+=8};
+  linea('Cliente',cliente);
+  linea('RFC',rfc);
+  if(regimen)linea('Régimen',regimen);
+  linea('Fecha de generación',fmtDate(toISODate(new Date())));
+  if(estatusResumen)linea('Determinaciones incluidas',estatusResumen);
+  doc.setFontSize(8);doc.setTextColor(200);
+  doc.text('Roma & Associates — Documento confidencial — Generado automáticamente a partir de determinaciones guardadas en el sistema',w/2,h-15,{align:'center'});
+  doc.setTextColor(0);
+}
+function dibujarTablaResumenEnDoc(doc,titulo,filas,ejercicio,periodoLabel){
+  const NAVY=[7,59,118];
+  doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(0);
+  doc.text(titulo,14,20);
+  let total=filas.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  doc.autoTable({
+    startY:26,
+    body:[
+      ...filas.map(f=>[f.nombre+(f.papel?` (${estadoLabel(f.papel.estatus)})`:' (sin capturar)'),f.monto!=null?fmtMoneyMX(f.monto):'—']),
+      [{content:'TOTAL '+titulo.replace('RESUMEN ',''),styles:{fontStyle:'bold'}},{content:fmtMoneyMX(total),styles:{fontStyle:'bold'}}]
+    ],
+    theme:'grid',
+    styles:{fontSize:9.5,cellPadding:3},
+    columnStyles:{0:{cellWidth:130},1:{halign:'right'}},
+    margin:{left:14,right:14},
+    headStyles:{fillColor:NAVY}
+  });
+  return doc.lastAutoTable.finalY;
+}
+function dibujarResumenExpedienteMensual(doc,clientId,ejercicio,periodo){
+  const NAVY=[7,59,118];
+  doc.setFontSize(15);doc.setFont(undefined,'bold');
+  doc.text(`Resumen Fiscal del Periodo — ${MESES_NOMBRE[periodo-1]} ${ejercicio}`,14,15);
+  let resumenFederal=calcularResumenFederal(clientId,ejercicio,periodo);
+  let y=dibujarTablaResumenEnDoc(doc,'RESUMEN FEDERAL',resumenFederal,ejercicio,periodo);
+  let resumenEstatal=calcularResumenEstatal(clientId,ejercicio,periodo);
+  if(resumenEstatal.length){
+    doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('RESUMEN ESTATAL',14,y+14);
+    doc.autoTable({
+      startY:y+20,
+      body:[
+        ...resumenEstatal.map(f=>[f.nombre+(f.papel?` (${estadoLabel(f.papel.estatus)})`:' (sin capturar)'),f.monto!=null?fmtMoneyMX(f.monto):'—']),
+        [{content:'TOTAL ESTATAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(resumenEstatal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0)),styles:{fontStyle:'bold'}}]
+      ],
+      theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:130},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}
+    });
+    y=doc.lastAutoTable.finalY;
+  }
+  let carga=calcularCargaFiscalPeriodo(clientId,ejercicio,periodo);
+  doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('CARGA FISCAL DEL PERIODO',14,y+14);
+  doc.autoTable({
+    startY:y+20,
+    body:[
+      ['Federal',fmtMoneyMX(carga.totalFederal)],
+      ['Estatal',fmtMoneyMX(carga.totalEstatal)],
+      [{content:'TOTAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(carga.total),styles:{fontStyle:'bold'}}]
+    ],
+    theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:130},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}
+  });
+}
+async function generarExpedienteMensual(clientId,ejercicio,periodo){
+  try{
+    await cargarLibreriasPdf();
+    const {jsPDF}=window.jspdf;
+    let c=client(clientId);
+    let doc=new jsPDF();
+
+    dibujarPortadaExpediente(doc,{
+      titulo:'Expediente Fiscal Mensual',cliente:clientDisplay(clientId),rfc:c.rfc,
+      regimen:(c.regimenes||[]).join(', '),subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`
+    });
+
+    doc.addPage('a4','portrait');
+    dibujarResumenExpedienteMensual(doc,clientId,ejercicio,periodo);
+
+    let configsFederal=[
+      construirConfigPapelISRPM(clientId,ejercicio,periodo),
+      construirConfigPapelIVA(clientId,ejercicio,periodo),
+      construirConfigPapelRetencionesISR(clientId,ejercicio,periodo),
+      construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo)
+    ];
+    configsFederal.forEach(cfg=>{if(cfg){doc.addPage('a4','portrait');dibujarPapelFiscalEnDoc(doc,cfg)}});
+
+    let aplicables=getEstatalesAplicables(clientId);
+    aplicables.forEach(def=>{
+      let construir=ESTATAL_CONSTRUCTORES_PAPEL[def.tipo];if(!construir)return;
+      let cfg=construir(clientId,ejercicio,periodo);
+      if(cfg){doc.addPage('a4','portrait');dibujarPapelFiscalEnDoc(doc,cfg)}
+    });
+
+    dibujarPiePaginaGenerico(doc,`Roma & Associates — Expediente Fiscal Mensual — ${clientDisplay(clientId)} — Documento confidencial`);
+    doc.save(`Expediente_Mensual_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`);
+  }catch(e){console.error(e);alert('No se pudo generar el expediente. Revisa tu conexión a internet e intenta de nuevo.')}
+}
+async function generarExpedienteAnual(clientId,ejercicio){
+  try{
+    await cargarLibreriasPdf();
+    const {jsPDF}=window.jspdf;
+    let c=client(clientId);
+    let doc=new jsPDF();
+
+    dibujarPortadaExpediente(doc,{
+      titulo:'Expediente Fiscal Anual',cliente:clientDisplay(clientId),rfc:c.rfc,
+      regimen:(c.regimenes||[]).join(', '),subtitulo:`Ejercicio ${ejercicio}`
+    });
+
+    // Resumen fiscal anual: suma de los MISMOS cierres ya calculados por cada cédula (nunca una
+    // segunda determinación) — un renglón por obligación, con su total anual (campo .cierre).
+    doc.addPage('a4','portrait');
+    const NAVY=[7,59,118];
+    doc.setFontSize(15);doc.setFont(undefined,'bold');
+    doc.text(`Resumen Fiscal Anual — Ejercicio ${ejercicio}`,14,15);
+    let cedulaIsr=getCedulaAnualISRPM(clientId,ejercicio);
+    let cedulaIva=getCedulaAnualIVA(clientId,ejercicio);
+    let cedulaRetIsr=getCedulaAnualRetencionesISR(clientId,ejercicio);
+    let cedulaRetIva=getCedulaAnualRetencionesIVA(clientId,ejercicio);
+    let filasAnual=[
+      ['ISR Personas Morales (resultado determinado, cierre del ejercicio)',fmtMoneyMX(cedulaIsr.resultadoDeterminado.cierre)],
+      ['IVA (suma del ejercicio, IVA final a pagar)',fmtMoneyMX(cedulaIva.ivaFinalAPagar.cierre)],
+      ['Retenciones ISR (suma del ejercicio)',fmtMoneyMX(cedulaRetIsr.totalRetenido.cierre)],
+      ['Retenciones IVA (suma del ejercicio)',fmtMoneyMX(cedulaRetIva.totalRetenido.cierre)]
+    ];
+    let aplicables=getEstatalesAplicables(clientId);
+    let cedulasEstatalesGetters={
+      isn:()=>getCedulaAnualISN(clientId,ejercicio),extraccion:()=>getCedulaAnualExtraccion(clientId,ejercicio),
+      hospedaje:()=>getCedulaAnualHospedaje(clientId,ejercicio),hospedaje_anfitrion:()=>getCedulaAnualHospedajeAnfitrion(clientId,ejercicio),
+      bebidas:()=>getCedulaAnualBebidas(clientId,ejercicio)
+    };
+    let campoCierreEstatal={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
+    aplicables.forEach(def=>{
+      let ced=cedulasEstatalesGetters[def.tipo]&&cedulasEstatalesGetters[def.tipo]();
+      if(ced)filasAnual.push([`${def.label} (suma del ejercicio)`,fmtMoneyMX(ced[campoCierreEstatal[def.tipo]].cierre)]);
+    });
+    doc.autoTable({startY:22,body:filasAnual,theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:140},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}});
+
+    // Cédulas anuales (landscape) — reutilizan exactamente construirConfigCedulaXxx + dibujarCedulaFiscalEnDoc
+    let cedulasFederal=[
+      construirConfigCedulaISRPM(clientId,ejercicio),construirConfigCedulaIVA(clientId,ejercicio),
+      construirConfigCedulaRetencionesISR(clientId,ejercicio),construirConfigCedulaRetencionesIVA(clientId,ejercicio)
+    ];
+    cedulasFederal.forEach(cfg=>{if(cfg){doc.addPage('a4','landscape');dibujarCedulaFiscalEnDoc(doc,cfg)}});
+    aplicables.forEach(def=>{
+      let construir=ESTATAL_CONSTRUCTORES_CEDULA[def.tipo];if(!construir)return;
+      let cfg=construir(clientId,ejercicio);
+      if(cfg){doc.addPage('a4','landscape');dibujarCedulaFiscalEnDoc(doc,cfg)}
+    });
+
+    // Controles fiscales relevantes del ejercicio — solo representación, nunca recálculo
+    doc.addPage('a4','portrait');
+    doc.setFontSize(15);doc.setFont(undefined,'bold');doc.setTextColor(0);
+    doc.text(`Controles Fiscales — Ejercicio ${ejercicio}`,14,15);
+    let fechaRefControles=`${ejercicio}-12-31`;
+    let coef=getCoeficienteVigente(clientId,fechaRefControles);
+    let perdida=getControlVigente(clientId,'isr_perdida_fiscal',null);
+    let ptu=getControlVigente(clientId,'isr_ptu',null);
+    let saldoIva=getControlVigente(clientId,'iva_saldo_favor',null);
+    let filasControles=[
+      ['Coeficiente de utilidad (vigente al cierre del ejercicio)',coef&&coef.datos&&coef.datos.coeficiente!=null?`${coef.datos.coeficiente} (origen ${coef.ejercicio})`:'Sin registrar'],
+      ['Pérdidas fiscales — saldo disponible',perdida?fmtMoneyMX(getSaldoControl(perdida.id)):'Sin registrar'],
+      ['PTU — saldo disponible',ptu?fmtMoneyMX(getSaldoControl(ptu.id)):'Sin registrar'],
+      ['Saldo a favor IVA — disponible',saldoIva?fmtMoneyMX(getSaldoControl(saldoIva.id)):'Sin registrar']
+    ];
+    doc.autoTable({startY:22,body:filasControles,theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:140},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}});
+
+    dibujarPiePaginaGenerico(doc,`Roma & Associates — Expediente Fiscal Anual — ${clientDisplay(clientId)} — Documento confidencial`);
+    doc.save(`Expediente_Anual_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`);
+  }catch(e){console.error(e);alert('No se pudo generar el expediente. Revisa tu conexión a internet e intenta de nuevo.')}
+}
+function abrirExpedientePdfUI(){
+  let {clientId,ejercicio,periodo}=__fiscalWorkspaceState;
+  modal('Expediente PDF',`<div class="hint" style="margin-bottom:12px">Se genera a partir de las determinaciones ya guardadas — no recalcula ni modifica ningún papel.</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn primary" onclick="closeModal();generarExpedienteMensual(${clientId},${ejercicio},${periodo})">📄 Expediente Mensual — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</button>
+      <button class="btn primary" onclick="closeModal();generarExpedienteAnual(${clientId},${ejercicio})">📄 Expediente Anual — Ejercicio ${ejercicio}</button>
+    </div>`,`<button class="btn" onclick="closeModal()">Cancelar</button>`);
+}
 function fmtPct(n){return n==null?'—':n+'%'}
 function estadoLabel(e){return e==='publicado'?'Publicado':(e==='revisado'?'Revisado':'Borrador')}
 
 // --- Imprimir / Exportar PDF — los 9 papeles mensuales. Todos leen el papel YA GUARDADO. ---
-function imprimirPapelISRPM(clientId,ejercicio,periodo){
+function construirConfigPapelISRPM(clientId,ejercicio,periodo){
   let p=getPapelISRPMVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'ISR Pago Provisional — Personas Morales',
     subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`,
     cliente:c.name,rfc:c.rfc,regimen:(c.regimenes||[]).join(', '),
@@ -3629,13 +3862,18 @@ function imprimirPapelISRPM(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`ISR_PM_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelIVA(clientId,ejercicio,periodo){
+function imprimirPapelISRPM(clientId,ejercicio,periodo){
+  let config=construirConfigPapelISRPM(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelIVA(clientId,ejercicio,periodo){
   let p=getPapelIVAVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'IVA Mensual',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`,
     cliente:c.name,rfc:c.rfc,regimen:(c.regimenes||[]).join(', '),
     estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
@@ -3675,13 +3913,18 @@ function imprimirPapelIVA(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`IVA_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelRetencionesISR(clientId,ejercicio,periodo){
+function imprimirPapelIVA(clientId,ejercicio,periodo){
+  let config=construirConfigPapelIVA(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelRetencionesISR(clientId,ejercicio,periodo){
   let p=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Retenciones ISR',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`,
     cliente:c.name,rfc:c.rfc,regimen:(c.regimenes||[]).join(', '),
     estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
@@ -3701,13 +3944,18 @@ function imprimirPapelRetencionesISR(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Retenciones_ISR_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelRetencionesIVA(clientId,ejercicio,periodo){
+function imprimirPapelRetencionesISR(clientId,ejercicio,periodo){
+  let config=construirConfigPapelRetencionesISR(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo){
   let p=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Retenciones IVA',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`,
     cliente:c.name,rfc:c.rfc,regimen:(c.regimenes||[]).join(', '),
     estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
@@ -3723,13 +3971,18 @@ function imprimirPapelRetencionesIVA(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Retenciones_IVA_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelISN(clientId,ejercicio,periodo){
+function imprimirPapelRetencionesIVA(clientId,ejercicio,periodo){
+  let config=construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelISN(clientId,ejercicio,periodo){
   let p=getPapelISNVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Impuesto Sobre Nóminas (ISN)',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${p.entidadFederativa}`,
     cliente:c.name,rfc:c.rfc,estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
     fechaCreacion:fmtDate((p.creadoEn||'').slice(0,10)),
@@ -3749,13 +4002,18 @@ function imprimirPapelISN(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`ISN_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelExtraccion(clientId,ejercicio,periodo){
+function imprimirPapelISN(clientId,ejercicio,periodo){
+  let config=construirConfigPapelISN(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelExtraccion(clientId,ejercicio,periodo){
   let p=getPapelExtraccionVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Extracción de Materiales del Suelo y Subsuelo',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${p.entidadFederativa}`,
     cliente:c.name,rfc:c.rfc,estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
     fechaCreacion:fmtDate((p.creadoEn||'').slice(0,10)),
@@ -3768,13 +4026,18 @@ function imprimirPapelExtraccion(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Extraccion_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelHospedaje(clientId,ejercicio,periodo){
+function imprimirPapelExtraccion(clientId,ejercicio,periodo){
+  let config=construirConfigPapelExtraccion(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelHospedaje(clientId,ejercicio,periodo){
   let p=getPapelHospedajeVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Impuesto al Hospedaje',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${p.entidadFederativa}`,
     cliente:c.name,rfc:c.rfc,estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
     fechaCreacion:fmtDate((p.creadoEn||'').slice(0,10)),
@@ -3786,13 +4049,18 @@ function imprimirPapelHospedaje(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Hospedaje_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
+function imprimirPapelHospedaje(clientId,ejercicio,periodo){
+  let config=construirConfigPapelHospedaje(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
   let p=getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Hospedaje Anfitrión',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${p.entidadFederativa}`,
     cliente:c.name,rfc:c.rfc,estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
     fechaCreacion:fmtDate((p.creadoEn||'').slice(0,10)),
@@ -3804,13 +4072,18 @@ function imprimirPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Hospedaje_Anfitrion_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
 }
-function imprimirPapelBebidas(clientId,ejercicio,periodo){
+function imprimirPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
+  let config=construirConfigPapelHospedajeAnfitrion(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
+}
+function construirConfigPapelBebidas(clientId,ejercicio,periodo){
   let p=getPapelBebidasVigente(clientId,ejercicio,periodo);
-  if(!p){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  if(!p)return null;
   let c=client(clientId);
-  generarPdfPapelFiscal({
+  return {
     titulo:'Retenciones — Bebidas con Contenido Alcohólico',subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${p.entidadFederativa}`,
     cliente:c.name,rfc:c.rfc,estatus:estadoLabel(p.estatus),elaboroNombre:person(p.elaboradoPor).name,revisoNombre:p.revisadoPor?person(p.revisadoPor).name:null,
     fechaCreacion:fmtDate((p.creadoEn||'').slice(0,10)),
@@ -3822,7 +4095,12 @@ function imprimirPapelBebidas(clientId,ejercicio,periodo){
     ],
     observaciones:p.observaciones,
     nombreArchivo:`Bebidas_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
-  });
+  };
+}
+function imprimirPapelBebidas(clientId,ejercicio,periodo){
+  let config=construirConfigPapelBebidas(clientId,ejercicio,periodo);
+  if(!config){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
+  generarPdfPapelFiscal(config);
 }
 
 function renderReports(){let states=['Sin iniciar','En proceso','En revisión','Concluida'];$('#reportStates').innerHTML=states.map(s=>`<div class="prow"><span>${s}</span><div class="progress"><span style="width:${db.obligations.length?db.obligations.filter(o=>o.state===s).length/db.obligations.length*100:0}%"></span></div><b>${db.obligations.filter(o=>o.state===s).length}</b></div>`).join('');
@@ -4481,6 +4759,7 @@ function renderFiscalWorkspace(){
       <div style="display:flex;gap:10px;align-items:flex-end">
         <div class="field" style="margin:0"><label>Ejercicio</label><input id="isrPmEjercicioSel" type="number" value="${ejercicio}" style="width:100px" onchange="actualizarPeriodoFiscalWorkspace()"></div>
         <div class="field" style="margin:0"><label>Periodo</label><select id="isrPmPeriodoSel" style="width:150px" onchange="actualizarPeriodoFiscalWorkspace()">${MESES_NOMBRE.map((m,i)=>`<option value="${i+1}" ${i+1===periodo?'selected':''}>${m}</option>`).join('')}</select></div>
+        <button class="btn" onclick="abrirExpedientePdfUI()" title="Genera un solo PDF consolidado a partir de las determinaciones ya guardadas">📑 Expediente PDF</button>
       </div>
     </div>
     <div class="tabs-fiscal" style="display:flex;gap:6px;margin:16px 0;border-bottom:1px solid var(--line)">
@@ -4528,17 +4807,16 @@ function resumenImpuestosHtml(titulo,filas,ejercicio,periodo){
 }
 // --- Carga fiscal del periodo: agrega los mismos totales federal + estatal, releyendo los papeles
 // persistidos de forma independiente (para que funcione desde cualquiera de las dos pestañas). ---
+// --- Cálculo puro de la Carga Fiscal del periodo — ÚNICA fuente para pantalla y Expediente PDF. ---
+function calcularCargaFiscalPeriodo(clientId,ejercicio,periodo){
+  let resumenFederal=calcularResumenFederal(clientId,ejercicio,periodo);
+  let totalFederal=resumenFederal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  let resumenEstatal=calcularResumenEstatal(clientId,ejercicio,periodo);
+  let totalEstatal=resumenEstatal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  return {totalFederal,totalEstatal,total:totalFederal+totalEstatal};
+}
 function cargaFiscalPeriodoHtml(clientId,ejercicio,periodo){
-  let pIsr=getPapelISRPMVigente(clientId,ejercicio,periodo);
-  let pIva=getPapelIVAVigente(clientId,ejercicio,periodo);
-  let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
-  let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
-  let totalFederal=[pIsr?pIsr.resultadoIsrCargo:null,pIva?pIva.ivaFinalAPagar:null,pRetIsr?pRetIsr.totalRetenido:null,pRetIva?pRetIva.totalRetenido:null].reduce((s,v)=>s+(v!=null?Number(v):0),0);
-  let aplicables=getEstatalesAplicables(clientId);
-  let getters={isn:()=>getPapelISNVigente(clientId,ejercicio,periodo),extraccion:()=>getPapelExtraccionVigente(clientId,ejercicio,periodo),hospedaje:()=>getPapelHospedajeVigente(clientId,ejercicio,periodo),hospedaje_anfitrion:()=>getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo),bebidas:()=>getPapelBebidasVigente(clientId,ejercicio,periodo)};
-  let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
-  let totalEstatal=aplicables.reduce((s,def)=>{let p=getters[def.tipo]();return s+(p&&p[resultadoCampo[def.tipo]]!=null?Number(p[resultadoCampo[def.tipo]]):0)},0);
-  let total=totalFederal+totalEstatal;
+  let {totalFederal,totalEstatal,total}=calcularCargaFiscalPeriodo(clientId,ejercicio,periodo);
   return `<div class="card" style="margin-top:14px;padding:14px 18px;background:var(--bg)">
     <h3 style="margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)">Carga Fiscal del Periodo — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</h3>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -4548,6 +4826,32 @@ function cargaFiscalPeriodoHtml(clientId,ejercicio,periodo){
     </table>
   </div>`;
 }
+// --- Cálculo del resumen Federal/Estatal — ÚNICA fuente, usada por la pantalla Y por el Expediente PDF.
+// Pura agregación de los mismos papeles ya persistidos; nunca determina ni recalcula nada. ---
+function calcularResumenFederal(clientId,ejercicio,periodo){
+  let pIsr=getPapelISRPMVigente(clientId,ejercicio,periodo);
+  let pIva=getPapelIVAVigente(clientId,ejercicio,periodo);
+  let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
+  let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
+  return [
+    {nombre:'ISR Personas Morales',papel:pIsr,monto:pIsr?pIsr.resultadoIsrCargo:null},
+    {nombre:'IVA',papel:pIva,monto:pIva?pIva.ivaFinalAPagar:null},
+    {nombre:'Retenciones ISR',papel:pRetIsr,monto:pRetIsr?pRetIsr.totalRetenido:null},
+    {nombre:'Retenciones IVA',papel:pRetIva,monto:pRetIva?pRetIva.totalRetenido:null}
+  ];
+}
+function calcularResumenEstatal(clientId,ejercicio,periodo){
+  let aplicables=getEstatalesAplicables(clientId);
+  let getters={
+    isn:()=>getPapelISNVigente(clientId,ejercicio,periodo),
+    extraccion:()=>getPapelExtraccionVigente(clientId,ejercicio,periodo),
+    hospedaje:()=>getPapelHospedajeVigente(clientId,ejercicio,periodo),
+    hospedaje_anfitrion:()=>getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo),
+    bebidas:()=>getPapelBebidasVigente(clientId,ejercicio,periodo)
+  };
+  let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
+  return aplicables.map(def=>{let p=getters[def.tipo]();return{nombre:def.label,papel:p,monto:p?p[resultadoCampo[def.tipo]]:null}});
+}
 function renderFiscalWorkspaceTabContent(){
   let {clientId,ejercicio,periodo,tab}=__fiscalWorkspaceState;
   let el=$('#fiscalWorkspaceContent');if(!el)return;
@@ -4556,12 +4860,7 @@ function renderFiscalWorkspaceTabContent(){
     let pIva=getPapelIVAVigente(clientId,ejercicio,periodo);
     let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
     let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
-    let resumenFederal=[
-      {nombre:'ISR Personas Morales',papel:pIsr,monto:pIsr?pIsr.resultadoIsrCargo:null},
-      {nombre:'IVA',papel:pIva,monto:pIva?pIva.ivaFinalAPagar:null},
-      {nombre:'Retenciones ISR',papel:pRetIsr,monto:pRetIsr?pRetIsr.totalRetenido:null},
-      {nombre:'Retenciones IVA',papel:pRetIva,monto:pRetIva?pRetIva.totalRetenido:null}
-    ];
+    let resumenFederal=calcularResumenFederal(clientId,ejercicio,periodo);
     el.innerHTML=`<div class="grid cols2">
       ${fiscalCardHtml({ambito:'Federal',nombre:'ISR Personas Morales',estatus:pIsr?pIsr.estatus:null,
         lineas:[['Resultado del periodo',pIsr?fmtMoneyMX(pIsr.resultadoIsrCargo):'—']],
@@ -4599,7 +4898,7 @@ function renderFiscalWorkspaceTabContent(){
       bebidas:`verCedulaBebidas(${clientId},${ejercicio})`
     };
     let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
-    let resumenEstatal=aplicables.map(def=>{let p=getters[def.tipo]();return{nombre:def.label,papel:p,monto:p?p[resultadoCampo[def.tipo]]:null}});
+    let resumenEstatal=calcularResumenEstatal(clientId,ejercicio,periodo);
     el.innerHTML=`<div class="grid cols2">${aplicables.map(def=>{
       let p=getters[def.tipo]();
       return fiscalCardHtml({ambito:'Estatal',nombre:def.label,estatus:p?p.estatus:null,
