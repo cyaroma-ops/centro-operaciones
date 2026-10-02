@@ -907,6 +907,7 @@ function getCedulaAnualISRPM(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelISRPMVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   function ultimo(campo){for(let i=11;i>=0;i--){if(meses[i])return meses[i][campo]}return null}
   // Desglose por concepto dinámico: deriva EXCLUSIVAMENTE de los ingresos ya persistidos en cada
   // papel mensual (nunca recalcula, nunca inventa). Un mes sin el concepto pero CON papel capturado
@@ -945,7 +946,7 @@ function getCedulaAnualISRPM(clientId,ejercicio){
     principal:{tipo:'suma',valores:meses.map(m=>m?Number(m.resultadoIsrCargo||0):null),cierre:suma('resultadoIsrCargo')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1128,6 +1129,7 @@ function getCedulaAnualIVA(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelIVAVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let saldoDisponibleHoy=getSaldosFavorIVAVigentes(clientId).reduce((s,d)=>s+d.saldoDisponible,0);
   return {
     meses,
@@ -1140,7 +1142,7 @@ function getCedulaAnualIVA(clientId,ejercicio){
     ivaFinalAPagar:{tipo:'suma',valores:meses.map(m=>m?Number(m.ivaFinalAPagar||0):null),cierre:suma('ivaFinalAPagar')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')},
     saldoDisponibleHoy:{tipo:'control',cierre:saldoDisponibleHoy}
   };
 }
@@ -1257,6 +1259,7 @@ function getCedulaAnualRetencionesISR(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelRetencionesISRVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let catalogoIds=[...new Set(meses.flatMap(m=>m?(m.conceptos||[]).map(c=>c.catalogoId):[]))];
   let porConcepto=catalogoIds.map(cid=>{
     let item=(db.fiscalCatalogoRetenciones||[]).find(x=>x.id===cid);
@@ -1270,7 +1273,7 @@ function getCedulaAnualRetencionesISR(clientId,ejercicio){
     principal:{tipo:'suma',valores:meses.map(m=>m?Number(m.principalPagado||0):null),cierre:suma('principalPagado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalPagado||0):null),cierre:suma('totalPagado')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalPagado||0):null),cierre:sumaSiPagado('totalPagado')},
     diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
   };
 }
@@ -1316,6 +1319,7 @@ function getCedulaAnualRetencionesIVA(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelRetencionesIVAVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let catalogoIds=[...new Set(meses.flatMap(m=>m?(m.conceptos||[]).map(c=>c.catalogoId):[]))];
   let porConcepto=catalogoIds.map(cid=>{
     let item=(db.fiscalCatalogoRetenciones||[]).find(x=>x.id===cid);
@@ -1327,7 +1331,7 @@ function getCedulaAnualRetencionesIVA(clientId,ejercicio){
     principal:{tipo:'suma',valores:meses.map(m=>m?Number(m.principalPagado||0):null),cierre:suma('principalPagado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalPagado||0):null),cierre:suma('totalPagado')},
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalPagado||0):null),cierre:sumaSiPagado('totalPagado')},
     diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
   };
 }
@@ -1405,6 +1409,7 @@ function getCedulaAnualISN(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelISNVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   return {
     meses,
     totalRemuneraciones:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalRemuneraciones||0):null),cierre:suma('totalRemuneraciones')},
@@ -1412,7 +1417,7 @@ function getCedulaAnualISN(clientId,ejercicio){
     impuestoDeterminado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoDeterminado||0):null),cierre:suma('impuestoDeterminado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1468,6 +1473,7 @@ function getCedulaAnualExtraccion(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelExtraccionVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let materialesVistos=[...new Set(meses.flatMap(m=>m?(m.materiales||[]).map(x=>x.material):[]))];
   let porMaterial=materialesVistos.map(mat=>({
     nombre:mat,
@@ -1479,7 +1485,7 @@ function getCedulaAnualExtraccion(clientId,ejercicio){
     totalImpuesto:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalImpuesto||0):null),cierre:suma('totalImpuesto')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1535,6 +1541,7 @@ function getCedulaAnualHospedaje(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelHospedajeVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   return {
     meses,
     baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
@@ -1542,7 +1549,7 @@ function getCedulaAnualHospedaje(clientId,ejercicio){
     impuestoDeterminado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoDeterminado||0):null),cierre:suma('impuestoDeterminado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1595,6 +1602,7 @@ function getCedulaAnualHospedajeAnfitrion(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelHospedajeAnfitrionVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   return {
     meses,
     baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
@@ -1604,7 +1612,7 @@ function getCedulaAnualHospedajeAnfitrion(clientId,ejercicio){
     impuestoACargo:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoACargo||0):null),cierre:suma('impuestoACargo')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1654,6 +1662,7 @@ function getCedulaAnualBebidas(clientId,ejercicio){
   let meses=[];
   for(let p=1;p<=12;p++)meses.push(getPapelBebidasVigente(clientId,ejercicio,p));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
+  function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   return {
     meses,
     baseGravable:{tipo:'suma',valores:meses.map(m=>m?Number(m.baseGravable||0):null),cierre:suma('baseGravable')},
@@ -1661,7 +1670,7 @@ function getCedulaAnualBebidas(clientId,ejercicio){
     impuestoRetenidoDeterminado:{tipo:'suma',valores:meses.map(m=>m?Number(m.impuestoRetenidoDeterminado||0):null),cierre:suma('impuestoRetenidoDeterminado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
-    totalPagado:{tipo:'suma',valores:meses.map(m=>m?Number(m.totalAPagar||0):null),cierre:suma('totalAPagar')}
+    totalPagado:{tipo:'suma',valores:meses.map(m=>(m&&m.fechaPago)?Number(m.totalAPagar||0):null),cierre:sumaSiPagado('totalAPagar')}
   };
 }
 
@@ -1833,6 +1842,17 @@ function avanzarEstatusPapelISRPM(id,nuevoEstatus){
   save();
 }
 
+// --- Origen de la fecha de vencimiento mostrada: compara el valor actual contra lo que el motor de
+// vencimientos (proponerVencimientoFiscal, sin tocar) propondría HOY para este mismo papel. Si coincide,
+// es la propuesta del sistema ("Calculado"); si el contador la cambió, es un ajuste ("Ajustado").
+// Para papeles sin regla de vencimiento verificada (Extracción, Bebidas) siempre es "Manual" — nunca
+// se inventa una regla donde no existe. Pura presentación: no persiste ni modifica nada. ---
+function origenTagVencimiento(tipoPapel,clientId,ejercicio,periodo,fechaActual){
+  if(!fechaActual)return '';
+  let propuesta=proponerVencimientoFiscal(tipoPapel,clientId,ejercicio,periodo);
+  if(!propuesta)return origenTag('manual');
+  return origenTag(fechaActual===propuesta?'calculado':'override');
+}
 // --- Etiqueta de origen del dato (de dónde salió cada cifra) ---
 function origenTag(tipo){
   const map={manual:['Manual','#6366f1'],calculado:['Calculado','#16a34a'],control:['Control','#b45309'],parametro:['Parámetro','#a21caf'],override:['Ajustado','#dc2626']};
@@ -1844,6 +1864,7 @@ function origenTag(tipo){
 // --- ISR PM — Cédula de trabajo a pantalla completa (reutiliza exactamente el mismo motor/campos que el modal legacy) ---
 function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
   let existente=getPapelISRPMVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('isr_pm',clientId,ejercicio,periodo)||'');
   let conceptos=getConceptosIngreso(clientId);
   let ingresosPrevios=existente?mergeIngresosConCatalogoActual(existente.ingresos,conceptos):conceptos.map(c=>({conceptoId:c.id,nombre:c.nombre,importe:0}));
   __isrPmState={clientId,ejercicio,periodo,calc:null};
@@ -1877,7 +1898,7 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
     <div class="card" style="margin-top:14px">
       <h3 style="margin-bottom:8px">4. Pago y accesorios</h3>
       <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <div class="field" style="margin:0;flex:1;min-width:200px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTag('manual')}</label><input id="isrPmVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('isr_pm',clientId,ejercicio,periodo)||'')}" onchange="marcarFiscalDirty();calcularPapelISRPMUI()"></div>
+        <div class="field" style="margin:0;flex:1;min-width:200px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('isr_pm',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="isrPmVencimiento" type="date" value="${fechaVencActual}" onchange="marcarFiscalDirty();calcularPapelISRPMUI()"></div>
         <div class="field" style="margin:0;flex:1;min-width:200px"><label>Fecha de pago ${origenTag('manual')}</label><input id="isrPmFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" onchange="marcarFiscalDirty();calcularPapelISRPMUI()"></div>
       </div>
       <div class="field full"><label>Observaciones</label><input id="isrPmObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
@@ -2001,6 +2022,7 @@ function abrirPapelIVADesdeSelector(clientId){
 }
 function openPapelIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelIVAVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('iva',clientId,ejercicio,periodo)||'');
   __ivaState={clientId,ejercicio,periodo,calc:null};
   let fechaRefIva=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
   let tasaParamActual=getParametroVigente('federal',null,'iva_tasa_general',fechaRefIva);
@@ -2042,7 +2064,7 @@ function openPapelIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelIVAUI()">Calcular</button></div>
       <div id="ivaResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="ivaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('iva',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('iva',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="ivaVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="ivaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="ivaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -2169,6 +2191,7 @@ function filaConceptoRetHtml(prefix,idx,c,catalogo){
 }
 function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_isr',clientId,ejercicio,periodo)||'');
   let catalogo=getCatalogoRetenciones('isr');
   __retIsrState={clientId,ejercicio,periodo,calc:null,conceptosForm:existente?(existente.conceptos||[]).map(c=>({catalogoId:c.catalogoId,base:c.base,retenidoConfirmado:c.retenidoConfirmado})):[]};
   modal(`Retenciones ISR — ${MESES_NOMBRE[periodo-1]} ${ejercicio}`,`
@@ -2197,7 +2220,7 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesISRUI()">Calcular</button></div>
       <div id="retIsrResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="retIsrVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_isr',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('retenciones_isr',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="retIsrVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIsrFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="retIsrObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -2334,6 +2357,7 @@ function abrirPapelRetencionesIVADesdeSelector(clientId){
 }
 function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_iva',clientId,ejercicio,periodo)||'');
   let catalogo=getCatalogoRetenciones('iva');
   __retIvaState={clientId,ejercicio,periodo,calc:null,conceptosForm:existente?(existente.conceptos||[]).map(c=>({catalogoId:c.catalogoId,base:c.base,ivaOperacion:c.ivaOperacion,retenidoConfirmado:c.retenidoConfirmado})):[]};
   modal(`Retenciones IVA — ${MESES_NOMBRE[periodo-1]} ${ejercicio}`,`
@@ -2353,7 +2377,7 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesIVAUI()">Calcular</button></div>
       <div id="retIvaResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="retIvaVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_iva',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('retenciones_iva',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="retIvaVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIvaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="retIvaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -2416,6 +2440,7 @@ function abrirPapelISNDesdeSelector(clientId){
 }
 function openPapelISN(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelISNVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('isn',clientId,ejercicio,periodo)||'');
   __isnState={clientId,ejercicio,periodo,calc:null};
   modal(`ISN — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${entidadFederativaDeCliente(clientId)}`,`
     <div id="isnBody">
@@ -2432,7 +2457,7 @@ function openPapelISN(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelISNUI()">Calcular</button></div>
       <div id="isnResultado"></div>
 
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="isnVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('isn',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('isn',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="isnVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="isnFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="isnObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -2611,6 +2636,7 @@ function abrirPapelHospedajeDesdeSelector(clientId){
 }
 function openPapelHospedaje(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelHospedajeVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('hospedaje',clientId,ejercicio,periodo)||'');
   __hospedajeState={clientId,ejercicio,periodo,calc:null};
   modal(`Impuesto al Hospedaje — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${entidadFederativaDeCliente(clientId)}`,`
     <div>
@@ -2624,7 +2650,7 @@ function openPapelHospedaje(clientId,ejercicio,periodo){__fiscalModalOpen=true;l
       </div>
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelHospedajeUI()">Calcular</button></div>
       <div id="hospResultado"></div>
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="hospVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('hospedaje',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('hospedaje',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="hospVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="hospObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -2659,6 +2685,7 @@ function abrirPapelHospedajeAnfitrionDesdeSelector(clientId){
 }
 function openPapelHospedajeAnfitrion(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo);
+  let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('hospedaje_anfitrion',clientId,ejercicio,periodo)||'');
   __hospAnfState={clientId,ejercicio,periodo,calc:null};
   modal(`Hospedaje Anfitrión — ${MESES_NOMBRE[periodo-1]} ${ejercicio} · ${entidadFederativaDeCliente(clientId)}`,`
     <div>
@@ -2672,7 +2699,7 @@ function openPapelHospedajeAnfitrion(clientId,ejercicio,periodo){__fiscalModalOp
       </div>
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelHospedajeAnfitrionUI()">Calcular</button></div>
       <div id="hospAnfResultado"></div>
-      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''}</label><input id="hospAnfVencimiento" type="date" value="${existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('hospedaje_anfitrion',clientId,ejercicio,periodo)||'')}" oninput="marcarFiscalDirty()"></div>
+      <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('hospedaje_anfitrion',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="hospAnfVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="hospAnfFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="hospAnfObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>`,
@@ -4292,30 +4319,46 @@ function verSerieMensualConcepto(ambito,entidad,clave){
     </div>`;
   }).join('')||'<div class="role">Sin registros todavía</div>'}</div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
+// --- ¿Esta versión fue reemplazada por una corrección real del MISMO registro (no una sucesión natural
+// de vigencia)? Reutiliza exactamente el mismo criterio de pillEstatusParametro. ---
+function esReemplazadoReal(p,grupo){
+  return grupo.some(o=>o.reemplazaA===p.id&&o.vigenciaDesde<=p.vigenciaDesde);
+}
 function verSerieMensualEjercicio(ambito,entidad,clave,ejercicio){
   let cat=CLAVES_PARAMETRO_COMUNES.find(c=>c.clave===clave);
   let esTasa=cat&&cat.tipoSimple==='periodo_tasa';
   let registros=(db.parametrosFiscales||[]).filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave&&p.valor&&p.valor.periodo&&p.valor.periodo.startsWith(ejercicio));
   window.__fiscalParamsDetailRefresh=`verSerieMensualEjercicio('${ambito}','${esc(entidad)}','${esc(clave)}','${ejercicio}')`;
+  let huboOcultos=false;
   let filas=MESES_NOMBRE.map((nombreMes,i)=>{
     let periodo=`${ejercicio}-${String(i+1).padStart(2,'0')}`;
     let delMes=registros.filter(p=>p.valor.periodo===periodo).sort((a,b)=>b.id-a.id);
-    let actual=delMes[0];
-    if(!actual)return `<tr><td>${nombreMes}</td><td colspan="4" class="role">Sin capturar</td></tr>`;
+    // La versión EFECTIVA es la que no fue reemplazada por una corrección real ni anulada — ésa es la
+    // que de verdad usa el motor. Las versiones históricas de este mismo mes se ocultan de esta vista
+    // rápida (siguen consultables desde "Ver historial completo"), nunca se eliminan.
+    let efectivos=delMes.filter(p=>!esReemplazadoReal(p,delMes)&&p.estatus!=='anulado');
+    if(delMes.length>efectivos.length)huboOcultos=true;
+    let actual=efectivos[0];
+    if(!actual)return `<tr><td>${nombreMes}</td><td colspan="4" class="role">${delMes.length?'Sólo versiones históricas (ver historial)':'Sin capturar'}</td></tr>`;
     let val=esTasa?actual.valor.tasa+'%':actual.valor.valor;
     return `<tr><td>${nombreMes}</td><td style="text-align:right"><b>${val}</b></td><td>${pillEstatusParametro(actual,delMes)}</td><td>${esc(actual.fuente||'')}</td><td style="width:30px">${menuMantenimientoParametroHtml(actual)}</td></tr>`;
   }).join('');
-  modal(`${esc(labelAmigableParametro(clave))} — ${ejercicio}`,`<div class="table-wrap"><table class="table"><thead><tr><th>Mes</th><th style="text-align:right">Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`,`<button class="btn" onclick="verSerieMensualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')">← Volver a ejercicios</button><button class="btn" onclick="closeModal()">Cerrar</button>`);
+  modal(`${esc(labelAmigableParametro(clave))} — ${ejercicio}`,`<div class="table-wrap"><table class="table"><thead><tr><th>Mes</th><th style="text-align:right">Valor</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>${huboOcultos?`<div class="hint" style="margin-top:10px">Hay versiones anteriores (reemplazadas o anuladas) de uno o más meses. <a href="#" onclick="verHistorialParam('${ambito}','${esc(entidad)}','${esc(clave)}');return false">Ver historial completo</a>.</div>`:''}`,`<button class="btn" onclick="verSerieMensualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')">← Volver a ejercicios</button><button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 // --- Series anuales (UMA): agrupadas por el año de su vigencia desde ---
 function verSerieAnualConcepto(ambito,entidad,clave){
   let todos=(db.parametrosFiscales||[]).filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave).sort((a,b)=>(b.vigenciaDesde||'').localeCompare(a.vigenciaDesde||''));
   window.__fiscalParamsDetailRefresh=`verSerieAnualConcepto('${ambito}','${esc(entidad)}','${esc(clave)}')`;
-  modal(`${esc(labelAmigableParametro(clave))} — valores por ejercicio`,`<div class="table-wrap"><table class="table"><thead><tr><th>Ejercicio</th><th style="text-align:right">Valor</th><th>Vigencia</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${todos.map(p=>{
+  // La vista principal muestra solo las versiones EFECTIVAS (una por cada vigencia real) — las
+  // reemplazadas por corrección o anuladas quedan disponibles en "Ver historial completo", nunca se
+  // pierden ni se modifican.
+  let efectivos=todos.filter(p=>!esReemplazadoReal(p,todos)&&p.estatus!=='anulado');
+  let huboOcultos=todos.length>efectivos.length;
+  modal(`${esc(labelAmigableParametro(clave))} — valores por ejercicio`,`<div class="table-wrap"><table class="table"><thead><tr><th>Ejercicio</th><th style="text-align:right">Valor</th><th>Vigencia</th><th>Estatus</th><th>Fuente</th><th></th></tr></thead><tbody>${efectivos.map(p=>{
     let ejercicio=(p.vigenciaDesde||'').slice(0,4);
     let vig=`${fmtDate(p.vigenciaDesde)} — ${p.vigenciaHasta?fmtDate(p.vigenciaHasta):'vigente'}`;
     return `<tr><td>${ejercicio}</td><td style="text-align:right"><b>${formatearValorParametro(clave,p.valor)}</b></td><td>${vig}</td><td>${pillEstatusParametro(p,todos)}</td><td>${esc(p.fuente||'')}</td><td style="width:30px">${menuMantenimientoParametroHtml(p)}</td></tr>`;
-  }).join('')||'<tr><td colspan="6" class="empty">Sin registros</td></tr>'}</tbody></table></div>`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
+  }).join('')||'<tr><td colspan="6" class="empty">Sin registros</td></tr>'}</tbody></table></div>${huboOcultos?`<div class="hint" style="margin-top:10px">Hay versiones anteriores (reemplazadas por corrección o anuladas). <a href="#" onclick="verHistorialParam('${ambito}','${esc(entidad)}','${esc(clave)}');return false">Ver historial completo</a>.</div>`:''}`,`<button class="btn" onclick="closeModal()">Cerrar</button>`);
 }
 
 // ===================== Controles Fiscales — UI (dentro del expediente del cliente) =====================
@@ -4471,6 +4514,40 @@ function fiscalCardHtml(opts){
     </div>
   </div>`;
 }
+// --- Resumen de impuestos de un ámbito (Federal o Estatal) para el periodo seleccionado.
+// Es PURA REPRESENTACIÓN: recibe los papeles YA OBTENIDOS por el llamador, nunca calcula ni persiste nada. ---
+function resumenImpuestosHtml(titulo,filas,ejercicio,periodo){
+  let total=filas.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  return `<div class="card" style="margin-top:14px;padding:14px 18px">
+    <h3 style="margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)">${esc(titulo)} — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${filas.map(f=>`<tr><td style="padding:4px 0">${esc(f.nombre)}${f.papel?` <span class="pill ${f.papel.estatus==='publicado'?'p-green':(f.papel.estatus==='revisado'?'p-blue':'p-gray')}" style="font-size:9px;padding:1px 6px;margin-left:4px">${f.papel.estatus}</span>`:''}</td><td style="padding:4px 0;text-align:right;font-variant-numeric:tabular-nums">${f.monto!=null?fmtMoneyMX(f.monto):'—'}</td></tr>`).join('')}
+      <tr style="border-top:1.5px solid var(--line)"><td style="padding:6px 0;font-weight:700">TOTAL ${esc(titulo.replace('RESUMEN ',''))}</td><td style="padding:6px 0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmtMoneyMX(total)}</td></tr>
+    </table>
+  </div>`;
+}
+// --- Carga fiscal del periodo: agrega los mismos totales federal + estatal, releyendo los papeles
+// persistidos de forma independiente (para que funcione desde cualquiera de las dos pestañas). ---
+function cargaFiscalPeriodoHtml(clientId,ejercicio,periodo){
+  let pIsr=getPapelISRPMVigente(clientId,ejercicio,periodo);
+  let pIva=getPapelIVAVigente(clientId,ejercicio,periodo);
+  let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
+  let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
+  let totalFederal=[pIsr?pIsr.resultadoIsrCargo:null,pIva?pIva.ivaFinalAPagar:null,pRetIsr?pRetIsr.totalRetenido:null,pRetIva?pRetIva.totalRetenido:null].reduce((s,v)=>s+(v!=null?Number(v):0),0);
+  let aplicables=getEstatalesAplicables(clientId);
+  let getters={isn:()=>getPapelISNVigente(clientId,ejercicio,periodo),extraccion:()=>getPapelExtraccionVigente(clientId,ejercicio,periodo),hospedaje:()=>getPapelHospedajeVigente(clientId,ejercicio,periodo),hospedaje_anfitrion:()=>getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo),bebidas:()=>getPapelBebidasVigente(clientId,ejercicio,periodo)};
+  let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
+  let totalEstatal=aplicables.reduce((s,def)=>{let p=getters[def.tipo]();return s+(p&&p[resultadoCampo[def.tipo]]!=null?Number(p[resultadoCampo[def.tipo]]):0)},0);
+  let total=totalFederal+totalEstatal;
+  return `<div class="card" style="margin-top:14px;padding:14px 18px;background:var(--bg)">
+    <h3 style="margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)">Carga Fiscal del Periodo — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr><td style="padding:4px 0">Federal</td><td style="padding:4px 0;text-align:right;font-variant-numeric:tabular-nums">${fmtMoneyMX(totalFederal)}</td></tr>
+      <tr><td style="padding:4px 0">Estatal</td><td style="padding:4px 0;text-align:right;font-variant-numeric:tabular-nums">${fmtMoneyMX(totalEstatal)}</td></tr>
+      <tr style="border-top:1.5px solid var(--line)"><td style="padding:6px 0;font-weight:700">TOTAL</td><td style="padding:6px 0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmtMoneyMX(total)}</td></tr>
+    </table>
+  </div>`;
+}
 function renderFiscalWorkspaceTabContent(){
   let {clientId,ejercicio,periodo,tab}=__fiscalWorkspaceState;
   let el=$('#fiscalWorkspaceContent');if(!el)return;
@@ -4479,6 +4556,12 @@ function renderFiscalWorkspaceTabContent(){
     let pIva=getPapelIVAVigente(clientId,ejercicio,periodo);
     let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
     let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
+    let resumenFederal=[
+      {nombre:'ISR Personas Morales',papel:pIsr,monto:pIsr?pIsr.resultadoIsrCargo:null},
+      {nombre:'IVA',papel:pIva,monto:pIva?pIva.ivaFinalAPagar:null},
+      {nombre:'Retenciones ISR',papel:pRetIsr,monto:pRetIsr?pRetIsr.totalRetenido:null},
+      {nombre:'Retenciones IVA',papel:pRetIva,monto:pRetIva?pRetIva.totalRetenido:null}
+    ];
     el.innerHTML=`<div class="grid cols2">
       ${fiscalCardHtml({ambito:'Federal',nombre:'ISR Personas Morales',estatus:pIsr?pIsr.estatus:null,
         lineas:[['Resultado del periodo',pIsr?fmtMoneyMX(pIsr.resultadoIsrCargo):'—']],
@@ -4492,7 +4575,9 @@ function renderFiscalWorkspaceTabContent(){
       ${fiscalCardHtml({ambito:'Federal',nombre:'Retenciones IVA',estatus:pRetIva?pRetIva.estatus:null,
         lineas:[['Total retenido',pRetIva?fmtMoneyMX(pRetIva.totalRetenido):'—']],
         onAbrir:`abrirPapelRetencionesIVADesdeSelector(${clientId})`,onCedula:`verCedulaRetencionesIVA(${clientId},${ejercicio})`})}
-    </div>`;
+    </div>
+    ${resumenImpuestosHtml('RESUMEN FEDERAL',resumenFederal,ejercicio,periodo)}
+    ${cargaFiscalPeriodoHtml(clientId,ejercicio,periodo)}`;
   }else if(tab==='estatal'){
     let aplicables=getEstatalesAplicables(clientId);
     if(!aplicables.length){el.innerHTML='<div class="empty">Este cliente no tiene impuestos estatales marcados como aplicables. Puedes marcarlos en "Editar cliente" → Obligaciones.</div>';return}
@@ -4514,12 +4599,15 @@ function renderFiscalWorkspaceTabContent(){
       bebidas:`verCedulaBebidas(${clientId},${ejercicio})`
     };
     let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
+    let resumenEstatal=aplicables.map(def=>{let p=getters[def.tipo]();return{nombre:def.label,papel:p,monto:p?p[resultadoCampo[def.tipo]]:null}});
     el.innerHTML=`<div class="grid cols2">${aplicables.map(def=>{
       let p=getters[def.tipo]();
       return fiscalCardHtml({ambito:'Estatal',nombre:def.label,estatus:p?p.estatus:null,
         lineas:[['Resultado del periodo',p?fmtMoneyMX(p[resultadoCampo[def.tipo]]):'—']],
         onAbrir:abrir[def.tipo],onCedula:cedula[def.tipo]});
-    }).join('')}</div>`;
+    }).join('')}</div>
+    ${resumenImpuestosHtml('RESUMEN ESTATAL',resumenEstatal,ejercicio,periodo)}
+    ${cargaFiscalPeriodoHtml(clientId,ejercicio,periodo)}`;
   }else if(tab==='controles'){
     el.innerHTML=fiscalControlesCard(clientId,ejercicio,periodo);
   }
