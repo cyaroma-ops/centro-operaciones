@@ -3623,6 +3623,16 @@ const ESTATAL_CONSTRUCTORES_PAPEL={
   isn:construirConfigPapelISN,extraccion:construirConfigPapelExtraccion,hospedaje:construirConfigPapelHospedaje,
   hospedaje_anfitrion:construirConfigPapelHospedajeAnfitrion,bebidas:construirConfigPapelBebidas
 };
+const ESTATAL_ARRAY_DB={
+  isn:'fiscalPapelIsn',extraccion:'fiscalPapelExtraccion',hospedaje:'fiscalPapelHospedaje',
+  hospedaje_anfitrion:'fiscalPapelHospedajeAnfitrion',bebidas:'fiscalPapelBebidas'
+};
+// --- ¿Existe al menos un papel REAL de este tipo en el ejercicio? (cualquier periodo, cualquier estatus).
+// No crea nada — solo consulta los mismos arreglos que ya usan los getters existentes. ---
+function hayAlgunPapelEnEjercicio(tipo,clientId,ejercicio){
+  let arr=ESTATAL_ARRAY_DB[tipo];if(!arr)return true; // tipos sin mapeo conocido: no se filtran (comportamiento previo)
+  return (db[arr]||[]).some(p=>p.client===clientId&&p.ejercicio===ejercicio);
+}
 const ESTATAL_CONSTRUCTORES_CEDULA={
   isn:construirConfigCedulaISN,extraccion:construirConfigCedulaExtraccion,hospedaje:construirConfigCedulaHospedaje,
   hospedaje_anfitrion:construirConfigCedulaHospedajeAnfitrion,bebidas:construirConfigCedulaBebidas
@@ -3757,7 +3767,8 @@ async function generarExpedienteAnual(clientId,ejercicio){
     let cedulaRetIsr=getCedulaAnualRetencionesISR(clientId,ejercicio);
     let cedulaRetIva=getCedulaAnualRetencionesIVA(clientId,ejercicio);
     let filasAnual=[
-      ['ISR Personas Morales (resultado determinado, cierre del ejercicio)',fmtMoneyMX(cedulaIsr.resultadoDeterminado.cierre)],
+      ['ISR Personas Morales — ISR determinado acumulado al cierre del ejercicio (determinación, no implica pago)',fmtMoneyMX(cedulaIsr.resultadoDeterminado.cierre)],
+      ['ISR Personas Morales — Pagos provisionales efectivamente pagados en el ejercicio (solo con pago real registrado)',fmtMoneyMX(cedulaIsr.totalPagado.cierre)],
       ['IVA (suma del ejercicio, IVA final a pagar)',fmtMoneyMX(cedulaIva.ivaFinalAPagar.cierre)],
       ['Retenciones ISR (suma del ejercicio)',fmtMoneyMX(cedulaRetIsr.totalRetenido.cierre)],
       ['Retenciones IVA (suma del ejercicio)',fmtMoneyMX(cedulaRetIva.totalRetenido.cierre)]
@@ -3770,6 +3781,7 @@ async function generarExpedienteAnual(clientId,ejercicio){
     };
     let campoCierreEstatal={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
     aplicables.forEach(def=>{
+      if(!hayAlgunPapelEnEjercicio(def.tipo,clientId,ejercicio))return; // sin ningún papel real en el ejercicio — se omite, no se inventa
       let ced=cedulasEstatalesGetters[def.tipo]&&cedulasEstatalesGetters[def.tipo]();
       if(ced)filasAnual.push([`${def.label} (suma del ejercicio)`,fmtMoneyMX(ced[campoCierreEstatal[def.tipo]].cierre)]);
     });
@@ -3783,6 +3795,7 @@ async function generarExpedienteAnual(clientId,ejercicio){
     cedulasFederal.forEach(cfg=>{if(cfg){doc.addPage('a4','landscape');dibujarCedulaFiscalEnDoc(doc,cfg)}});
     aplicables.forEach(def=>{
       let construir=ESTATAL_CONSTRUCTORES_CEDULA[def.tipo];if(!construir)return;
+      if(!hayAlgunPapelEnEjercicio(def.tipo,clientId,ejercicio))return; // sin ningún papel real en el ejercicio — se omite, no se inventa
       let cfg=construir(clientId,ejercicio);
       if(cfg){doc.addPage('a4','landscape');dibujarCedulaFiscalEnDoc(doc,cfg)}
     });
@@ -3853,7 +3866,7 @@ function construirConfigPapelISRPM(clientId,ejercicio,periodo){
       ]},
       {titulo:'Resultado',negritas:true,filas:[['ISR a cargo',fmtMoneyMX(p.resultadoIsrCargo)]]},
       {titulo:'Pago y accesorios',filas:[
-        ['Fecha de vencimiento',p.fechaVencimiento?fmtDate(p.fechaVencimiento):'—'],
+        ['Fecha de vencimiento',(()=>{let f=p.fechaVencimiento||proponerVencimientoFiscal('isr_pm',clientId,ejercicio,periodo);return f?fmtDate(f):'—'})()],
         ['Fecha de pago',p.fechaPago?fmtDate(p.fechaPago):'—'],
         ['Actualización',fmtMoneyMX(p.actualizacion)],
         ['Recargos',fmtMoneyMX(p.recargos)],
