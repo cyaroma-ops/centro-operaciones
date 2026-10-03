@@ -492,7 +492,7 @@ const TABLE_MAP={
   fiscalPapelHospedaje:{table:'fiscal_papel_hospedaje',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tipoEstablecimiento:'tipo_establecimiento',desgloseBase:'desglose_base',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
+  fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',conceptosCubiertos:'conceptos_cubiertos',ejercicio:'ejercicio',periodo:'periodo',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalRetencionesConceptosCliente:{table:'fiscal_retenciones_conceptos_cliente',key:'id',cols:{id:'id',client:'client_id',ambito:'ambito',catalogoId:'catalogo_id',desde:'desde',desactivadoDesde:'desactivado_desde',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',conceptoRetencionId:'concepto_retencion_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
 };
@@ -696,9 +696,22 @@ function totalPagadoPapel(tipoPapel,papelId){
   return Math.round(pagos.reduce((s,p)=>s+(p.importe!=null?Number(p.importe):0),0)*100)/100;
 }
 function agregarDeclaracion(tipoPapel,papelId,clientId,datos){
+  // Solo Retenciones ISR/IVA: la declaración guarda su clave de periodo y los conceptos que cubre, y un
+  // mismo folio NO se registra dos veces dentro del mismo periodo (se devuelve la ya existente).
+  let ejercicio=null,periodo=null,conceptosCubiertos=[];
+  if(esPapelRetenciones(tipoPapel)){
+    let p=papelPorId(tipoPapel,papelId);
+    if(p){
+      ejercicio=p.ejercicio;periodo=p.periodo;
+      let dup=buscarDeclaracionPorFolio(tipoPapel,p,datos.folioDeclaracion);
+      if(dup)return dup;
+    }
+    conceptosCubiertos=Array.isArray(datos.conceptosCubiertos)?[...new Set(datos.conceptosCubiertos.map(String))]:[];
+  }
   let nuevo=stamp({
     id:Date.now()+Math.floor(Math.random()*100000),client:clientId,papelTipo:tipoPapel,papelId,
     tipo:datos.tipo||'normal',fechaPresentacion:datos.fechaPresentacion||null,folioDeclaracion:datos.folioDeclaracion||null,
+    conceptosCubiertos,ejercicio,periodo,
     declaracionAnteriorId:datos.declaracionAnteriorId||null,observaciones:datos.observaciones||null,
     creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),
     actualizadoPor:currentStaff?currentStaff.id:null,actualizadoEn:new Date().toISOString()
@@ -733,6 +746,10 @@ function eliminarPago(id){
 function asignarConceptoPago(pagoId,conceptoId){
   let pg=(db.fiscalPagos||[]).find(x=>x.id===pagoId);if(!pg)return null;
   pg.conceptoRetencionId=conceptoId!=null&&conceptoId!==''?String(conceptoId):null;
+  if(esPapelRetenciones(pg.papelTipo)&&pg.declaracionId){
+    let p=papelVigenteDePago(pg),d=(db.fiscalDeclaraciones||[]).find(x=>x.id===pg.declaracionId);
+    if(p&&d&&pg.conceptoRetencionId&&!declaracionCubreConcepto(pg.papelTipo,p,d,pg.conceptoRetencionId))pg.declaracionId=null;
+  }
   pg.actualizadoPor=currentStaff?currentStaff.id:null;pg.actualizadoEn=new Date().toISOString();
   stamp(pg);
   sincronizarLegadoRetenciones(pg.papelTipo,pg.papelId);
@@ -800,6 +817,112 @@ function eliminarPagoUI(id,tipoPapel,clientId,ejercicio,periodo,prefix){
   if(!confirm('¿Eliminar este pago? Esta acción no se puede deshacer.'))return;
   eliminarPago(id);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+}
+// ===================== Declaraciones que cubren uno o varios conceptos (Retenciones ISR / IVA) =====================
+// Papel → conceptos → declaraciones 1:N (cada una cubre 1..N conceptos) → pagos 1:N (concepto + declaración).
+// UNA declaración = UNA fila en fiscal_declaraciones aunque cubra varios conceptos: la cobertura vive
+// en conceptosCubiertos (ids estables: 'salarios' ó String(catalogoId)). [] = "todos los conceptos del papel".
+// Cada obligación conserva su propia declaración aunque otra comparta folio (nunca se cruzan ISR PM, IVA, Ret ISR, Ret IVA).
+function normalizarFolioDeclaracion(f){return String(f==null?'':f).replace(/\s+/g,'').toLowerCase()}
+function papelPorId(tipoPapel,papelId){return (db[PAPEL_ARRAY_DB[tipoPapel]]||[]).find(x=>x.id===papelId)}
+function papelVigenteDePago(pg){
+  let p0=papelPorId(pg.papelTipo,pg.papelId);if(!p0)return null;
+  return PAPEL_GETTER_VIGENTE[pg.papelTipo](p0.client,p0.ejercicio,p0.periodo)||p0;
+}
+function idsConceptosPapelRetenciones(tipoPapel,p){return conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos).map(c=>c.id)}
+function coberturaDeclaracion(tipoPapel,p,d){
+  let todos=idsConceptosPapelRetenciones(tipoPapel,p);
+  let explicitos=Array.isArray(d.conceptosCubiertos)?d.conceptosCubiertos.map(String):[];
+  return explicitos.length?explicitos.filter(id=>todos.includes(id)):todos;
+}
+function declaracionCubreConcepto(tipoPapel,p,d,cid){return coberturaDeclaracion(tipoPapel,p,d).includes(String(cid))}
+function ordenarDeclaraciones(arr){
+  return arr.slice().sort((a,b)=>(a.fechaPresentacion||'').localeCompare(b.fechaPresentacion||'')||(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id);
+}
+function declaracionesQueCubren(tipoPapel,p,cid){return ordenarDeclaraciones(getDeclaracionesPapel(tipoPapel,p.id).filter(d=>declaracionCubreConcepto(tipoPapel,p,d,cid)))}
+// Declaración vigente de un concepto = la más reciente que lo cubre; las anteriores se conservan como historia.
+function declaracionVigenteDeConcepto(tipoPapel,p,cid){let l=declaracionesQueCubren(tipoPapel,p,cid);return l.length?l[l.length-1]:null}
+function buscarDeclaracionPorFolio(tipoPapel,p,folio){
+  let n=normalizarFolioDeclaracion(folio);if(!n)return null;
+  return getDeclaracionesPapel(tipoPapel,p.id).find(d=>normalizarFolioDeclaracion(d.folioDeclaracion)===n)||null;
+}
+function validarCoberturaRetenciones(tipoPapel,p,ids){
+  let validos=idsConceptosPapelRetenciones(tipoPapel,p);
+  let limpio=[...new Set((ids||[]).map(x=>String(x)))];
+  if(!limpio.length)return {ok:false,error:'Selecciona al menos un concepto que cubra la declaración.'};
+  let ajenos=limpio.filter(id=>!validos.includes(id));
+  if(ajenos.length)return {ok:false,error:'Hay conceptos que no pertenecen a este papel: '+ajenos.join(', ')};
+  return {ok:true,ids:limpio};
+}
+function tocarRegistro(o){o.actualizadoPor=currentStaff?currentStaff.id:null;o.actualizadoEn=new Date().toISOString();stamp(o)}
+// Los pagos del concepto que aún no tienen declaración se ligan a ESTA declaración solo si es la única que cubre ese concepto.
+function autovincularPagosADeclaracion(tipoPapel,p,d,ids){
+  let n=0;
+  getPagosPapel(tipoPapel,p.id).forEach(pg=>{
+    let cid=claveConceptoDePago(pg);
+    if(!cid||pg.declaracionId||!ids.includes(cid))return;
+    let cubren=declaracionesQueCubren(tipoPapel,p,cid);
+    if(cubren.length===1&&cubren[0].id===d.id){pg.declaracionId=d.id;tocarRegistro(pg);n++}
+  });
+  return n;
+}
+// Alta de una declaración desde el contexto de un concepto. Si el folio ya existe en el periodo NO se duplica:
+// se amplía la cobertura de la existente.
+function registrarDeclaracionRetenciones(tipoPapel,papelId,clientId,datos){
+  let p=papelPorId(tipoPapel,papelId);
+  if(!p||!esPapelRetenciones(tipoPapel))return {ok:false,error:'Papel de Retenciones no encontrado.'};
+  let v=validarCoberturaRetenciones(tipoPapel,p,datos.conceptos);
+  if(!v.ok)return v;
+  let existente=buscarDeclaracionPorFolio(tipoPapel,p,datos.folioDeclaracion);
+  let d,creada=false,ampliados=[];
+  if(existente){
+    d=existente;
+    let actual=coberturaDeclaracion(tipoPapel,p,d);
+    ampliados=v.ids.filter(id=>!actual.includes(id));
+    if(ampliados.length){d.conceptosCubiertos=[...new Set([...actual,...ampliados])];tocarRegistro(d)}
+  }else{
+    let anterior=datos.declaracionAnteriorId||null;
+    if(!anterior&&datos.tipo==='complementaria'){
+      for(const id of v.ids){let vig=declaracionVigenteDeConcepto(tipoPapel,p,id);if(vig){anterior=vig.id;break}}
+    }
+    d=agregarDeclaracion(tipoPapel,papelId,clientId,{tipo:datos.tipo||'normal',fechaPresentacion:datos.fechaPresentacion,folioDeclaracion:datos.folioDeclaracion,observaciones:datos.observaciones,declaracionAnteriorId:anterior,conceptosCubiertos:v.ids});
+    creada=true;
+  }
+  let pagosVinculados=autovincularPagosADeclaracion(tipoPapel,p,d,v.ids);
+  save();
+  return {ok:true,declaracion:d,creada,ampliados,pagosVinculados};
+}
+function quitarConceptoDeDeclaracion(declId,cid){
+  let d=(db.fiscalDeclaraciones||[]).find(x=>x.id===declId);if(!d)return {ok:false,error:'Declaración no encontrada.'};
+  let p0=papelPorId(d.papelTipo,d.papelId);if(!p0)return {ok:false,error:'Papel no encontrado.'};
+  let p=PAPEL_GETTER_VIGENTE[d.papelTipo](p0.client,p0.ejercicio,p0.periodo)||p0;
+  cid=String(cid);
+  let actual=coberturaDeclaracion(d.papelTipo,p,d);
+  if(!actual.includes(cid))return {ok:true};
+  if(actual.length<=1)return {ok:false,error:'Una declaración debe cubrir al menos un concepto.'};
+  if(getPagosDeDeclaracion(d.id).some(pg=>claveConceptoDePago(pg)===cid))return {ok:false,error:'Hay pagos de este concepto ligados a esta declaración. Desvincúlalos primero.'};
+  d.conceptosCubiertos=actual.filter(x=>x!==cid);tocarRegistro(d);save();
+  return {ok:true};
+}
+// Relación pago ↔ declaración. El pago debe tener concepto y la declaración debe cubrirlo. declId vacío = desvincular.
+function vincularPagoADeclaracion(pagoId,declId){
+  let pg=(db.fiscalPagos||[]).find(x=>x.id===pagoId);if(!pg)return {ok:false,error:'Pago no encontrado.'};
+  if(declId==null||declId===''){pg.declaracionId=null;tocarRegistro(pg);save();return {ok:true}}
+  let d=(db.fiscalDeclaraciones||[]).find(x=>x.id===+declId);if(!d)return {ok:false,error:'Declaración no encontrada.'};
+  if(d.papelTipo!==pg.papelTipo)return {ok:false,error:'La declaración es de otra obligación.'};
+  if(esPapelRetenciones(pg.papelTipo)){
+    let cid=claveConceptoDePago(pg);
+    if(!cid)return {ok:false,error:'Primero asigna el pago a un concepto.'};
+    let p=papelVigenteDePago(pg);
+    if(!p||!idsLinajePapel(pg.papelTipo,p.id).includes(d.papelId))return {ok:false,error:'La declaración es de otro periodo.'};
+    if(!declaracionCubreConcepto(pg.papelTipo,p,d,cid))return {ok:false,error:'Esa declaración no cubre el concepto del pago.'};
+  }
+  pg.declaracionId=d.id;tocarRegistro(pg);save();
+  return {ok:true};
+}
+function pagosSinDeclaracion(tipoPapel,papelId){return getPagosPapel(tipoPapel,papelId).filter(pg=>!pg.declaracionId)}
+function etiquetaDeclaracion(d){
+  return [d.tipo==='complementaria'?'Complementaria':'Normal',d.fechaPresentacion?fmtDate(d.fechaPresentacion):null,d.folioDeclaracion?'Folio '+d.folioDeclaracion:null].filter(Boolean).join(' · ');
 }
 function tarjetaDeclaracionHtml(d,prefix){
   return `<div class="statbox" style="align-items:flex-start;text-align:left;padding:8px 12px;margin-bottom:6px">
@@ -972,17 +1095,59 @@ function refrescarResumenRetencionesUI(tipoPapel){
   }catch(e){console.error(e)}
 }
 function opcionesBancoHtml(){return BANCOS_CATALOGO.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('')}
-function tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix){
+function chipsCoberturaHtml(d,p,tipoPapel,det,clientId,ejercicio,periodo,prefix){
+  let cobertura=coberturaDeclaracion(tipoPapel,p,d);
+  let implicita=!(Array.isArray(d.conceptosCubiertos)&&d.conceptosCubiertos.length);
+  return cobertura.map(cid=>{
+    let nombre=(det.find(x=>x.id===cid)||{}).nombre||cid;
+    let puedeQuitar=!implicita&&cobertura.length>1&&!getPagosDeDeclaracion(d.id).some(pg=>claveConceptoDePago(pg)===cid);
+    return `<span class="pill p-gray" style="font-size:10.5px;margin:0 3px 3px 0">${esc(nombre)}${puedeQuitar?` <button style="all:unset;cursor:pointer;opacity:.6;margin-left:3px" title="Quitar este concepto de la declaración" onclick="quitarConceptoDeclaracionUI(${d.id},'${cid}','${tipoPapel}',${clientId},${ejercicio},${periodo},'${prefix}')">×</button>`:''}</span>`;
+  }).join('');
+}
+// Cada declaración se muestra UNA sola vez (aunque cubra varios conceptos), con los conceptos que cubre.
+function tarjetaDeclaracionRetencionHtml(d,p,tipoPapel,det,clientId,ejercicio,periodo,prefix,anterior){
+  return `<div data-decl-id="${d.id}" style="padding:7px 10px;margin-bottom:6px;background:#fff;border:1px solid var(--line);border-radius:8px;font-size:12px;${anterior?'opacity:.75':''}">
+    <div><b>${d.tipo==='complementaria'?'Complementaria':'Normal'}</b> · ${d.fechaPresentacion?fmtDate(d.fechaPresentacion):'Sin fecha'}${d.folioDeclaracion?' · Folio '+esc(d.folioDeclaracion):''}${d.observaciones?` <span class="role">· ${esc(d.observaciones)}</span>`:''}</div>
+    <div style="margin-top:4px"><span class="role" style="font-size:10.5px">Cubre:</span> ${chipsCoberturaHtml(d,p,tipoPapel,det,clientId,ejercicio,periodo,prefix)}</div>
+  </div>`;
+}
+function tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix,p){
   let partes=[`<b>${fmtMoneyMX(pg.importe)}</b>`,pg.fechaPago?fmtDate(pg.fechaPago):'Sin fecha'];
   if(pg.bancoPago)partes.push(esc(pg.bancoPago));
   if(pg.lineaCaptura)partes.push('Línea '+esc(pg.lineaCaptura));
   if(pg.folioPago)partes.push('Operación '+esc(pg.folioPago));
-  return `<div data-pago-id="${pg.id}" style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 8px;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:11.5px">
-    <span>${partes.join(' · ')}</span>
-    ${isAdmin?`<button class="btn" style="padding:1px 7px;font-size:10px" title="Eliminar pago" onclick="eliminarPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">✕</button>`:''}
+  let decl=pg.declaracionId?(db.fiscalDeclaraciones||[]).find(x=>x.id===pg.declaracionId):null;
+  let cid=claveConceptoDePago(pg);
+  let candidatas=(p&&cid)?declaracionesQueCubren(tipoPapel,p,cid):[];
+  let etiquetaDecl=decl
+    ?`<span class="role" style="font-size:11px">Declaración: ${esc(etiquetaDeclaracion(decl))}</span>`
+    :`<span class="pill p-amber" style="font-size:10px" title="Es un dato de evidencia, no un pendiente de pago">Pago sin declaración vinculada</span>`;
+  let vincular=(candidatas.length)?`<select id="${prefix}Vinc${pg.id}" style="max-width:230px;font-size:11px"><option value="">— sin vincular —</option>${candidatas.map(d=>`<option value="${d.id}" ${pg.declaracionId===d.id?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select>
+      <button class="btn" style="padding:1px 8px;font-size:10.5px" onclick="vincularPagoDeclaracionUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">Vincular</button>`:'';
+  return `<div data-pago-id="${pg.id}" style="padding:5px 8px;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:11.5px">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+      <span>${partes.join(' · ')}</span>
+      ${isAdmin?`<button class="btn" style="padding:1px 7px;font-size:10px" title="Eliminar pago" onclick="eliminarPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">✕</button>`:''}
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px">${etiquetaDecl}${vincular}</div>
   </div>`;
 }
-function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaraciones){
+function formNuevaDeclaracionConceptoHtml(prefix,key,detVisibles,args){
+  const id=s=>`${prefix}ND${key}${s}`;
+  return `<div id="${id('Form')}" class="card" style="display:none;background:#fff;padding:10px;margin-top:6px">
+    <div class="form-grid">
+      <div class="field"><label>Tipo</label><select id="${id('Tipo')}"><option value="normal">Normal</option><option value="complementaria">Complementaria</option></select></div>
+      <div class="field"><label>Fecha de presentación</label><input id="${id('Fecha')}" type="date"></div>
+      <div class="field"><label>Folio / operación</label><input id="${id('Folio')}"></div>
+      <div class="field full"><label>Esta declaración cubre</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px">${detVisibles.map(c=>`<label style="font-size:12px;display:flex;gap:5px;align-items:center"><input type="checkbox" class="${prefix}ND${key}Cubre" value="${esc(c.id)}" ${String(c.id)===String(key)?'checked':''}> ${esc(c.nombre)}</label>`).join('')}</div>
+        <div class="hint" style="margin-top:3px">Una sola declaración puede cubrir varios conceptos: si ya registraste ese folio, no se duplica, se amplía lo que cubre.</div>
+      </div>
+    </div>
+    <button class="btn primary" style="margin-top:6px" onclick="guardarDeclaracionConceptoUI(${args},'${key}')">Guardar declaración</button>
+  </div>`;
+}
+function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaracionesElegibles,sinDeclaracionAviso){
   const id=s=>`${prefix}NP${key}${s}`;
   return `<div id="${id('Form')}" class="card" style="display:none;background:#fff;padding:10px;margin-top:6px">
     <div class="form-grid">
@@ -994,14 +1159,54 @@ function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaracione
       <div class="field"><label>Línea de captura / referencia</label><input id="${id('Linea')}"></div>
       <div class="field"><label>Vigencia de la línea</label><input id="${id('Vigencia')}" type="date"></div>
       <div class="field"><label>Operación / folio del pago</label><input id="${id('Folio')}"></div>
-      ${declaraciones.length>1?`<div class="field"><label>Declaración</label><select id="${id('Decl')}"><option value="">—</option>${declaraciones.map(d=>`<option value="${d.id}">${d.tipo==='complementaria'?'Complementaria':'Normal'} · ${d.fechaPresentacion?fmtDate(d.fechaPresentacion):'s/f'}${d.folioDeclaracion?' · '+esc(d.folioDeclaracion):''}</option>`).join('')}</select></div>`:''}
+      ${declaracionesElegibles.length>1?`<div class="field"><label>Declaración que respalda este pago</label><select id="${id('Decl')}">${declaracionesElegibles.map((d,i)=>`<option value="${d.id}" ${i===declaracionesElegibles.length-1?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select></div>`:''}
     </div>
+    ${sinDeclaracionAviso?'<div class="hint" style="margin-top:4px">Aún no hay una declaración registrada para esto: el pago se guardará sin declaración vinculada y podrás vincularlo después.</div>':''}
     <button class="btn primary" style="margin-top:6px" onclick="guardarPagoConceptoUI(${args},'${key}')">Guardar pago</button>
   </div>`;
 }
 function alternarFormPagoConcepto(prefix,key){
   let f=document.getElementById(`${prefix}NP${key}Form`);
   if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+function alternarFormDeclConcepto(prefix,key){
+  let f=document.getElementById(`${prefix}ND${key}Form`);
+  if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+function guardarDeclaracionConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key){
+  const el=s=>document.getElementById(`${prefix}ND${key}${s}`);
+  let ids=[...document.querySelectorAll(`.${prefix}ND${key}Cubre`)].filter(x=>x.checked).map(x=>x.value);
+  let folio=el('Folio').value.trim(),fecha=el('Fecha').value||null,tipo=el('Tipo').value;
+  let p=papelPorId(tipoPapel,papelId);
+  let v=p?validarCoberturaRetenciones(tipoPapel,p,ids):{ok:false,error:'Papel no encontrado.'};
+  if(!v.ok){alert(v.error);mostrarToast('No se registró la declaración',v.error,'error');return null}
+  let existente=buscarDeclaracionPorFolio(tipoPapel,p,folio);
+  if(existente){
+    let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+    let actual=coberturaDeclaracion(tipoPapel,p,existente);
+    let nuevos=v.ids.filter(i=>!actual.includes(i));
+    let nombres=l=>l.map(i=>(det.find(x=>x.id===i)||{}).nombre||i).join(', ');
+    if(!nuevos.length){alert(`Esa declaración (folio ${folio}) ya existe en este periodo y ya cubre: ${nombres(actual)}. No se duplicó.`);mostrarToast('Declaración ya registrada','No se duplicó: ya cubre esos conceptos','error');return null}
+    if(!confirm(`Ya existe una declaración con el folio "${folio}" en este periodo (cubre: ${nombres(actual)}).\n\nNo se creará otra: se agregará a lo que cubre → ${nombres(nuevos)}.\n\n¿Continuar?`))return null;
+  }
+  let r=registrarDeclaracionRetenciones(tipoPapel,papelId,clientId,{tipo,fechaPresentacion:fecha,folioDeclaracion:folio||null,conceptos:ids});
+  if(!r.ok){alert(r.error);mostrarToast('No se registró la declaración',r.error,'error');return null}
+  mostrarToast(r.creada?'✓ Declaración registrada':'✓ Declaración compartida: se amplió lo que cubre',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${r.pagosVinculados?` · ${r.pagosVinculados} pago(s) vinculado(s)`:''}`);
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+  return r.declaracion;
+}
+function quitarConceptoDeclaracionUI(declId,cid,tipoPapel,clientId,ejercicio,periodo,prefix){
+  if(!confirm('¿Quitar este concepto de la cobertura de la declaración?\n\nLa declaración y sus datos se conservan; solo deja de cubrir ese concepto.'))return;
+  let r=quitarConceptoDeDeclaracion(declId,cid);
+  if(!r.ok){alert(r.error);mostrarToast('No se modificó la cobertura',r.error,'error');return}
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+}
+function vincularPagoDeclaracionUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefix){
+  let sel=document.getElementById(`${prefix}Vinc${pagoId}`);if(!sel)return;
+  let r=vincularPagoADeclaracion(pagoId,sel.value||null);
+  if(!r.ok){alert(r.error);mostrarToast('No se vinculó el pago',r.error,'error');return}
+  mostrarToast(sel.value?'✓ Pago vinculado a la declaración':'Vínculo quitado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
 }
 function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key){
   const el=s=>document.getElementById(`${prefix}NP${key}${s}`);
@@ -1011,13 +1216,20 @@ function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,pref
   if(!(importe>0)){alert('Captura el importe del pago.');mostrarToast('No se registró el pago','Falta el importe','error');return null}
   let bancoSel=el('Banco'),banco=bancoSel?bancoSel.value:'';
   if(banco==='Otro'){let o=el('BancoOtro');banco=o?o.value.trim():''}
-  let declaraciones=getDeclaracionesPapel(tipoPapel,papelId);
-  let declId=(el('Decl')&&el('Decl').value)?+el('Decl').value:(declaraciones.length===1?declaraciones[0].id:null);
+  let p=papelPorId(tipoPapel,papelId);
+  // Declaración que respalda el pago: solo una que CUBRA su concepto. Una sola → automática; varias → la elegida (por defecto, la vigente); ninguna → "sin declaración vinculada".
+  let cubren=p?declaracionesQueCubren(tipoPapel,p,conceptoId):[];
+  let elegido=(el('Decl')&&el('Decl').value)?+el('Decl').value:null;
+  let declId=null;
+  if(elegido){
+    if(!cubren.some(d=>d.id===elegido)){alert('La declaración elegida no cubre este concepto.');mostrarToast('No se registró el pago','La declaración no cubre el concepto','error');return null}
+    declId=elegido;
+  }else if(cubren.length)declId=cubren[cubren.length-1].id;
   let pg=agregarPago(tipoPapel,papelId,clientId,{
     declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
     lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
   });
-  mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
+  mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${declId?'':' · sin declaración vinculada'}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
   return pg;
 }
@@ -1030,7 +1242,7 @@ function asignarConceptoPagoUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefi
 }
 function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo){
   const tipoCump=p.tipoCumplimiento||'normal';
-  const declaraciones=getDeclaracionesPapel(tipoPapel,p.id);
+  const declaraciones=ordenarDeclaraciones(getDeclaracionesPapel(tipoPapel,p.id));
   const det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
   const der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
   const args=`'${tipoPapel}',${p.id},${clientId},${ejercicio},${periodo},'${prefix}'`;
@@ -1041,10 +1253,9 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
         <option value="complementaria" ${tipoCump==='complementaria'?'selected':''}>Complementaria</option>
         <option value="en_ceros" ${tipoCump==='en_ceros'?'selected':''}>Presentada en ceros / Sin operaciones</option>
       </select></div>`;
-  let cuerpo='';
   if(tipoCump==='en_ceros'){
     let decl=declaraciones[0];
-    cuerpo=`<div class="hint" style="margin-bottom:8px;color:var(--amber)">Presentada en ceros — no exige importe pagado, banco ni línea de captura.</div>
+    let cuerpo=`<div class="hint" style="margin-bottom:8px;color:var(--amber)">Presentada en ceros — no exige importe pagado, banco ni línea de captura.</div>
       ${decl?tarjetaDeclaracionHtml(decl,prefix):`<div class="form-grid">
         <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
         <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
@@ -1052,29 +1263,24 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
       </div><button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},'normal',null)">Guardar</button>`}`;
     return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px"><h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>${selector}<div style="margin-top:10px">${cuerpo}</div></div>`;
   }
-  // Declaraciones (1:N) — igual que en el resto de los impuestos
-  let seccionDecl;
-  if(tipoCump==='complementaria'){
-    seccionDecl=`<b style="font-size:12px">Declaraciones</b>
-      ${declaraciones.map(d=>tarjetaDeclaracionHtml(d,prefix)).join('')||'<div class="role">Sin declaraciones registradas</div>'}
-      <div class="form-grid" style="margin-top:6px">
-        <div class="field"><label>Tipo</label><select id="${prefix}NuevaDeclTipo"><option value="normal">Normal</option><option value="complementaria" ${declaraciones.length?'selected':''}>Complementaria</option></select></div>
-        <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
-        <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
-      </div>
-      <button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},document.getElementById('${prefix}NuevaDeclTipo').value,${declaraciones.length?declaraciones[declaraciones.length-1].id:null})">+ Agregar declaración</button>`;
-  }else{
-    let decl=declaraciones[0];
-    seccionDecl=`<b style="font-size:12px">Declaración</b>
-      ${decl?tarjetaDeclaracionHtml(decl,prefix):`<div class="form-grid">
-        <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
-        <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
-      </div><button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},'normal',null)">Guardar declaración</button>`}`;
-  }
   const fm=n=>n==null?'—':fmtMoneyMX(n);
+  const nombreDe=id=>(det.find(x=>x.id===id)||{}).nombre||id;
   const celda=(t,v)=>`<div><div class="role" style="font-size:10px;text-transform:uppercase">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
   const grid='display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;font-size:12.5px';
-  const conceptosHtml=der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).map(c=>`
+  const visibles=der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length);
+  // Declaraciones del papel: cada una UNA sola vez, con los conceptos que cubre
+  const vigentes=new Set(visibles.map(c=>{let v=declaracionVigenteDeConcepto(tipoPapel,p,c.id);return v?v.id:null}).filter(Boolean));
+  const seccionDecl=`<b style="font-size:12px">Declaraciones</b>
+    <div class="hint" style="margin:2px 0 6px">Se registran dentro de cada concepto. Una declaración puede cubrir varios conceptos y aquí aparece una sola vez.</div>
+    ${declaraciones.length?declaraciones.map(d=>tarjetaDeclaracionRetencionHtml(d,p,tipoPapel,det,clientId,ejercicio,periodo,prefix,!vigentes.has(d.id))).join(''):'<div class="role">Sin declaraciones registradas todavía</div>'}`;
+  const conceptosHtml=visibles.map(c=>{
+    const cubren=declaracionesQueCubren(tipoPapel,p,c.id);
+    const lineasDecl=cubren.length
+      ?cubren.slice().reverse().map((d,i)=>{
+          let otros=coberturaDeclaracion(tipoPapel,p,d).filter(x=>x!==c.id).map(nombreDe);
+          return `<div style="font-size:11.5px;${i?'opacity:.65':''}">${i===0?'Declaración':'Declaración anterior'}: <b>${esc(etiquetaDeclaracion(d))}</b>${otros.length?` <span class="role">· compartida con ${esc(otros.join(', '))}</span>`:''}</div>`}).join('')
+      :'<div style="font-size:11.5px;color:var(--amber)">Sin declaración registrada para este concepto</div>';
+    return `
     <div class="card" style="padding:10px 12px;margin:8px 0;background:var(--bg)">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
         <b style="font-size:13px">${esc(c.nombre)}</b>
@@ -1089,15 +1295,18 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
         ${celda('Ajuste',c.pagado==null?'—':(c.esRedondeo?fm(c.ajuste):fm(0)))}
         ${celda('Pendiente','<b>'+fm(c.pendiente)+'</b>')}
       </div>
-      ${c.pagos.map(pg=>tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix)).join('')}
+      <div style="margin-top:8px">${lineasDecl}</div>
+      <button class="btn" style="margin-top:6px;padding:3px 10px;font-size:11.5px" onclick="alternarFormDeclConcepto('${prefix}','${c.id}')">+ Registrar declaración</button>
+      ${formNuevaDeclaracionConceptoHtml(prefix,c.id,visibles.map(x=>({id:x.id,nombre:x.nombre})),args)}
+      ${c.pagos.map(pg=>tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix,p)).join('')}
       <button class="btn" style="margin-top:6px;padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','${c.id}')">+ Agregar pago</button>
-      ${formNuevoPagoConceptoHtml(prefix,c.id,null,args,declaraciones)}
-    </div>`).join('');
+      ${formNuevoPagoConceptoHtml(prefix,c.id,null,args,cubren,cubren.length===0)}
+    </div>`}).join('');
   const sinAsignarHtml=der.sinAsignar.length?`
     <div class="card" style="padding:10px 12px;margin:8px 0;border:1px dashed var(--amber);background:#fffaf0">
       <b style="font-size:12.5px">Pagos sin asignar a un concepto (${der.sinAsignar.length})</b>
       <div class="hint" style="margin:3px 0 6px">Asigna cada pago al concepto que liquida. No se vuelve a capturar nada: solo se establece la relación.</div>
-      ${der.sinAsignar.map(pg=>`${tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix)}
+      ${der.sinAsignar.map(pg=>`${tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix,p)}
         <div style="display:flex;gap:6px;align-items:center;margin:3px 0 6px 8px;font-size:11.5px">
           <span>Aplicar a:</span>
           <select id="${prefix}Asig${pg.id}" style="max-width:240px"><option value="">— Selecciona —</option>${det.map(c=>`<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select>
@@ -1105,9 +1314,10 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
         </div>`).join('')}
     </div>`:'';
   const generalHtml=`<div style="margin-top:8px"><button class="btn" style="padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','G')">+ Agregar pago (vista general)</button>
-      ${formNuevoPagoConceptoHtml(prefix,'G',det,args,declaraciones)}</div>`;
+      ${formNuevoPagoConceptoHtml(prefix,'G',det,args,declaraciones.length>1?declaraciones:[],declaraciones.length===0)}</div>`;
   const etiquetaTotal=tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA';
   const celdaT=(t,v)=>`<div><div style="font-size:10px;text-transform:uppercase;opacity:.8">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
+  const nSinDecl=pagosSinDeclaracion(tipoPapel,p.id).length;
   const totalHtml=`<div class="card" style="background:var(--nav);color:#fff;margin-top:10px;padding:12px 14px">
       <b style="font-size:12.5px;letter-spacing:.02em">${etiquetaTotal}</b>
       <div style="${grid};margin-top:8px">
@@ -1121,13 +1331,14 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
       </div>
       <div style="margin-top:6px;font-size:10.5px;opacity:.8">Suma de los conceptos — no es un dato editable.</div>
       ${der.sinAsignar.length?`<div style="margin-top:6px;font-size:11px;color:#ffd98a">Hay pagos sin asignar: el redondeo por concepto se aplicará en cuanto los asignes.</div>`:''}
+      ${nSinDecl?`<div style="margin-top:6px;font-size:11px;color:#ffd98a">${nSinDecl} pago(s) sin declaración vinculada — es evidencia por completar, no un pendiente de pago.</div>`:''}
     </div>`;
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
     <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
     ${selector}
     <div style="margin-top:10px">${seccionDecl}</div>
-    <div style="margin-top:14px"><b style="font-size:12px">Pagos por concepto de retención</b>
-      <div class="hint" style="margin:2px 0 4px">Cada concepto puede pagarse por separado y admite más de un pago.</div>
+    <div style="margin-top:14px"><b style="font-size:12px">Conceptos de retención: declaraciones y pagos</b>
+      <div class="hint" style="margin:2px 0 4px">Cada concepto puede tener sus declaraciones y pagarse por separado; admite más de un pago.</div>
       ${conceptosHtml||'<div class="role">Sin conceptos con retención en este papel</div>'}
       ${sinAsignarHtml}${generalHtml}</div>
     ${totalHtml}
@@ -1250,30 +1461,43 @@ function desactivarConceptoRetUI(prefix,ambito,idx,catalogoId){
 // Sección de Cumplimiento del PDF para Retenciones: por concepto, con sus pagos. Mismos datos que la pantalla.
 function seccionCumplimientoRetencionesPdf(p,tipoPapel){
   if(p.tipoCumplimiento==='en_ceros')return seccionCumplimientoPdf(p,tipoPapel);
-  let declaraciones=getDeclaracionesPapel(tipoPapel,p.id);
+  let declaraciones=ordenarDeclaraciones(getDeclaracionesPapel(tipoPapel,p.id));
   let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
   let der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
   if(!declaraciones.length&&!der.tienePagos)return [];
   const fm=n=>n==null?'—':fmtMoneyMX(n);
-  const detallePago=pg=>[pg.fechaPago?fmtDate(pg.fechaPago):null,pg.bancoPago,pg.lineaCaptura?'Línea '+pg.lineaCaptura:null,pg.folioPago?'Operación '+pg.folioPago:null].filter(Boolean).join(' · ');
+  const nombreDe=id=>(det.find(x=>x.id===id)||{}).nombre||id;
+  const declDePago=pg=>pg.declaracionId?(declaraciones.find(d=>d.id===pg.declaracionId)||null):null;
+  const detallePago=pg=>{
+    let d=declDePago(pg);
+    return [pg.fechaPago?fmtDate(pg.fechaPago):null,pg.bancoPago,pg.lineaCaptura?'Línea '+pg.lineaCaptura:null,pg.folioPago?'Operación '+pg.folioPago:null,
+      d?'Declaración '+(d.folioDeclaracion?'folio '+d.folioDeclaracion:etiquetaDeclaracion(d)):'sin declaración vinculada'].filter(Boolean).join(' · ');
+  };
   let secciones=[];
+  // Cada declaración UNA sola vez, con los conceptos que cubre (aunque cubra varios)
   if(declaraciones.length){
-    secciones.push({titulo:'Cumplimiento — Declaraciones',filas:declaraciones.map((d,i)=>{
-      let partes=[];if(d.fechaPresentacion)partes.push(fmtDate(d.fechaPresentacion));if(d.folioDeclaracion)partes.push('Folio '+d.folioDeclaracion);
-      return [declaraciones.length>1?`Declaración ${i+1} (${d.tipo==='complementaria'?'Complementaria':'Normal'})`:'Declaración',partes.join(' · ')||'—'];
-    })});
+    secciones.push({titulo:'Cumplimiento — Declaraciones',filas:declaraciones.map((d,i)=>[
+      `Declaración ${i+1}: ${etiquetaDeclaracion(d)}`,
+      'Cubre: '+coberturaDeclaracion(tipoPapel,p,d).map(nombreDe).join(', ')
+    ])});
   }
   der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).forEach(c=>{
+    let cubren=declaracionesQueCubren(tipoPapel,p,c.id);
+    let vig=cubren.length?cubren[cubren.length-1]:null;
+    let compartida=vig?coberturaDeclaracion(tipoPapel,p,vig).filter(x=>x!==c.id).map(nombreDe):[];
     secciones.push({titulo:`Cumplimiento — ${c.nombre}`,filas:[
       ['Retenido',fm(c.retenido)],['Actualización',fm(c.actualizacion)],['Recargos',fm(c.recargos)],['Total determinado',fm(c.totalDeterminado)],
       ['Pagado',fm(c.pagado)],['Ajuste por redondeo',c.pagado==null?'—':fm(c.esRedondeo?c.ajuste:0)],['Pendiente',fm(c.pendiente)],
+      ['Declaración',vig?etiquetaDeclaracion(vig)+(compartida.length?` (compartida con ${compartida.join(', ')})`:''):'Sin declaración registrada'],
       ...c.pagos.map((pg,i)=>[`Pago ${i+1}: ${detallePago(pg)}`,fm(pg.importe)])
     ],negritaUltima:false});
   });
   if(der.sinAsignar.length)secciones.push({titulo:'Cumplimiento — Pagos sin asignar a un concepto',filas:der.sinAsignar.map(pg=>[detallePago(pg),fm(pg.importe)])});
+  let nSinDecl=pagosSinDeclaracion(tipoPapel,p.id).length;
   secciones.push({titulo:tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA',negritas:true,filas:[
     ['Principal retenido',fm(der.totalRetenido)],['Actualización',fm(der.actualizacionTotal)],['Recargos',fm(der.recargosTotal)],['Total determinado',fm(der.totalDeterminado)],
-    ['Pagado',fm(der.totalPagado)],['Ajuste por redondeo',der.tienePagos?fm(der.ajusteTotal):'—'],['Pendiente',fm(der.pendienteTotal)]
+    ['Pagado',fm(der.totalPagado)],['Ajuste por redondeo',der.tienePagos?fm(der.ajusteTotal):'—'],['Pendiente',fm(der.pendienteTotal)],
+    ...(nSinDecl?[['Pagos sin declaración vinculada (evidencia por completar, no es un pendiente de pago)',String(nSinDecl)]]:[])
   ]});
   return secciones;
 }
@@ -2065,8 +2289,28 @@ function detalleCedulaRetenciones(tipoPapel,clientId,ejercicio,meses){
       pendiente:g('pendiente')
     };
   };
+  // Fecha de presentación de la declaración VIGENTE de cada concepto en cada mes (texto, no suma)
+  const filaDeclaracion=id=>({tipo:'texto',cierre:null,valores:meses.map(m=>{
+    if(!m)return null;
+    let vig=declaracionVigenteDeConcepto(tipoPapel,m,id);
+    return vig?(vig.fechaPresentacion?fmtDate(vig.fechaPresentacion):'s/f'):null;
+  })});
+  // Declaraciones del ejercicio: CADA declaración una sola vez (aunque cubra varios conceptos)
+  let vistas=new Set(),declaraciones=[];
+  meses.forEach(m=>{
+    if(!m)return;
+    let detMes=conceptosDeterminadosRetenciones(tipoPapel,m.salariosRetenido,m.conceptos);
+    getDeclaracionesPapel(tipoPapel,m.id).forEach(d=>{
+      if(vistas.has(d.id))return;vistas.add(d.id);
+      let implicita=!(Array.isArray(d.conceptosCubiertos)&&d.conceptosCubiertos.length);
+      declaraciones.push({id:d.id,periodo:m.periodo,mes:MESES_NOMBRE[m.periodo-1],fecha:d.fechaPresentacion||null,tipo:d.tipo==='complementaria'?'Complementaria':'Normal',folio:d.folioDeclaracion||null,
+        conceptos:implicita?['Todos los conceptos']:coberturaDeclaracion(tipoPapel,m,d).map(cid=>(detMes.find(x=>x.id===cid)||{}).nombre||nombres[cid]||cid)});
+    });
+  });
+  declaraciones.sort((a,b)=>a.periodo-b.periodo||(a.fecha||'').localeCompare(b.fecha||'')||a.id-b.id);
   return {
-    conceptos:orden.map(id=>({id,nombre:nombres[id],filas:filasConcepto(id)})),
+    declaraciones,
+    conceptos:orden.map(id=>({id,nombre:nombres[id],filas:{...filasConcepto(id),declaracion:filaDeclaracion(id)}})),
     total:{
       principalRetenido:serie(d=>d.totalRetenido),actualizacion:serie(d=>d.actualizacionTotal),recargos:serie(d=>d.recargosTotal),
       totalDeterminado:serie(d=>d.totalDeterminado),pagado:serie(d=>d.totalPagado),
@@ -2074,15 +2318,29 @@ function detalleCedulaRetenciones(tipoPapel,clientId,ejercicio,meses){
     }
   };
 }
+function tablaDeclaracionesEjercicioHtml(detalle){
+  if(!detalle.declaraciones.length)return '';
+  return `<h3 style="font-size:13px;margin:18px 0 6px">Declaraciones del ejercicio</h3>
+    <div style="overflow-x:auto"><table class="cedula-table" style="min-width:640px"><thead><tr><th>Periodo</th><th>Fecha</th><th>Tipo</th><th>Folio / operación</th><th>Conceptos cubiertos</th></tr></thead><tbody>
+    ${detalle.declaraciones.map(d=>`<tr><td class="lbl">${esc(d.mes)}</td><td>${d.fecha?fmtDate(d.fecha):'—'}</td><td>${d.tipo}</td><td style="white-space:nowrap">${d.folio?esc(d.folio):'—'}</td><td class="lbl">${esc(d.conceptos.join(', '))}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="hint" style="margin-top:6px">Cada declaración aparece una sola vez, aunque cubra varios conceptos.</div>`;
+}
+function tablaExtraDeclaracionesPdf(detalle){
+  if(!detalle.declaraciones.length)return null;
+  return {titulo:'Declaraciones del ejercicio',encabezados:['Periodo','Fecha','Tipo','Folio / operación','Conceptos cubiertos'],anchos:[30,26,30,70,125],
+    filas:detalle.declaraciones.map(d=>[d.mes,d.fecha?fmtDate(d.fecha):'—',d.tipo,d.folio||'—',d.conceptos.join(', ')])};
+}
 function cedulaRetencionesFilasHtml(detalle,fila,tituloTotal){
   const cab=t=>`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">${t}</td></tr>`;
-  const bloque=(titulo,f)=>cab(titulo)+fila('Retenido',f.retenido)+fila('Actualización',f.actualizacion)+fila('Recargos',f.recargos)+fila('Total determinado',f.totalDeterminado)+fila('Pagado',f.pagado)+fila('Ajuste por redondeo',f.ajuste)+fila('Pendiente',f.pendiente);
+  const filaTexto=(label,o)=>`<tr><td class="lbl">${label}</td>${o.valores.map(v=>`<td style="text-align:right;font-size:11px;white-space:nowrap">${v==null?'—':esc(String(v))}</td>`).join('')}<td style="text-align:right;background:#fbf8f0">—</td></tr>`;
+  const bloque=(titulo,f)=>cab(titulo)+fila('Retenido',f.retenido)+fila('Actualización',f.actualizacion)+fila('Recargos',f.recargos)+fila('Total determinado',f.totalDeterminado)+fila('Pagado',f.pagado)+fila('Ajuste por redondeo',f.ajuste)+fila('Pendiente',f.pendiente)+(f.declaracion?filaTexto('Declaración (fecha de presentación)',f.declaracion):'');
   let t=detalle.total;
   return detalle.conceptos.map(cn=>bloque(esc(cn.nombre),cn.filas)).join('')+bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente});
 }
 function cedulaRetencionesFilasPdf(detalle,tituloTotal){
   const vacia=t=>[t.toUpperCase(),...Array(13).fill('')];
-  const bloque=(titulo,f)=>[vacia(titulo),filaCedulaPdf('Retenido',f.retenido),filaCedulaPdf('Actualización',f.actualizacion),filaCedulaPdf('Recargos',f.recargos),filaCedulaPdf('Total determinado',f.totalDeterminado),filaCedulaPdf('Pagado',f.pagado),filaCedulaPdf('Ajuste por redondeo',f.ajuste),filaCedulaPdf('Pendiente',f.pendiente)];
+  const bloque=(titulo,f)=>[vacia(titulo),filaCedulaPdf('Retenido',f.retenido),filaCedulaPdf('Actualización',f.actualizacion),filaCedulaPdf('Recargos',f.recargos),filaCedulaPdf('Total determinado',f.totalDeterminado),filaCedulaPdf('Pagado',f.pagado),filaCedulaPdf('Ajuste por redondeo',f.ajuste),filaCedulaPdf('Pendiente',f.pendiente),...(f.declaracion?[filaCedulaPdf('Declaración (fecha)',f.declaracion)]:[])];
   let t=detalle.total;
   return [...detalle.conceptos.flatMap(cn=>bloque(cn.nombre,cn.filas)),...bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente})];
 }
@@ -2697,6 +2955,10 @@ function avanzarEstatusPapelGenerico(tipoPapel,id,nuevoEstatus,ejercicio,periodo
   if(!isAdmin){alert('Solo un administrador puede revisar/publicar papeles fiscales.');return}
   let arr=PAPEL_ARRAY_DB[tipoPapel];
   let p=(db[arr]||[]).find(x=>x.id===id);if(!p)return;
+  if(nuevoEstatus==='revisado'&&esPapelRetenciones(tipoPapel)){
+    let sinDecl=pagosSinDeclaracion(tipoPapel,p.id);
+    if(sinDecl.length&&!confirm(`Este papel tiene ${sinDecl.length} pago(s) sin declaración vinculada.\n\nNo es un pendiente de pago: solo significa que aún no se relacionó cada pago con la declaración que lo respalda. Puedes marcarlo como revisado de todas formas y vincularlos después.\n\n¿Marcar como revisado?`))return;
+  }
   p.estatus=nuevoEstatus;
   if(nuevoEstatus==='revisado'){p.revisadoPor=currentStaff?currentStaff.id:null;p.revisadoEn=new Date().toISOString()}
   save();
@@ -3194,7 +3456,7 @@ function verCedulaRetencionesISR(clientId,ejercicio){
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES ISR')}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}<div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== Retenciones IVA — Interfaz de captura =====================
@@ -3264,7 +3526,7 @@ function verCedulaRetencionesIVA(clientId,ejercicio){
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES IVA')}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}<div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== ISN — Interfaz de captura =====================
@@ -3631,7 +3893,7 @@ function verCedulaBebidas(clientId,ejercicio){
 // --- Impresión de cédulas ENE-DIC: SIEMPRE lee de los papeles ya guardados (getCedulaAnualX ya hace esto) ---
 function filaCedulaPdf(label,obj){
   let esCoeficiente=label.toLowerCase().includes('coeficiente');
-  let fmt=v=>v==null?'—':(obj.tipo==='referencia'?(esCoeficiente?v:v+'%'):fmtMoneyMX(v));
+  let fmt=v=>v==null?'—':(obj.tipo==='texto'?String(v):(obj.tipo==='referencia'?(esCoeficiente?v:v+'%'):fmtMoneyMX(v)));
   return [label,...obj.valores.map(fmt),obj.cierre==null?'—':fmt(obj.cierre)];
 }
 function construirConfigCedulaISRPM(clientId,ejercicio){
@@ -3693,6 +3955,7 @@ function construirConfigCedulaRetencionesISR(clientId,ejercicio){
     titulo:'Cédula Anual — Retenciones ISR',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES ISR'),
+    tablaExtra:tablaExtraDeclaracionesPdf(c.detalle),
     nombreArchivo:`Cedula_Retenciones_ISR_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
@@ -3707,6 +3970,7 @@ function construirConfigCedulaRetencionesIVA(clientId,ejercicio){
     titulo:'Cédula Anual — Retenciones IVA',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
     filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES IVA'),
+    tablaExtra:tablaExtraDeclaracionesPdf(c.detalle),
     nombreArchivo:`Cedula_Retenciones_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
@@ -4433,6 +4697,15 @@ function dibujarCedulaFiscalEnDoc(doc,config){
   if(config.notaPie){
     let y=doc.lastAutoTable.finalY+6;
     doc.setFontSize(8);doc.setTextColor(100);doc.text(config.notaPie,10,y);
+  }
+  if(config.tablaExtra){
+    let te=config.tablaExtra;
+    let y=doc.lastAutoTable.finalY+(config.notaPie?14:10);
+    if(y>doc.internal.pageSize.getHeight()-40){doc.addPage('a4','landscape');drawHeader();y=30}
+    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(0);doc.text(te.titulo,10,y);doc.setFont(undefined,'normal');
+    let cs={};(te.anchos||[]).forEach((w,i)=>{cs[i]={cellWidth:w}});
+    doc.autoTable({startY:y+3,head:[te.encabezados],body:te.filas,theme:'grid',styles:{fontSize:7,cellPadding:1.6,overflow:'linebreak'},
+      headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold',fontSize:7},columnStyles:cs,margin:{left:8,right:8},didDrawPage:drawHeader});
   }
 }
 async function generarPdfCedulaFiscal(config){
