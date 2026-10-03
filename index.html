@@ -486,16 +486,16 @@ const TABLE_MAP={
   controlesFiscales:{table:'controles_fiscales',key:'id',cols:{id:'id',client:'client_id',tipo:'tipo',ejercicio:'ejercicio',datos:'datos',saldoOriginal:'saldo_original',estatus:'estatus',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en'}},
   controlesMovimientos:{table:'controles_fiscales_movimientos',key:'id',cols:{id:'id',control:'control_id',periodo:'periodo',tipoMovimiento:'tipo_movimiento',importe:'importe',papelTipo:'papel_tipo',papelId:'papel_id',valorPropuesto:'valor_propuesto',valorConfirmado:'valor_confirmado',fueAjustado:'fue_ajustado_por_usuario',usuario:'usuario_id',fecha:'fecha',observacion:'observacion'}},
   fiscalConceptosIngreso:{table:'fiscal_conceptos_ingreso',key:'id',cols:{id:'id',client:'client_id',nombre:'nombre',estatus:'estatus',creadoPor:'creado_por',creadoEn:'creado_en'}},
-  fiscalPapelIsrPm:{table:'fiscal_papel_isr_pm',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',ingresos:'ingresos',totalIngresosMes:'total_ingresos_mes',ingresosAcumulados:'ingresos_acumulados',inventarioAcumulable:'inventario_acumulable',coeficienteValor:'coeficiente_valor',coeficienteControlId:'coeficiente_control_id',tasaIsr:'tasa_isr',tasaIsrParamId:'tasa_isr_param_id',utilidadFiscalAcumulada:'utilidad_fiscal_acumulada',ptuPropuesta:'ptu_propuesta',ptuConfirmada:'ptu_confirmada',ptuAjustada:'ptu_ajustada',ptuControlId:'ptu_control_id',perdidaPropuesta:'perdida_propuesta',perdidaConfirmada:'perdida_confirmada',perdidaAjustada:'perdida_ajustada',perdidaDetalle:'perdida_detalle',baseIsr:'base_isr',isrDeterminadoAcumulado:'isr_determinado_acumulado',pagosProvisionalesPropuestos:'pagos_provisionales_propuestos',pagosProvisionalesConfirmados:'pagos_provisionales_confirmados',pagosProvAjustado:'pagos_prov_ajustado',isrRetenidoContribuyenteMes:'isr_retenido_contribuyente_mes',isrRetenidoContribuyenteAcumulado:'isr_retenido_contribuyente_acumulado',resultadoIsrCargo:'resultado_isr_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelIva:{table:'fiscal_papel_iva',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',baseGravada16:'base_gravada_16',baseTasa0:'base_tasa_0',baseExentos:'base_exentos',baseNoObjeto:'base_no_objeto',ivaTrasladado:'iva_trasladado',acredBase16:'acred_base_16',acredBase0:'acred_base_0',acredExentosNoObjeto:'acred_exentos_no_objeto',acredDesglose:'acred_desglose',ivaAcreditable:'iva_acreditable',tasaIva:'tasa_iva',tasaIvaParamId:'tasa_iva_param_id',ivaRetenidoContribuyente:'iva_retenido_contribuyente',otrasCantidades:'otras_cantidades',resultadoAntesAplicaciones:'resultado_antes_aplicaciones',ivaACargoDelPeriodo:'iva_a_cargo_del_periodo',ivaAFavorGenerado:'iva_a_favor_generado',saldoFavorPropuesto:'saldo_favor_propuesto',saldoFavorAplicado:'saldo_favor_aplicado',saldoFavorAjustado:'saldo_favor_ajustado',saldoFavorDetalle:'saldo_favor_detalle',controlGeneradoId:'control_generado_id',ivaFinalAPagar:'iva_final_a_pagar',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelIsrPm:{table:'fiscal_papel_isr_pm',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',ingresos:'ingresos',totalIngresosMes:'total_ingresos_mes',ingresosAcumulados:'ingresos_acumulados',inventarioAcumulable:'inventario_acumulable',coeficienteValor:'coeficiente_valor',coeficienteControlId:'coeficiente_control_id',tasaIsr:'tasa_isr',tasaIsrParamId:'tasa_isr_param_id',utilidadFiscalAcumulada:'utilidad_fiscal_acumulada',ptuPropuesta:'ptu_propuesta',ptuConfirmada:'ptu_confirmada',ptuAjustada:'ptu_ajustada',ptuControlId:'ptu_control_id',perdidaPropuesta:'perdida_propuesta',perdidaConfirmada:'perdida_confirmada',perdidaAjustada:'perdida_ajustada',perdidaDetalle:'perdida_detalle',baseIsr:'base_isr',isrDeterminadoAcumulado:'isr_determinado_acumulado',pagosProvisionalesPropuestos:'pagos_provisionales_propuestos',pagosProvisionalesConfirmados:'pagos_provisionales_confirmados',pagosProvAjustado:'pagos_prov_ajustado',isrRetenidoContribuyenteMes:'isr_retenido_contribuyente_mes',isrRetenidoContribuyenteAcumulado:'isr_retenido_contribuyente_acumulado',resultadoIsrCargo:'resultado_isr_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelIva:{table:'fiscal_papel_iva',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',baseGravada16:'base_gravada_16',baseTasa0:'base_tasa_0',baseExentos:'base_exentos',baseNoObjeto:'base_no_objeto',ivaTrasladado:'iva_trasladado',acredBase16:'acred_base_16',acredBase0:'acred_base_0',acredExentosNoObjeto:'acred_exentos_no_objeto',acredDesglose:'acred_desglose',ivaAcreditable:'iva_acreditable',tasaIva:'tasa_iva',tasaIvaParamId:'tasa_iva_param_id',ivaRetenidoContribuyente:'iva_retenido_contribuyente',otrasCantidades:'otras_cantidades',resultadoAntesAplicaciones:'resultado_antes_aplicaciones',ivaACargoDelPeriodo:'iva_a_cargo_del_periodo',ivaAFavorGenerado:'iva_a_favor_generado',saldoFavorPropuesto:'saldo_favor_propuesto',saldoFavorAplicado:'saldo_favor_aplicado',saldoFavorAjustado:'saldo_favor_ajustado',saldoFavorDetalle:'saldo_favor_detalle',controlGeneradoId:'control_generado_id',ivaFinalAPagar:'iva_final_a_pagar',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalCatalogoRetenciones:{table:'fiscal_catalogo_retenciones',key:'id',cols:{id:'id',ambito:'ambito',nombre:'nombre',tipoCalculo:'tipo_calculo',parametroClave:'parametro_clave',esEstandar:'es_estandar',estatus:'estatus',creadoPor:'creado_por',creadoEn:'creado_en'}},
   fiscalPapelRetencionesIsr:{table:'fiscal_papel_retenciones_isr',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',salariosBaseGravada:'salarios_base_gravada',salariosBaseExenta:'salarios_base_exenta',salariosRetenido:'salarios_retenido',conceptos:'conceptos',totalRetenido:'total_retenido',principalPagado:'principal_pagado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',ajustes:'ajustes',totalPagado:'total_pagado',diferenciaPendiente:'diferencia_pendiente',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelRetencionesIva:{table:'fiscal_papel_retenciones_iva',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',conceptos:'conceptos',totalRetenido:'total_retenido',principalPagado:'principal_pagado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',ajustes:'ajustes',totalPagado:'total_pagado',diferenciaPendiente:'diferencia_pendiente',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelIsn:{table:'fiscal_papel_isn',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',totalRemuneraciones:'total_remuneraciones',numeroTrabajadores:'numero_trabajadores',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoTerceros:'impuesto_retenido_terceros',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelExtraccion:{table:'fiscal_papel_extraccion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',materiales:'materiales',totalImpuesto:'total_impuesto',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelHospedaje:{table:'fiscal_papel_hospedaje',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tipoEstablecimiento:'tipo_establecimiento',desgloseBase:'desglose_base',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelIsn:{table:'fiscal_papel_isn',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',totalRemuneraciones:'total_remuneraciones',numeroTrabajadores:'numero_trabajadores',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoTerceros:'impuesto_retenido_terceros',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelExtraccion:{table:'fiscal_papel_extraccion',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',materiales:'materiales',totalImpuesto:'total_impuesto',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelHospedaje:{table:'fiscal_papel_hospedaje',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tipoEstablecimiento:'tipo_establecimiento',desgloseBase:'desglose_base',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',conceptosCubiertos:'conceptos_cubiertos',ejercicio:'ejercicio',periodo:'periodo',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalRetencionesConceptosCliente:{table:'fiscal_retenciones_conceptos_cliente',key:'id',cols:{id:'id',client:'client_id',ambito:'ambito',catalogoId:'catalogo_id',desde:'desde',desactivadoDesde:'desactivado_desde',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalPapelSnapshots:{table:'fiscal_papel_snapshots',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',ejercicio:'ejercicio',periodo:'periodo',version:'version_n',origen:'origen',creadoPor:'creado_por',creadoEn:'creado_en',huella:'huella',contenido:'contenido'}},
@@ -756,12 +756,14 @@ function construirSnapshotPapel(tipoPapel,pRev,origen){
     if(esPapelRetenciones(tipoPapel)){
       const det=conceptosDeterminadosRetenciones(tipoPapel,pRev.salariosRetenido,pRev.conceptos);
       const der=derivarCumplimientoRetencionesCore(tipoPapel,pRev.id,det,pRev.totalRetenido,pRev.fechaVencimiento);
+      der.accesoriosFaltantes.forEach(x=>ctx.faltantes.push(x));
       cumplimiento={
-        conceptos:der.porConcepto.map(c=>({id:c.id,nombre:c.nombre,retenido:c.retenido,actualizacion:c.actualizacion,recargos:c.recargos,totalDeterminado:c.totalDeterminado,pagado:c.pagado,ajuste:c.ajuste,pendiente:c.pendiente,pagos:c.pagos.map(x=>x.id)})),
+        conceptos:der.porConcepto.map(c=>({id:c.id,nombre:c.nombre,retenido:c.retenido,actualizacion:c.actualizacion,recargos:c.recargos,totalDeterminado:c.totalDeterminado,pagado:c.pagado,ajuste:c.ajuste,pendiente:c.pendiente,pagos:c.pagos.map(x=>x.id),memorias:c.memorias})),
         total:{retenido:der.totalRetenido,actualizacion:der.actualizacionTotal,recargos:der.recargosTotal,totalDeterminado:der.totalDeterminado,pagado:der.totalPagado,ajuste:der.ajusteTotal,pendiente:der.pendienteTotal}
       };
     }else if(pRev.fechaVencimiento&&pRev.fechaPago){
       calcularAccesorios(1,pRev.fechaVencimiento,pRev.fechaPago);
+      if(pRev.accesoriosMemoria&&pRev.accesoriosMemoria.completo===false)(pRev.accesoriosMemoria.faltantes||[]).forEach(x=>ctx.faltantes.push(x));
     }
   });
   ctx.consultados.parametros.forEach(cp=>{if(!parametros.some(x=>x.id===cp.id))parametros.push(cp)});
@@ -862,7 +864,8 @@ function registrarEventoAccesoriosPago(pg,motivo){
   const registro={
     version:((pg.accesoriosEvento&&pg.accesoriosEvento.registros)||[]).length+1,motivo,
     calculadoEn:new Date().toISOString(),calculadoPor:currentStaff?currentStaff.id:null,snapshotId:st.snapshot.id,estatusPapel:p.estatus,
-    parametros:{inpc:ctx.consultados.inpc,recargos:ctx.consultados.recargos},faltantes:[...new Set(ctx.faltantes)],
+    parametros:{inpc:ctx.consultados.inpc,recargos:ctx.consultados.recargos},faltantes:[...new Set([...ctx.faltantes,...der.accesoriosFaltantes])],
+    memorias:(pc&&pc.memorias||[]).filter(m=>m.pagoId===pg.id).map(m=>m.memoria),
     resultadoConcepto:pc?{conceptoId:pc.id,actualizacion:pc.actualizacion,recargos:pc.recargos}:null
   };
   pg.accesoriosEvento={registros:[...((pg.accesoriosEvento&&pg.accesoriosEvento.registros)||[]),registro]};
@@ -1316,22 +1319,22 @@ function claveConceptoDePago(pg){return pg.conceptoRetencionId==null?'':String(p
 // motor común (calcularAccesorios) — aquí solo se decide SOBRE QUÉ principal se aplica.
 function asignarPagoAPrincipalConcepto(principalPendiente,importe,fechaVenc,fechaPago){
   const acc=s=>{
-    if(!fechaVenc||!fechaPago||!(s>0))return {actualizacion:0,recargos:0};
+    if(!fechaVenc||!fechaPago||!(s>0))return {actualizacion:0,recargos:0,memoria:null,faltantes:[]};
     let a=calcularAccesorios(s,fechaVenc,fechaPago);
-    return {actualizacion:a.actualizacion||0,recargos:a.recargos||0};
+    return {actualizacion:a.actualizacion||0,recargos:a.recargos||0,memoria:a.memoria,faltantes:a.faltantes||[]};
   };
   let rem=Math.max(0,principalPendiente);
   let accRem=acc(rem);
   let totalRem=Math.round((rem+accRem.actualizacion+accRem.recargos)*100)/100;
   if(importe>=totalRem-0.005||calcularAjusteCumplimiento(totalRem,importe).esRedondeo)
-    return {principal:rem,actualizacion:accRem.actualizacion,recargos:accRem.recargos};
+    return {principal:rem,actualizacion:accRem.actualizacion,recargos:accRem.recargos,memoria:accRem.memoria,faltantes:accRem.faltantes};
   let lo=0,hi=Math.min(rem,importe);
   for(let i=0;i<40;i++){
     let mid=(lo+hi)/2,a=acc(mid);
     if(mid+a.actualizacion+a.recargos<=importe+0.005)lo=mid;else hi=mid;
   }
   let s=Math.round(lo*100)/100,a=acc(s);
-  return {principal:s,actualizacion:a.actualizacion,recargos:a.recargos};
+  return {principal:s,actualizacion:a.actualizacion,recargos:a.recargos,memoria:a.memoria,faltantes:a.faltantes};
 }
 // Cumplimiento de Retenciones — CADA CONCEPTO es una determinación de cumplimiento independiente:
 //   Retenido → Actualización → Recargos → Total determinado → Pagado (1:N) → Ajuste → Pendiente
@@ -1345,18 +1348,20 @@ function derivarCumplimientoRetencionesCore(tipoPapel,papelId,conceptosDet,total
   const porFecha=(a,b)=>(a.fechaPago||'9999-99-99').localeCompare(b.fechaPago||'9999-99-99')||a.id-b.id;
   let porConcepto=conceptosDet.map(c=>{
     let pg=pagos.filter(p=>claveConceptoDePago(p)===c.id).sort(porFecha);
-    let pendientePrincipal=c.retenido,act=0,rec=0,principalCubierto=0;
+    let pendientePrincipal=c.retenido,act=0,rec=0,principalCubierto=0,memorias=[],faltAcc=[];
     pg.forEach(p=>{
       let a=asignarPagoAPrincipalConcepto(pendientePrincipal,Number(p.importe)||0,fechaVenc,p.fechaPago);
       pendientePrincipal=r2(pendientePrincipal-a.principal);principalCubierto=r2(principalCubierto+a.principal);
       act+=a.actualizacion;rec+=a.recargos;
+      if(a.memoria&&a.memoria.aplica)memorias.push({pagoId:p.id,memoria:a.memoria});
+      (a.faltantes||[]).forEach(x=>faltAcc.push(x));
     });
     act=r2(act);rec=r2(rec);
     let totalDeterminado=r2(c.retenido+act+rec);
     let pagado=pg.length?r2(pg.reduce((s,p)=>s+(Number(p.importe)||0),0)):null;
     let r=calcularAjusteCumplimiento(totalDeterminado,pagado);
     return {id:c.id,nombre:c.nombre,retenido:c.retenido,vencimiento:fechaVenc||null,actualizacion:act,recargos:rec,totalDeterminado,
-      pagado,ajuste:r.esRedondeo?r.ajusteRedondeo:null,esRedondeo:r.esRedondeo,pendiente:r.pendiente,principalCubierto,pagos:pg};
+      pagado,ajuste:r.esRedondeo?r.ajusteRedondeo:null,esRedondeo:r.esRedondeo,pendiente:r.pendiente,principalCubierto,pagos:pg,memorias,accesoriosFaltantes:[...new Set(faltAcc)]};
   });
   let sinAsignar=pagos.filter(p=>!idsValidos.has(claveConceptoDePago(p)));
   let totalPagado=pagos.length?r2(pagos.reduce((s,p)=>s+(Number(p.importe)||0),0)):null;
@@ -1385,23 +1390,29 @@ function derivarCumplimientoRetencionesCore(tipoPapel,papelId,conceptosDet,total
     totalPagado:totalPagado||0,
     diferenciaPendiente:pendienteTotal,ajusteRedondeo:ajusteTotal
   };
-  return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,totalRetenido:r2(totalRetenido||0),
+  return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,accesoriosFaltantes:[...new Set(porConcepto.flatMap(c=>c.accesoriosFaltantes))],totalRetenido:r2(totalRetenido||0),
     actualizacionTotal:actTotal,recargosTotal:recTotal,totalDeterminado,totalPagado,ajusteTotal,pendienteTotal,legado};
 }
 // Selección del contexto de lectura según el ESTATUS del papel (a menos que quien llama imponga uno: vivo forzado al
 // guardar una nueva versión, captura al revisar, evento al registrar un pago posterior, exclusivo en el preview de la UI).
+function advertenciaAccesorios(faltantes,congelado){
+  if(!faltantes.length)return [];
+  return [congelado
+    ?`Accesorios INCOMPLETOS: faltan parámetros en el snapshot congelado (${faltantes.join('; ')}). No se completaron con datos vigentes: esos accesorios no se calcularon.`
+    :`Accesorios INCOMPLETOS por parámetros faltantes: ${faltantes.join('; ')}. Los accesorios mostrados no están completos; publica el parámetro y vuelve a revisar el papel. Así no podrá marcarse como Revisado.`];
+}
 function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
   const core=()=>derivarCumplimientoRetencionesCore(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc);
-  if(__ctxParam){const der=core();der.contexto={modo:__ctxParam.modo};der.advertencias=der.advertencias||[];return der}
+  if(__ctxParam){const der=core();der.contexto={modo:__ctxParam.modo};der.advertencias=advertenciaAccesorios(der.accesoriosFaltantes,__ctxParam.modo==='exclusivo');return der}
   const papelRow=papelId!=null?papelPorId(tipoPapel,papelId):null;
-  if(!papelRow||papelRow.estatus==='borrador'){const der=core();der.contexto={modo:'vivo'};der.advertencias=[];return der}
+  if(!papelRow||papelRow.estatus==='borrador'){const der=core();der.contexto={modo:'vivo'};der.advertencias=advertenciaAccesorios(der.accesoriosFaltantes,false);return der}
   const st=estadoSnapshotPapel(tipoPapel,papelRow);
   if(st.estado==='completo'){
     const ctx=contextoExclusivoDePapel(tipoPapel,papelRow,st.snapshot);
     const der=conContextoParametros(ctx,core);
-    const falt=[...new Set(ctx.faltantes)];
+    const falt=[...new Set([...ctx.faltantes,...der.accesoriosFaltantes])];
     der.contexto={modo:'exclusivo',snapshotId:st.snapshot.id,snapshotVersion:st.snapshot.version,origen:st.snapshot.origen};
-    der.advertencias=falt.length?[`Faltan parámetros en el snapshot congelado (${falt.join('; ')}). No se completaron con datos vigentes: esos accesorios no se calcularon.`]:[];
+    der.advertencias=advertenciaAccesorios(falt,true);
     return der;
   }
   // Revisado sin snapshot / snapshot incompleto: se conserva lo persistido; NINGUNA consulta al dato vivo
@@ -1652,6 +1663,7 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
         ${celda('Ajuste',c.pagado==null?'—':(c.esRedondeo?fm(c.ajuste):fm(0)))}
         ${celda('Pendiente','<b>'+fm(c.pendiente)+'</b>')}
       </div>
+      ${(c.memorias||[]).map(mm=>memoriaAccesoriosHtml(mm.memoria,'pago del '+fmtDate(mm.memoria.fechaPago))).join('')}
       <div style="margin-top:8px">${lineasDecl}</div>
       <button class="btn" style="margin-top:6px;padding:3px 10px;font-size:11.5px" onclick="alternarFormDeclConcepto('${prefix}','${c.id}')">+ Registrar declaración</button>
       ${formNuevaDeclaracionConceptoHtml(prefix,c.id,visibles.map(x=>({id:x.id,nombre:x.nombre})),args)}
@@ -1941,36 +1953,127 @@ function calcularAjusteCumplimiento(determinado,pagado){
   let pendiente=Math.round((determinado-pagado)*100)/100;
   return {ajusteRedondeo:0,pendiente,esRedondeo:false};
 }
+// --- Memoria de cálculo y advertencias de accesorios (presentación) ---
+function memoriaAccesoriosHtml(m,titulo){
+  if(!m||!m.aplica)return '';
+  const fm=fmtMoneyMX,act=m.actualizacion||{};
+  const idp=id=>id?` <span class="role" style="font-size:10.5px">(parámetro #${id})</span>`:'';
+  const lineaAct=act.nota
+    ?esc(act.nota)
+    :`INPC ${esc(act.periodoInicial)}: ${act.inpcInicial!=null?act.inpcInicial:'<b style="color:#b92e38">falta</b>'}${idp(act.paramIdInicial)} → INPC ${esc(act.periodoFinal)}: ${act.inpcFinal!=null?act.inpcFinal:'<b style="color:#b92e38">falta</b>'}${idp(act.paramIdFinal)} · factor ${Number(act.factor).toFixed(4)} · actualización <b>${fm(act.importe)}</b>`;
+  const meses=(m.recargos&&m.recargos.meses)||[];
+  const faltRec=(m.faltantesRecargo||[]).map(p=>`${esc(p)}: <b style="color:#b92e38">falta la tasa</b>`);
+  return `<details style="margin:8px 0;font-size:12px"><summary style="cursor:pointer;font-weight:600">Memoria de cálculo de accesorios${titulo?' — '+esc(titulo):''}</summary>
+    <div style="padding:7px 11px;background:var(--bg);border-radius:8px;line-height:1.6">
+      <div>Principal <b>${fm(m.principal)}</b> · Vencimiento ${fmtDate(m.fechaVencimiento)} · Pago ${fmtDate(m.fechaPago)}</div>
+      <div>Actualización: ${lineaAct}</div>
+      <div>Recargos sobre ${fm(m.recargos.base)} — ${meses.length+faltRec.length} mes(es) o fracción: ${[...meses.map(x=>`${esc(x.periodo)}: ${x.tasa}%${idp(x.paramId)} = ${fm(x.importe)}`),...faltRec].join(' · ')||'—'} → <b>${fm(m.recargos.importe)}</b></div>
+      <div>Total accesorios <b>${fm(m.totalAccesorios)}</b> · Total con principal <b>${fm(m.total)}</b></div>
+    </div></details>`;
+}
+function avisoAccesoriosIncompletosHtml(faltantes,conTotal){
+  if(!faltantes||!faltantes.length)return '';
+  return `<div class="card" style="margin:8px 0;padding:9px 12px;border:1px solid #e0a0a6;background:#fff0f1;color:#8f1d27;font-size:12px"><b>⚠ Accesorios INCOMPLETOS por parámetros faltantes:</b> ${faltantes.map(esc).join('; ')}. ${conTotal?'El total mostrado <b>no</b> incluye accesorios completos. ':''}El papel <b>no podrá marcarse como Revisado</b> hasta publicar el parámetro y volver a guardar el Borrador.</div>`;
+}
+function bloqueAccesoriosHtml(calc){
+  const m=calc&&calc.accesoriosMemoria;
+  if(!m||!m.aplica)return '';
+  return avisoAccesoriosIncompletosHtml(m.completo===false?m.faltantes:[],true)+memoriaAccesoriosHtml(m);
+}
+// ¿Puede el papel pasar a Revisado desde el punto de vista de sus accesorios? Con mora y cálculo incompleto, NO.
+function accesoriosIncompletosPapel(tipoPapel,p){
+  if(esPapelRetenciones(tipoPapel)){
+    const det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+    const der=conContextoParametros({modo:'vivo'},()=>derivarCumplimientoRetencionesCore(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento));
+    return der.accesoriosFaltantes.length?{incompleto:true,motivo:'parametros_faltantes',faltantes:der.accesoriosFaltantes}:{incompleto:false};
+  }
+  const mora=!!(p.fechaVencimiento&&p.fechaPago&&p.fechaPago>p.fechaVencimiento);
+  if(!mora)return {incompleto:false};
+  const m=p.accesoriosMemoria;
+  if(!m)return {incompleto:true,motivo:'sin_memoria',faltantes:[]};
+  if(m.fechaVencimiento!==p.fechaVencimiento||m.fechaPago!==p.fechaPago)return {incompleto:true,motivo:'memoria_desactualizada',faltantes:[]};
+  if(m.completo===false)return {incompleto:true,motivo:'parametros_faltantes',faltantes:m.faltantes||[]};
+  return {incompleto:false};
+}
+// Meses o fracciones de mora (Art. 21 CFF): desde el mes en que debió hacerse el pago HASTA el mes en que se efectúa,
+// ambos inclusive. Un pago tardío dentro del mismo mes del vencimiento causa UNA fracción de mes.
+function mesesDeMora(fechaVencimientoISO,fechaPagoISO){
+  if(!fechaVencimientoISO||!fechaPagoISO||fechaPagoISO<=fechaVencimientoISO)return [];
+  let d=new Date(fechaVencimientoISO+'T00:00:00'),h=new Date(fechaPagoISO+'T00:00:00');
+  let cur=new Date(d.getFullYear(),d.getMonth(),1),fin=new Date(h.getFullYear(),h.getMonth(),1),out=[];
+  while(cur<=fin){out.push(`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`);cur=new Date(cur.getFullYear(),cur.getMonth()+1,1)}
+  return out;
+}
+// Id (versión) del parámetro publicado que respalda el INPC / recargo de un periodo: del contexto congelado si lo hay, o del dato vivo.
+function idParamPeriodo(clave,periodo){
+  const ctx=__ctxParam;
+  if(ctx&&ctx.modo!=='vivo'){
+    const base=clave==='inpc_mensual'?ctx.base.inpc:ctx.base.recargos,cons=clave==='inpc_mensual'?ctx.consultados.inpc:ctx.consultados.recargos;
+    if(base[periodo]&&base[periodo].paramId!=null)return base[periodo].paramId;
+    if(cons[periodo]&&cons[periodo].paramId!=null)return cons[periodo].paramId;
+  }
+  const fila=filaParamVivaPeriodo(clave,periodo);
+  return fila?fila.id:null;
+}
+// Actualización (Art. 17-A) y recargos (Art. 21). Devuelve SIEMPRE la memoria completa del cálculo; si hay mora y falta
+// algún parámetro publicado, el resultado queda marcado completo:false con la lista de faltantes (nunca un $0 mudo).
 function calcularAccesorios(importePrincipal,fechaVencimientoISO,fechaPagoISO){
-  const memoria={fechaVencimiento:fechaVencimientoISO,fechaPago:fechaPagoISO,importePrincipal,meses:[],inpcInicial:null,inpcFinal:null,factorActualizacion:1,faltantesInpc:[],faltantesRecargo:[]};
-  if(!fechaPagoISO||!fechaVencimientoISO||fechaPagoISO<=fechaVencimientoISO||!importePrincipal){
-    return {actualizacion:0,recargos:0,totalAccesorios:0,memoria:{...memoria,nota:'Sin accesorios: pago dentro del plazo, sin fecha de pago, o sin importe.'}};
+  const r2=n=>Math.round(n*100)/100;
+  const principal=Number(importePrincipal)||0;
+  const hayMora=!!(fechaVencimientoISO&&fechaPagoISO&&fechaPagoISO>fechaVencimientoISO);
+  const faltantes=[];
+  const memoria={
+    esquema:1,calculadoEn:new Date().toISOString(),
+    principal:r2(principal),fechaVencimiento:fechaVencimientoISO||null,fechaPago:fechaPagoISO||null,hayMora,aplica:hayMora&&principal>0,
+    actualizacion:{periodoInicial:null,periodoFinal:null,inpcInicial:null,inpcFinal:null,paramIdInicial:null,paramIdFinal:null,factor:1,importe:0,nota:null},
+    recargos:{base:r2(principal),meses:[],importe:0},
+    totalAccesorios:0,total:r2(principal),completo:true,faltantes:[],nota:null,
+    // Compatibilidad con consumidores anteriores de la memoria
+    importePrincipal,meses:[],inpcInicial:null,inpcFinal:null,factorActualizacion:1,faltantesInpc:[],faltantesRecargo:[]
+  };
+  if(!memoria.aplica){
+    memoria.nota='Sin accesorios: pago dentro del plazo, sin fecha de pago, o sin importe.';
+    return {actualizacion:0,recargos:0,totalAccesorios:0,memoria,completo:true,faltantes:[]};
   }
-  let periodoInpcInicial=mesAnteriorYYYYMM(fechaVencimientoISO);
-  let periodoInpcFinal=mesAnteriorYYYYMM(fechaPagoISO);
-  let inpcInicial=getInpcPeriodo(periodoInpcInicial);
-  let inpcFinal=getInpcPeriodo(periodoInpcFinal);
-  memoria.inpcInicial={periodo:periodoInpcInicial,valor:inpcInicial};
-  memoria.inpcFinal={periodo:periodoInpcFinal,valor:inpcFinal};
+  // Actualización: INPC del mes anterior al del pago / INPC del mes anterior al del vencimiento
+  const pI=mesAnteriorYYYYMM(fechaVencimientoISO),pF=mesAnteriorYYYYMM(fechaPagoISO);
+  memoria.actualizacion.periodoInicial=pI;memoria.actualizacion.periodoFinal=pF;
   let actualizacion=0;
-  if(inpcInicial&&inpcFinal){
-    let factor=inpcFinal/inpcInicial;
-    memoria.factorActualizacion=factor;
-    actualizacion=factor>1?Math.round((importePrincipal*(factor-1))*100)/100:0;
+  if(pI===pF){
+    memoria.actualizacion.nota='Mismo periodo de INPC: factor 1, no hay actualización (no se requiere el índice).';
   }else{
-    memoria.faltantesInpc.push(!inpcInicial?periodoInpcInicial:periodoInpcFinal);
+    const vI=getInpcPeriodo(pI),vF=getInpcPeriodo(pF);
+    memoria.actualizacion.inpcInicial=vI;memoria.actualizacion.inpcFinal=vF;
+    memoria.actualizacion.paramIdInicial=vI?idParamPeriodo('inpc_mensual',pI):null;
+    memoria.actualizacion.paramIdFinal=vF?idParamPeriodo('inpc_mensual',pF):null;
+    memoria.inpcInicial={periodo:pI,valor:vI};memoria.inpcFinal={periodo:pF,valor:vF};
+    if(vI&&vF){
+      const factor=vF/vI;
+      memoria.factorActualizacion=factor;memoria.actualizacion.factor=factor;
+      actualizacion=factor>1?r2(principal*(factor-1)):0;
+    }else{
+      if(!vI){faltantes.push('INPC '+pI);memoria.faltantesInpc.push(pI)}
+      if(!vF){faltantes.push('INPC '+pF);memoria.faltantesInpc.push(pF)}
+    }
   }
-  let meses=mesesTranscurridos(fechaVencimientoISO,fechaPagoISO);
+  memoria.actualizacion.importe=actualizacion;
+  // Recargos: una tasa por cada mes o fracción de mora, tomada del parámetro publicado de ESE periodo
+  const base=r2(principal+actualizacion);memoria.recargos.base=base;
   let recargos=0;
-  meses.forEach(periodo=>{
-    let tasa=getRecargoPeriodo(periodo);
-    if(tasa===null){memoria.faltantesRecargo.push(periodo);return}
-    let recargoMes=Math.round((importePrincipal+actualizacion)*(tasa/100)*100)/100;
-    memoria.meses.push({periodo,tasa,recargoMes});
-    recargos+=recargoMes;
+  mesesDeMora(fechaVencimientoISO,fechaPagoISO).forEach(periodo=>{
+    const tasa=getRecargoPeriodo(periodo);
+    if(tasa==null){faltantes.push('recargo '+periodo);memoria.faltantesRecargo.push(periodo);return}
+    const importe=r2(base*(tasa/100));
+    memoria.recargos.meses.push({periodo,tasa,paramId:idParamPeriodo('recargos_mensual',periodo),importe});
+    memoria.meses.push({periodo,tasa,recargoMes:importe});
+    recargos+=importe;
   });
-  recargos=Math.round(recargos*100)/100;
-  return {actualizacion,recargos,totalAccesorios:Math.round((actualizacion+recargos)*100)/100,memoria};
+  recargos=r2(recargos);memoria.recargos.importe=recargos;
+  const totalAccesorios=r2(actualizacion+recargos);
+  memoria.totalAccesorios=totalAccesorios;memoria.total=r2(principal+totalAccesorios);
+  memoria.faltantes=[...new Set(faltantes)];memoria.completo=memoria.faltantes.length===0;
+  if(!memoria.completo)memoria.nota='INCOMPLETO: faltan parámetros publicados ('+memoria.faltantes.join('; ')+'). Los importes mostrados no incluyen lo que depende de ellos.';
+  return {actualizacion,recargos,totalAccesorios,memoria,completo:memoria.completo,faltantes:memoria.faltantes};
 }
 
 // --- Controles Fiscales: saldo disponible + libro de movimientos ---
@@ -2176,7 +2279,7 @@ function calcularPapelISRPM(clientId,ejercicio,periodo,inputs){
   let resultadoIsrCargo=isrDeterminadoAcumulado!=null?Math.max(0,Math.round((isrDeterminadoAcumulado-pagosProvConfirmados-isrRetenidoAcumulado)*100)/100):null;
 
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&resultadoIsrCargo){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(resultadoIsrCargo,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=resultadoIsrCargo!=null?Math.round((resultadoIsrCargo+accesorios.totalAccesorios)*100)/100:null;
@@ -2193,7 +2296,7 @@ function calcularPapelISRPM(clientId,ejercicio,periodo,inputs){
     isrRetenidoContribuyenteMes:isrRetenidoMes,isrRetenidoContribuyenteAcumulado:isrRetenidoAcumulado,
     resultadoIsrCargo,
     fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,
-    actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,
+    actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,
     _faltantes:{coeficiente:!coefControl,tasa:!tasaParam}
   };
 }
@@ -2218,7 +2321,7 @@ function guardarPapelISRPM(clientId,ejercicio,periodo,inputs){
     isrRetenidoContribuyenteMes:calc.isrRetenidoContribuyenteMes,isrRetenidoContribuyenteAcumulado:calc.isrRetenidoContribuyenteAcumulado,
     resultadoIsrCargo:calc.resultadoIsrCargo,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',
     elaboradoPor:currentStaff?currentStaff.id:null,
     revisadoPor:null,revisadoEn:null,
@@ -2393,7 +2496,7 @@ function calcularPapelIVA(clientId,ejercicio,periodo,inputs){
   let ivaFinalAPagar=ivaACargoDelPeriodo!=null?Math.max(0,Math.round((ivaACargoDelPeriodo-saldoFavorAplicado)*100)/100):null;
 
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&ivaFinalAPagar){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(ivaFinalAPagar,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=ivaFinalAPagar!=null?Math.round((ivaFinalAPagar+accesorios.totalAccesorios)*100)/100:null;
@@ -2407,7 +2510,7 @@ function calcularPapelIVA(clientId,ejercicio,periodo,inputs){
     saldoFavorPropuesto:saldoProp.maximoSugerido,saldoFavorAplicado,saldoFavorAjustado,saldoFavorDetalle:saldoFavorDetalleFinal,
     ivaFinalAPagar,
     fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,
-    actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,
+    actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,
     _faltantes:{tasa:!tasaParam}
   };
 }
@@ -2440,7 +2543,7 @@ function guardarPapelIVA(clientId,ejercicio,periodo,inputs){
     controlGeneradoId:anteriorVigente?anteriorVigente.controlGeneradoId:null,
     ivaFinalAPagar:calc.ivaFinalAPagar,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',
     elaboradoPor:currentStaff?currentStaff.id:null,
     revisadoPor:null,revisadoEn:null,
@@ -2847,11 +2950,11 @@ function calcularPapelISN(clientId,ejercicio,periodo,entidadFederativa,inputs){
   let impuestoRetenidoTerceros=Number(inputs.impuestoRetenidoTerceros)||0;
   let impuestoDeterminado=impuestoCausado!=null?Math.max(0,Math.round((impuestoCausado-impuestoRetenidoTerceros)*100)/100):null;
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoDeterminado){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(impuestoDeterminado,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=impuestoDeterminado!=null?Math.round((impuestoDeterminado+accesorios.totalAccesorios)*100)/100:null;
-  return {totalRemuneraciones,numeroTrabajadores,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoCausado,impuestoRetenidoTerceros,impuestoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+  return {totalRemuneraciones,numeroTrabajadores,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoCausado,impuestoRetenidoTerceros,impuestoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,_faltantes:{tasa:!tasaParam}};
 }
 function guardarPapelISN(clientId,ejercicio,periodo,entidadFederativa,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -2863,7 +2966,7 @@ function guardarPapelISN(clientId,ejercicio,periodo,entidadFederativa,inputs){
     totalRemuneraciones:calc.totalRemuneraciones,numeroTrabajadores:calc.numeroTrabajadores,
     tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoCausado:calc.impuestoCausado,impuestoRetenidoTerceros:calc.impuestoRetenidoTerceros,impuestoDeterminado:calc.impuestoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -2914,11 +3017,11 @@ function calcularPapelExtraccion(clientId,ejercicio,periodo,entidadFederativa,in
   });
   let totalImpuesto=Math.round(materiales.reduce((s,m)=>s+(Number(m.impuesto)||0),0)*100)/100;
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&totalImpuesto){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(totalImpuesto,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=Math.round((totalImpuesto+accesorios.totalAccesorios)*100)/100;
-  return {materiales,totalImpuesto,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{valorUMA:!umaParam,materialesSinTarifa:materiales.filter(m=>m.tarifaUMA==null).map(m=>m.material)}};
+  return {materiales,totalImpuesto,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,_faltantes:{valorUMA:!umaParam,materialesSinTarifa:materiales.filter(m=>m.tarifaUMA==null).map(m=>m.material)}};
 }
 function guardarPapelExtraccion(clientId,ejercicio,periodo,entidadFederativa,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -2929,7 +3032,7 @@ function guardarPapelExtraccion(clientId,ejercicio,periodo,entidadFederativa,inp
     id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     materiales:calc.materiales,totalImpuesto:calc.totalImpuesto,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -2983,11 +3086,11 @@ function calcularPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inp
   let tasa=(tasaParam&&tasaParam.valor&&tasaParam.valor.tasa!=null)?Number(tasaParam.valor.tasa):null;
   let impuestoDeterminado=tasa!=null?Math.round((baseGravable*(tasa/100))*100)/100:null;
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoDeterminado){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(impuestoDeterminado,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=impuestoDeterminado!=null?Math.round((impuestoDeterminado+accesorios.totalAccesorios)*100)/100:null;
-  return {baseGravable,tipoEstablecimiento:inputs.tipoEstablecimiento||null,desgloseBase:inputs.desgloseBase||[],tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+  return {baseGravable,tipoEstablecimiento:inputs.tipoEstablecimiento||null,desgloseBase:inputs.desgloseBase||[],tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,_faltantes:{tasa:!tasaParam}};
 }
 function guardarPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -2999,7 +3102,7 @@ function guardarPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inpu
     baseGravable:calc.baseGravable,tipoEstablecimiento:calc.tipoEstablecimiento,desgloseBase:calc.desgloseBase,
     tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoDeterminado:calc.impuestoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -3046,11 +3149,11 @@ function calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFeder
   let impuestoRetenidoPlataforma=Number(inputs.impuestoRetenidoPlataforma)||0;
   let impuestoACargo=impuestoCausado!=null?Math.max(0,Math.round((impuestoCausado-impuestoRetenidoPlataforma)*100)/100):null;
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoACargo){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(impuestoACargo,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=impuestoACargo!=null?Math.round((impuestoACargo+accesorios.totalAccesorios)*100)/100:null;
-  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoCausado,impuestoRetenidoPlataforma,impuestoACargo,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoCausado,impuestoRetenidoPlataforma,impuestoACargo,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,_faltantes:{tasa:!tasaParam}};
 }
 function guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativa,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -3062,7 +3165,7 @@ function guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFedera
     baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,
     impuestoCausado:calc.impuestoCausado,impuestoRetenidoPlataforma:calc.impuestoRetenidoPlataforma,impuestoACargo:calc.impuestoACargo,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -3109,11 +3212,11 @@ function calcularPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,input
   let tasa=(tasaParam&&tasaParam.valor&&tasaParam.valor.tasa!=null)?Number(tasaParam.valor.tasa):null;
   let impuestoRetenidoDeterminado=tasa!=null?Math.round((baseGravable*(tasa/100))*100)/100:null;
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
-  if(inputs.fechaVencimiento&&inputs.fechaPago&&impuestoRetenidoDeterminado){
+  if(inputs.fechaVencimiento&&inputs.fechaPago){
     accesorios=calcularAccesorios(impuestoRetenidoDeterminado,inputs.fechaVencimiento,inputs.fechaPago);
   }
   let totalAPagar=impuestoRetenidoDeterminado!=null?Math.round((impuestoRetenidoDeterminado+accesorios.totalAccesorios)*100)/100:null;
-  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoRetenidoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,totalAPagar,_faltantes:{tasa:!tasaParam}};
+  return {baseGravable,tasa,tasaParamId:tasaParam?tasaParam.id:null,impuestoRetenidoDeterminado,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,actualizacion:accesorios.actualizacion,recargos:accesorios.recargos,accesoriosMemoria:(accesorios.memoria&&accesorios.memoria.esquema)?accesorios.memoria:null,accesoriosIncompletos:accesorios.completo===false,totalAPagar,_faltantes:{tasa:!tasaParam}};
 }
 function guardarPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -3124,7 +3227,7 @@ function guardarPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs
     id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoRetenidoDeterminado:calc.impuestoRetenidoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,accesoriosMemoria:calc.accesoriosMemoria||null,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -3294,6 +3397,7 @@ function calcularPapelISRPMUI(){
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
+    ${bloqueAccesoriosHtml(calc)}
   `;
   inicializarInputsMonetarios($('#fiscalWorkspace'));
 }
@@ -3366,6 +3470,19 @@ function avanzarEstatusPapelGenerico(tipoPapel,id,nuevoEstatus,ejercicio,periodo
   if(nuevoEstatus==='revisado'&&esPapelRetenciones(tipoPapel)){
     let sinDecl=pagosSinDeclaracion(tipoPapel,p.id);
     if(sinDecl.length&&!confirm(`Este papel tiene ${sinDecl.length} pago(s) sin declaración vinculada.\n\nNo es un pendiente de pago: solo significa que aún no se relacionó cada pago con la declaración que lo respalda. Puedes marcarlo como revisado de todas formas y vincularlos después.\n\n¿Marcar como revisado?`))return;
+  }
+  if(nuevoEstatus!=='borrador'&&p.estatus==='borrador'){
+    const inc=accesoriosIncompletosPapel(tipoPapel,p);
+    if(inc.incompleto){
+      const detalle={
+        parametros_faltantes:`El cálculo de accesorios está INCOMPLETO por parámetros faltantes: ${(inc.faltantes||[]).join('; ')}.\n\nPublica el parámetro faltante y vuelve a GUARDAR el Borrador para recalcular; después podrás marcarlo como Revisado.`,
+        sin_memoria:'Este papel tiene fecha de pago posterior al vencimiento pero no tiene memoria de cálculo de accesorios (se guardó antes de esta versión).\n\nVuelve a guardar el Borrador para calcularla; después podrás marcarlo como Revisado.',
+        memoria_desactualizada:'Las fechas de vencimiento o de pago cambiaron desde el último cálculo de accesorios.\n\nVuelve a guardar el Borrador para recalcularlos; después podrás marcarlo como Revisado.'
+      }[inc.motivo];
+      alert('No se puede marcar como Revisado.\n\n'+detalle);
+      mostrarToast('No se marcó como revisado','Accesorios incompletos: revisa el cálculo y guarda el Borrador','error');
+      return;
+    }
   }
   let snapNuevo=null;
   if(nuevoEstatus!=='borrador'&&p.estatus==='borrador'&&!snapshotsDePapel(tipoPapel,p.id).some(s=>s.origen==='revision')){
@@ -3674,6 +3791,7 @@ function calcularPapelIVAUI(){
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
+    ${bloqueAccesoriosHtml(calc)}
   `;
 }
 function guardarPapelIVAUI(opts){
@@ -4014,6 +4132,7 @@ function calcularPapelISNUI(){
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
+    ${bloqueAccesoriosHtml(calc)}
   `;
 }
 function guardarPapelISNUI(opts){
@@ -4127,6 +4246,7 @@ function calcularPapelExtraccionUI(){
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${fmtMoneyMX(calc.totalAPagar)}</b></div>
     </div>
+    ${bloqueAccesoriosHtml(calc)}
   `;
 }
 function guardarPapelExtraccionUI(opts){
@@ -4253,7 +4373,7 @@ function calcularPapelHospedajeAnfitrionUI(){
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Impuesto a cargo</span><b style="color:#fff">${calc.impuestoACargo!=null?fmtMoneyMX(calc.impuestoACargo):'—'}</b></div>
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
-    </div>`;
+    </div>${bloqueAccesoriosHtml(calc)}`;
 }
 function guardarPapelHospedajeAnfitrionUI(opts){
   let {clientId,ejercicio,periodo,calc}=__hospAnfState;
@@ -4524,7 +4644,7 @@ function renderResultadoEstatalSimple(calc,campoTasa,campoResultado,labelResulta
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>${labelResultado}</span><b style="color:#fff">${calc[campoResultado]!=null?fmtMoneyMX(calc[campoResultado]):'—'}</b></div>
       ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
-    </div>`;
+    </div>${bloqueAccesoriosHtml(calc)}`;
 }
 function renderCedulaEstatalSimpleHtml(c,filas){
   function fila(label,obj,tipo){
