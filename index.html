@@ -1051,6 +1051,43 @@ function agregarDeclaracion(tipoPapel,papelId,clientId,datos){
   save();
   return nuevo;
 }
+// --- Referencias de pago repetidas: línea de captura / operación bancaria ya registradas en otro pago del MISMO cliente,
+// ejercicio y periodo (cualquier obligación fiscal). Solo ADVIERTE: el usuario decide continuar (un mismo comprobante
+// puede respaldar más de un concepto u obligación). Nunca bloquea, deduplica ni modifica pagos existentes. ---
+function normalizarReferenciaPago(v){return v==null?'':String(v).trim().toUpperCase().replace(/[\s\-]+/g,'')}
+function buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos,excluirPagoId){
+  const nLinea=normalizarReferenciaPago(datos.lineaCaptura),nOp=normalizarReferenciaPago(datos.folioPago);
+  if(!nLinea&&!nOp)return [];
+  const out=[];
+  (db.fiscalPagos||[]).forEach(pg=>{
+    if(pg.client!==clientId||pg.id===excluirPagoId)return;
+    const p0=papelPorId(pg.papelTipo,pg.papelId);
+    if(!p0||p0.ejercicio!==ejercicio||p0.periodo!==periodo)return;
+    const coincide=[];
+    if(nLinea&&normalizarReferenciaPago(pg.lineaCaptura)===nLinea)coincide.push('linea');
+    if(nOp&&normalizarReferenciaPago(pg.folioPago)===nOp)coincide.push('operacion');
+    if(!coincide.length)return;
+    let concepto=null;
+    if(esPapelRetenciones(pg.papelTipo)){
+      const cid=claveConceptoDePago(pg);
+      if(cid){const det=conceptosDeterminadosRetenciones(pg.papelTipo,p0.salariosRetenido,p0.conceptos).find(x=>x.id===cid);concepto=det?det.nombre:null}
+    }
+    out.push({pago:pg,coincide,obligacion:PAPEL_NOMBRE_AMIGABLE[pg.papelTipo]||pg.papelTipo,concepto});
+  });
+  return out;
+}
+function mensajeReferenciasRepetidas(coincidencias){
+  const detalle=x=>`  • ${x.obligacion}${x.concepto?' · '+x.concepto:''} · ${fmtMoneyMX(x.pago.importe)}${x.pago.fechaPago?' · '+fmtDate(x.pago.fechaPago):''}`;
+  const bloques=[];
+  const porLinea=coincidencias.filter(x=>x.coincide.includes('linea')),porOp=coincidencias.filter(x=>x.coincide.includes('operacion'));
+  if(porLinea.length)bloques.push('Esta línea de captura ya está registrada en otro pago de este periodo:\n'+porLinea.map(detalle).join('\n'));
+  if(porOp.length)bloques.push('Esta operación bancaria ya está registrada en otro pago de este periodo:\n'+porOp.map(detalle).join('\n'));
+  return bloques.join('\n\n')+'\n\nVerifica si corresponde al mismo comprobante o si estás duplicando la referencia. Un mismo comprobante puede respaldar más de un concepto u obligación.\n\n¿Guardar el pago de todas formas?';
+}
+function confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos){
+  const c=buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos);
+  return c.length?confirm(mensajeReferenciasRepetidas(c)):true;
+}
 function agregarPago(tipoPapel,papelId,clientId,datos){
   let nuevo=stamp({
     id:Date.now()+Math.floor(Math.random()*100000),client:clientId,papelTipo:tipoPapel,papelId,
@@ -1106,6 +1143,8 @@ const PAPEL_GETTER_VIGENTE={
   isn:getPapelISNVigente,extraccion:getPapelExtraccionVigente,hospedaje:getPapelHospedajeVigente,hospedaje_anfitrion:getPapelHospedajeAnfitrionVigente,bebidas:getPapelBebidasVigente
 };
 function refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix){
+  // Los botones de algunas tarjetas pasan el clientId como texto ('9001'); los getters comparan con ===, así que se normaliza
+  clientId=Number(clientId);ejercicio=Number(ejercicio);periodo=Number(periodo);
   let p=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
   let el=document.getElementById(`${prefix}CumpBloque`);
   if(el)el.outerHTML=formularioCumplimientoHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo);
@@ -1134,14 +1173,16 @@ function guardarPagoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,decla
   let banco=bancoSel?bancoSel.value:'';
   if(banco==='Otro'){let otro=document.getElementById(`${prefix}NuevoPagoBancoOtro`);banco=otro?otro.value.trim():''}
   let importe=valorMonetario(document.getElementById(`${prefix}NuevoPagoImporte`));
-  agregarPago(tipoPapel,papelId,clientId,{
+  const datosPago={
     declaracionId:declaracionId||null,importe,
     fechaPago:document.getElementById(`${prefix}NuevoPagoFecha`).value||null,
     bancoPago:banco||null,
     lineaCaptura:document.getElementById(`${prefix}NuevoPagoLinea`).value.trim()||null,
     vigenciaLineaCaptura:document.getElementById(`${prefix}NuevoPagoVigencia`)?document.getElementById(`${prefix}NuevoPagoVigencia`).value||null:null,
     folioPago:document.getElementById(`${prefix}NuevoPagoFolio`).value.trim()||null
-  });
+  };
+  if(!confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago))return null;
+  agregarPago(tipoPapel,papelId,clientId,datosPago);
   mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
 }
@@ -1479,18 +1520,39 @@ function tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix
   let decl=pg.declaracionId?(db.fiscalDeclaraciones||[]).find(x=>x.id===pg.declaracionId):null;
   let cid=claveConceptoDePago(pg);
   let candidatas=(p&&cid)?declaracionesQueCubren(tipoPapel,p,cid):[];
-  let etiquetaDecl=decl
-    ?`<span class="role" style="font-size:11px">Declaración: ${esc(etiquetaDeclaracion(decl))}</span>`
-    :`<span class="pill p-amber" style="font-size:10px" title="Es un dato de evidencia, no un pendiente de pago">Pago sin declaración vinculada</span>`;
-  let vincular=(candidatas.length)?`<select id="${prefix}Vinc${pg.id}" style="max-width:230px;font-size:11px"><option value="">— sin vincular —</option>${candidatas.map(d=>`<option value="${d.id}" ${pg.declaracionId===d.id?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select>
-      <button class="btn" style="padding:1px 8px;font-size:10.5px" onclick="vincularPagoDeclaracionUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">Vincular</button>`:'';
+  const args=`${pg.id},'${tipoPapel}',${clientId},${ejercicio},${periodo},'${prefix}'`;
+  const selector=`<select id="${prefix}Vinc${pg.id}" style="max-width:230px;font-size:11px"><option value="">— sin declaración —</option>${candidatas.map(d=>`<option value="${d.id}" ${pg.declaracionId===d.id?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select>`;
+  let vinculo;
+  if(decl){
+    // Ya vinculado: solo se muestra la declaración; cambiarla es una acción discreta y con confirmación
+    vinculo=`<span class="role" style="font-size:11px">Declaración: ${esc(etiquetaDeclaracion(decl))}</span>
+      <button style="all:unset;cursor:pointer;font-size:10.5px;color:var(--blue,#0c63ce);text-decoration:underline" onclick="mostrarCambioVinculoUI(${pg.id},'${prefix}')">Cambiar vínculo</button>
+      <span id="${prefix}CambioVinc${pg.id}" style="display:none">${selector}
+        <button class="btn" style="padding:1px 8px;font-size:10.5px" onclick="confirmarCambioVinculoUI(${args})">Confirmar cambio</button>
+        <button class="btn" style="padding:1px 8px;font-size:10.5px" onclick="mostrarCambioVinculoUI(${pg.id},'${prefix}')">Cancelar</button></span>`;
+  }else{
+    vinculo=`<span class="pill p-amber" style="font-size:10px" title="Es un dato de evidencia, no un pendiente de pago">Pago sin declaración vinculada</span>
+      ${candidatas.length?`${selector} <button class="btn" style="padding:1px 8px;font-size:10.5px" onclick="vincularPagoDeclaracionUI(${args})">Vincular</button>`:''}`;
+  }
   return `<div data-pago-id="${pg.id}" style="padding:5px 8px;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:11.5px">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
       <span>${partes.join(' · ')}</span>
-      ${isAdmin?`<button class="btn" style="padding:1px 7px;font-size:10px" title="Eliminar pago" onclick="eliminarPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">✕</button>`:''}
+      ${isAdmin?`<button class="btn" style="padding:1px 7px;font-size:10px" title="Eliminar pago" onclick="eliminarPagoUI(${pg.id},'${tipoPapel}',${clientId},${ejercicio},${periodo},'${prefix}')">✕</button>`:''}
     </div>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px">${etiquetaDecl}${vincular}</div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px">${vinculo}</div>
   </div>`;
+}
+function mostrarCambioVinculoUI(pagoId,prefix){
+  const el=document.getElementById(`${prefix}CambioVinc${pagoId}`);
+  if(el)el.style.display=el.style.display==='none'?'inline':'none';
+}
+function confirmarCambioVinculoUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefix){
+  const sel=document.getElementById(`${prefix}Vinc${pagoId}`),pg=(db.fiscalPagos||[]).find(x=>x.id===pagoId);
+  if(!sel||!pg)return;
+  if(sel.value===(pg.declaracionId?String(pg.declaracionId):'')){mostrarCambioVinculoUI(pagoId,prefix);return}
+  const nombre=id=>{const d=id?(db.fiscalDeclaraciones||[]).find(x=>x.id===+id):null;return d?etiquetaDeclaracion(d):'Sin declaración vinculada'};
+  if(!confirm(`¿Cambiar el vínculo de este pago?\n\nActual: ${nombre(pg.declaracionId)}\nNuevo: ${nombre(sel.value)}\n\nEl pago y la declaración no se modifican; solo cambia la relación entre ellos.`))return;
+  vincularPagoDeclaracionUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefix);
 }
 function formNuevaDeclaracionConceptoHtml(prefix,key,detVisibles,args){
   const id=s=>`${prefix}ND${key}${s}`;
@@ -1593,10 +1655,12 @@ function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,pref
     if(!cubren.some(d=>d.id===elegido)){alert('La declaración elegida no cubre este concepto.');mostrarToast('No se registró el pago','La declaración no cubre el concepto','error');return null}
     declId=elegido;
   }
-  let pg=agregarPago(tipoPapel,papelId,clientId,{
+  const datosPago={
     declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
     lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
-  });
+  };
+  if(!confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago))return null;
+  let pg=agregarPago(tipoPapel,papelId,clientId,datosPago);
   mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${declId?'':' · sin declaración vinculada'}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
   return pg;
@@ -1663,6 +1727,7 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
         ${celda('Ajuste',c.pagado==null?'—':(c.esRedondeo?fm(c.ajuste):fm(0)))}
         ${celda('Pendiente','<b>'+fm(c.pendiente)+'</b>')}
       </div>
+      ${trazaAccesoriosLigeraHtml(c.memorias)}
       ${(c.memorias||[]).map(mm=>memoriaAccesoriosHtml(mm.memoria,'pago del '+fmtDate(mm.memoria.fechaPago))).join('')}
       <div style="margin-top:8px">${lineasDecl}</div>
       <button class="btn" style="margin-top:6px;padding:3px 10px;font-size:11.5px" onclick="alternarFormDeclConcepto('${prefix}','${c.id}')">+ Registrar declaración</button>
@@ -1952,6 +2017,47 @@ function calcularAjusteCumplimiento(determinado,pagado){
   }
   let pendiente=Math.round((determinado-pagado)*100)/100;
   return {ajusteRedondeo:0,pendiente,esRedondeo:false};
+}
+// --- Trazabilidad fiscal resumida de accesorios: sale EXCLUSIVAMENTE de accesorios_memoria (nunca recalcula) ---
+function etiquetaPeriodoCorta(per){
+  const m=String(per||'').match(/^(\d{4})-(\d{2})$/);
+  return m?`${MESES_NOMBRE[(+m[2])-1].slice(0,3)}-${m[1]}`:'—';
+}
+function resumenActualizacionTexto(m){
+  const a=(m&&m.actualizacion)||{};
+  if(!a.periodoInicial)return '';
+  const distintos=a.periodoInicial!==a.periodoFinal;
+  const val=v=>v!=null?` (${v})`:(distintos?' (falta)':'');
+  return `INPC base: ${etiquetaPeriodoCorta(a.periodoInicial)}${val(a.inpcInicial)} · INPC final: ${etiquetaPeriodoCorta(a.periodoFinal)}${val(a.inpcFinal)} · Factor: ${Number(a.factor).toFixed(4)}`;
+}
+function resumenRecargosLineas(m){
+  const meses=((m&&m.recargos&&m.recargos.meses)||[]).map(x=>`${etiquetaPeriodoCorta(x.periodo)} · ${x.tasa}%`);
+  const faltan=((m&&m.faltantesRecargo)||[]).map(p=>`${etiquetaPeriodoCorta(p)} · falta la tasa`);
+  const n=meses.length+faltan.length;
+  if(!n)return [];
+  if(n===1)return [`${(meses[0]||faltan[0])} · 1 mes/fracción`];
+  return [...meses,...faltan,`${n} meses/fracciones`];
+}
+// Dentro de las tarjetas oscuras de resultado: Actualización y Recargos separados, cada uno con su referencia debajo
+function filasAccesoriosCardHtml(calc){
+  const m=calc&&calc.accesoriosMemoria;
+  if(!m||!m.aplica){
+    return (calc&&(calc.actualizacion||calc.recargos))
+      ?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX((calc.actualizacion||0)+(calc.recargos||0))}</b></div>`:'';
+  }
+  const sub=t=>`<div style="font-size:10.5px;color:rgba(255,255,255,.72);margin:-3px 0 7px;line-height:1.5">${t}</div>`;
+  return `<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion)}</b></div>${sub(esc(resumenActualizacionTexto(m)))}
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.recargos)}</b></div>${sub(resumenRecargosLineas(m).map(esc).join('<br>')||'—')}`;
+}
+// En tarjetas claras (Retenciones por concepto): una referencia por cada pago con mora
+function trazaAccesoriosLigeraHtml(memorias){
+  const lista=(memorias||[]).filter(mm=>mm&&mm.memoria&&mm.memoria.aplica);
+  if(!lista.length)return '';
+  return `<div style="margin-top:7px;font-size:11.5px;line-height:1.5">${lista.map(mm=>{
+    const m=mm.memoria;
+    return `<div style="margin-bottom:5px">${lista.length>1?`<b>Pago del ${fmtDate(m.fechaPago)}</b><br>`:''}
+      <span class="role" style="font-size:10px;text-transform:uppercase">Actualización</span> <b>${fmtMoneyMX(m.actualizacion.importe)}</b><br><span style="color:var(--muted)">${esc(resumenActualizacionTexto(m))}</span><br>
+      <span class="role" style="font-size:10px;text-transform:uppercase">Recargos</span> <b>${fmtMoneyMX(m.recargos.importe)}</b><br><span style="color:var(--muted)">${resumenRecargosLineas(m).map(esc).join('<br>')||'—'}</span></div>`}).join('')}</div>`;
 }
 // --- Memoria de cálculo y advertencias de accesorios (presentación) ---
 function memoriaAccesoriosHtml(m,titulo){
@@ -3394,7 +3500,7 @@ function calcularPapelISRPMUI(){
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:14px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>ISR a cargo</span><b style="color:#fff">${calc.resultadoIsrCargo!=null?fmtMoneyMX(calc.resultadoIsrCargo):'—'}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
     ${bloqueAccesoriosHtml(calc)}
@@ -3788,7 +3894,7 @@ function calcularPapelIVAUI(){
     </div>`:''}
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>IVA final a pagar</span><b style="color:#fff">${calc.ivaFinalAPagar!=null?fmtMoneyMX(calc.ivaFinalAPagar):'—'}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
     ${bloqueAccesoriosHtml(calc)}
@@ -4129,7 +4235,7 @@ function calcularPapelISNUI(){
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Impuesto determinado</span><b style="color:#fff">${calc.impuestoDeterminado!=null?fmtMoneyMX(calc.impuestoDeterminado):'—'}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>
     ${bloqueAccesoriosHtml(calc)}
@@ -4243,7 +4349,7 @@ function calcularPapelExtraccionUI(){
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Impuesto total</span><b style="color:#fff">${fmtMoneyMX(calc.totalImpuesto)}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${fmtMoneyMX(calc.totalAPagar)}</b></div>
     </div>
     ${bloqueAccesoriosHtml(calc)}
@@ -4371,7 +4477,7 @@ function calcularPapelHospedajeAnfitrionUI(){
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Impuesto a cargo</span><b style="color:#fff">${calc.impuestoACargo!=null?fmtMoneyMX(calc.impuestoACargo):'—'}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>${bloqueAccesoriosHtml(calc)}`;
 }
@@ -4642,7 +4748,7 @@ function renderResultadoEstatalSimple(calc,campoTasa,campoResultado,labelResulta
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>${labelResultado}</span><b style="color:#fff">${calc[campoResultado]!=null?fmtMoneyMX(calc[campoResultado]):'—'}</b></div>
-      ${(calc.actualizacion||calc.recargos)?`<div class="prow" style="color:rgba(255,255,255,.85)"><span>+ Actualización / Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion+calc.recargos)}</b></div>`:''}
+      ${filasAccesoriosCardHtml(calc)}
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>${bloqueAccesoriosHtml(calc)}`;
 }
@@ -5337,11 +5443,11 @@ function dibujarTablaResumenEnDoc(doc,titulo,filas,ejercicio,periodoLabel){
   const NAVY=[7,59,118];
   doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(0);
   doc.text(titulo,14,20);
-  let total=filas.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  let total=filas.reduce((s,f)=>s+totalDeFilaResumen(f),0);
   doc.autoTable({
     startY:26,
     body:[
-      ...filas.map(f=>[f.nombre+(f.papel?` (${estadoLabel(f.papel.estatus)})`:' (sin capturar)'),f.monto!=null?fmtMoneyMX(f.monto):'—']),
+      ...cuerpoResumenPdf(filas),
       [{content:'TOTAL '+titulo.replace('RESUMEN ',''),styles:{fontStyle:'bold'}},{content:fmtMoneyMX(total),styles:{fontStyle:'bold'}}]
     ],
     theme:'grid',
@@ -5364,8 +5470,8 @@ function dibujarResumenExpedienteMensual(doc,clientId,ejercicio,periodo){
     doc.autoTable({
       startY:y+20,
       body:[
-        ...resumenEstatal.map(f=>[f.nombre+(f.papel?` (${estadoLabel(f.papel.estatus)})`:' (sin capturar)'),f.monto!=null?fmtMoneyMX(f.monto):'—']),
-        [{content:'TOTAL ESTATAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(resumenEstatal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0)),styles:{fontStyle:'bold'}}]
+        ...cuerpoResumenPdf(resumenEstatal),
+        [{content:'TOTAL ESTATAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(resumenEstatal.reduce((s,f)=>s+totalDeFilaResumen(f),0)),styles:{fontStyle:'bold'}}]
       ],
       theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:130},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}
     });
@@ -5378,7 +5484,8 @@ function dibujarResumenExpedienteMensual(doc,clientId,ejercicio,periodo){
     body:[
       ['Federal',fmtMoneyMX(carga.totalFederal)],
       ['Estatal',fmtMoneyMX(carga.totalEstatal)],
-      [{content:'TOTAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(carga.total),styles:{fontStyle:'bold'}}]
+      [{content:'TOTAL',styles:{fontStyle:'bold'}},{content:fmtMoneyMX(carga.total),styles:{fontStyle:'bold'}}],
+      ...(carga.accesorios>0?[['Incluye actualización y recargos (no incluye lo pagado ni ajustes por redondeo)',fmtMoneyMX(carga.accesorios)]]:[])
     ],
     theme:'grid',styles:{fontSize:9.5,cellPadding:3},columnStyles:{0:{cellWidth:130},1:{halign:'right'}},margin:{left:14,right:14},headStyles:{fillColor:NAVY}
   });
@@ -6554,27 +6661,72 @@ function fiscalCardHtml(opts){
 // --- Resumen de impuestos de un ámbito (Federal o Estatal) para el periodo seleccionado.
 // Es PURA REPRESENTACIÓN: recibe los papeles YA OBTENIDOS por el llamador, nunca calcula ni persiste nada. ---
 function resumenImpuestosHtml(titulo,filas,ejercicio,periodo){
-  let total=filas.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  let total=filas.reduce((s,f)=>s+totalDeFilaResumen(f),0);
+  const td='padding:4px 0;text-align:right;font-variant-numeric:tabular-nums';
+  const pill=f=>f.papel?` <span class="pill ${f.papel.estatus==='publicado'?'p-green':(f.papel.estatus==='revisado'?'p-blue':'p-gray')}" style="font-size:9px;padding:1px 6px;margin-left:4px">${f.papel.estatus}</span>`:'';
+  const filasHtml=filas.map(f=>{
+    const principal=`<tr><td style="padding:4px 0">${esc(f.nombre)}${pill(f)}</td><td style="${td}">${f.monto!=null?fmtMoneyMX(f.monto):'—'}</td></tr>`;
+    if(!(f.accesorios>0||f.accesoriosIncompletos))return principal;   // presentación compacta cuando no hay accesorios
+    return principal+`<tr><td style="padding:1px 0 1px 16px;font-size:12px;color:var(--muted)">↳ Actualización / Recargos${f.accesoriosIncompletos?' <span class="pill p-amber" style="font-size:9px;padding:1px 6px">⚠ incompleto: faltan parámetros</span>':''}</td><td style="padding:1px 0;text-align:right;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums" title="Actualización ${fmtMoneyMX(f.actualizacion)} · Recargos ${fmtMoneyMX(f.recargos)}">${fmtMoneyMX(f.accesorios)}</td></tr>
+      <tr style="border-top:1px solid var(--line)"><td style="padding:3px 0;font-weight:600">Total ${esc(f.nombre)}</td><td style="padding:3px 0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums">${fmtMoneyMX(f.total)}</td></tr>`;
+  }).join('');
   return `<div class="card" style="margin-top:14px;padding:14px 18px">
     <h3 style="margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)">${esc(titulo)} — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</h3>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
-      ${filas.map(f=>`<tr><td style="padding:4px 0">${esc(f.nombre)}${f.papel?` <span class="pill ${f.papel.estatus==='publicado'?'p-green':(f.papel.estatus==='revisado'?'p-blue':'p-gray')}" style="font-size:9px;padding:1px 6px;margin-left:4px">${f.papel.estatus}</span>`:''}</td><td style="padding:4px 0;text-align:right;font-variant-numeric:tabular-nums">${f.monto!=null?fmtMoneyMX(f.monto):'—'}</td></tr>`).join('')}
+      ${filasHtml}
       <tr style="border-top:1.5px solid var(--line)"><td style="padding:6px 0;font-weight:700">TOTAL ${esc(titulo.replace('RESUMEN ',''))}</td><td style="padding:6px 0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmtMoneyMX(total)}</td></tr>
     </table>
   </div>`;
 }
 // --- Carga fiscal del periodo: agrega los mismos totales federal + estatal, releyendo los papeles
 // persistidos de forma independiente (para que funcione desde cualquiera de las dos pestañas). ---
+// Accesorios (actualización + recargos) de un papel para el Resumen: del propio papel (persistidos) o, en Retenciones,
+// de la suma real de sus conceptos/pagos (derivación; sin duplicar pagos ni declaraciones). NO incluye ajustes de redondeo.
+function accesoriosResumenDePapel(tipoPapel,p){
+  const r2=n=>Math.round(n*100)/100;
+  if(!p)return {actualizacion:0,recargos:0,incompleto:false};
+  if(esPapelRetenciones(tipoPapel)){
+    const det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+    const der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
+    return {actualizacion:r2(der.legado.actualizacion||0),recargos:r2(der.legado.recargos||0),
+      incompleto:(der.accesoriosFaltantes||[]).length>0&&!(der.contexto&&der.contexto.modo==='sin_snapshot')};
+  }
+  const m=p.accesoriosMemoria;
+  return {actualizacion:r2(Number(p.actualizacion)||0),recargos:r2(Number(p.recargos)||0),incompleto:!!(m&&m.aplica&&m.completo===false)};
+}
+// Fila del Resumen: `monto` sigue siendo el PRINCIPAL determinado; se agregan accesorios y total (principal + accesorios)
+function filaResumenFiscal(nombre,tipoPapel,p,monto){
+  const acc=accesoriosResumenDePapel(tipoPapel,p);
+  const accesorios=Math.round((acc.actualizacion+acc.recargos)*100)/100;
+  const total=monto!=null?Math.round((Number(monto)+accesorios)*100)/100:null;
+  return {nombre,papel:p,monto,actualizacion:acc.actualizacion,recargos:acc.recargos,accesorios,total,accesoriosIncompletos:acc.incompleto};
+}
+const totalDeFilaResumen=f=>f.total!=null?Number(f.total):(f.monto!=null?Number(f.monto):0);
+// Cuerpo común (PDF) de una tabla de resumen: presentación compacta si no hay accesorios; con accesorios: principal, ↳ accesorios y total
+function cuerpoResumenPdf(filas){
+  const out=[];
+  filas.forEach(f=>{
+    out.push([f.nombre+(f.papel?` (${estadoLabel(f.papel.estatus)})`:' (sin capturar)'),f.monto!=null?fmtMoneyMX(f.monto):'—']);
+    if(f.accesorios>0||f.accesoriosIncompletos){
+      out.push([`      ↳ Actualización / Recargos${f.accesoriosIncompletos?' (INCOMPLETO: faltan parámetros)':''}`,fmtMoneyMX(f.accesorios)]);
+      out.push([{content:'Total '+f.nombre,styles:{fontStyle:'bold'}},{content:fmtMoneyMX(f.total),styles:{fontStyle:'bold'}}]);
+    }
+  });
+  return out;
+}
 // --- Cálculo puro de la Carga Fiscal del periodo — ÚNICA fuente para pantalla y Expediente PDF. ---
 function calcularCargaFiscalPeriodo(clientId,ejercicio,periodo){
   let resumenFederal=calcularResumenFederal(clientId,ejercicio,periodo);
-  let totalFederal=resumenFederal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
+  let totalFederal=resumenFederal.reduce((s,f)=>s+totalDeFilaResumen(f),0);
   let resumenEstatal=calcularResumenEstatal(clientId,ejercicio,periodo);
-  let totalEstatal=resumenEstatal.reduce((s,f)=>s+(f.monto!=null?Number(f.monto):0),0);
-  return {totalFederal,totalEstatal,total:totalFederal+totalEstatal};
+  let totalEstatal=resumenEstatal.reduce((s,f)=>s+totalDeFilaResumen(f),0);
+  // Carga fiscal = principal determinado + actualización + recargos. NO usa lo pagado ni el ajuste por redondeo.
+  const r2=n=>Math.round(n*100)/100;
+  let accesoriosFederal=r2(resumenFederal.reduce((s,f)=>s+(f.accesorios||0),0)),accesoriosEstatal=r2(resumenEstatal.reduce((s,f)=>s+(f.accesorios||0),0));
+  return {totalFederal:r2(totalFederal),totalEstatal:r2(totalEstatal),total:r2(totalFederal+totalEstatal),accesoriosFederal,accesoriosEstatal,accesorios:r2(accesoriosFederal+accesoriosEstatal)};
 }
 function cargaFiscalPeriodoHtml(clientId,ejercicio,periodo){
-  let {totalFederal,totalEstatal,total}=calcularCargaFiscalPeriodo(clientId,ejercicio,periodo);
+  let {totalFederal,totalEstatal,total,accesorios}=calcularCargaFiscalPeriodo(clientId,ejercicio,periodo);
   return `<div class="card" style="margin-top:14px;padding:14px 18px;background:var(--bg)">
     <h3 style="margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)">Carga Fiscal del Periodo — ${MESES_NOMBRE[periodo-1]} ${ejercicio}</h3>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -6582,6 +6734,7 @@ function cargaFiscalPeriodoHtml(clientId,ejercicio,periodo){
       <tr><td style="padding:4px 0">Estatal</td><td style="padding:4px 0;text-align:right;font-variant-numeric:tabular-nums">${fmtMoneyMX(totalEstatal)}</td></tr>
       <tr style="border-top:1.5px solid var(--line)"><td style="padding:6px 0;font-weight:700">TOTAL</td><td style="padding:6px 0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmtMoneyMX(total)}</td></tr>
     </table>
+    ${accesorios>0?`<div class="hint" style="margin-top:6px">Incluye actualización y recargos por ${fmtMoneyMX(accesorios)} (principal determinado ${fmtMoneyMX(total-accesorios)}). No incluye lo pagado ni ajustes por redondeo.</div>`:''}
   </div>`;
 }
 // --- Cálculo del resumen Federal/Estatal — ÚNICA fuente, usada por la pantalla Y por el Expediente PDF.
@@ -6592,10 +6745,10 @@ function calcularResumenFederal(clientId,ejercicio,periodo){
   let pRetIsr=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
   let pRetIva=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
   return [
-    {nombre:'ISR Personas Morales',papel:pIsr,monto:pIsr?pIsr.resultadoIsrCargo:null},
-    {nombre:'IVA',papel:pIva,monto:pIva?pIva.ivaFinalAPagar:null},
-    {nombre:'Retenciones ISR',papel:pRetIsr,monto:pRetIsr?pRetIsr.totalRetenido:null},
-    {nombre:'Retenciones IVA',papel:pRetIva,monto:pRetIva?pRetIva.totalRetenido:null}
+    filaResumenFiscal('ISR Personas Morales','isr_pm',pIsr,pIsr?pIsr.resultadoIsrCargo:null),
+    filaResumenFiscal('IVA','iva',pIva,pIva?pIva.ivaFinalAPagar:null),
+    filaResumenFiscal('Retenciones ISR','retenciones_isr',pRetIsr,pRetIsr?pRetIsr.totalRetenido:null),
+    filaResumenFiscal('Retenciones IVA','retenciones_iva',pRetIva,pRetIva?pRetIva.totalRetenido:null)
   ];
 }
 function calcularResumenEstatal(clientId,ejercicio,periodo){
@@ -6608,7 +6761,7 @@ function calcularResumenEstatal(clientId,ejercicio,periodo){
     bebidas:()=>getPapelBebidasVigente(clientId,ejercicio,periodo)
   };
   let resultadoCampo={isn:'impuestoDeterminado',extraccion:'totalImpuesto',hospedaje:'impuestoDeterminado',hospedaje_anfitrion:'impuestoACargo',bebidas:'impuestoRetenidoDeterminado'};
-  return aplicables.map(def=>{let p=getters[def.tipo]();return{nombre:def.label,papel:p,monto:p?p[resultadoCampo[def.tipo]]:null}});
+  return aplicables.map(def=>{let p=getters[def.tipo]();return filaResumenFiscal(def.label,def.tipo,p,p?p[resultadoCampo[def.tipo]]:null)});
 }
 function renderFiscalWorkspaceTabContent(){
   let {clientId,ejercicio,periodo,tab}=__fiscalWorkspaceState;
