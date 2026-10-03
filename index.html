@@ -450,8 +450,12 @@ function stamp(o){o._ts=Date.now();return o}
 function idPapelAUsar(anteriorVigente,esNuevaVersion){
   return (anteriorVigente&&!esNuevaVersion)?anteriorVigente.id:(Date.now()+Math.floor(Math.random()*100000));
 }
+// Campos de cumplimiento que NO forman parte del formulario de la determinación: se conservan
+// al guardar (si no, "Guardar como Borrador" devolvería el selector a Normal y borraría el espejo).
+const CAMPOS_CUMPLIMIENTO_PRESERVAR=['tipoCumplimiento','fechaPresentacionDeclaracion','folioDeclaracion','lineaCaptura','vigenciaLineaCaptura','importePagado','bancoPago','folioPago','ajusteRedondeo','cumplimientoActualizadoPor','cumplimientoActualizadoEn'];
 function persistirVersionPapel(arrName,anteriorVigente,esNuevaVersion,nuevo){
   db[arrName]=db[arrName]||[];
+  if(anteriorVigente)CAMPOS_CUMPLIMIENTO_PRESERVAR.forEach(k=>{if(nuevo[k]===undefined&&anteriorVigente[k]!==undefined)nuevo[k]=anteriorVigente[k]});
   if(anteriorVigente&&!esNuevaVersion){
     let idx=db[arrName].findIndex(p=>p.id===anteriorVigente.id);
     if(idx>=0){db[arrName][idx]=nuevo}else{db[arrName].push(nuevo)}
@@ -489,7 +493,7 @@ const TABLE_MAP={
   fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
-  fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
+  fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',conceptoRetencionId:'concepto_retencion_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
 };
 const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso'],vacationPeriods:['fechaInicio','fechaFin'],parametrosFiscales:['vigenciaDesde','vigenciaHasta'],fiscalPapelIsrPm:['fechaVencimiento','fechaPago'],fiscalPapelIva:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIsr:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIva:['fechaVencimiento','fechaPago'],fiscalPapelIsn:['fechaVencimiento','fechaPago'],fiscalPapelExtraccion:['fechaVencimiento','fechaPago'],fiscalPapelHospedaje:['fechaVencimiento','fechaPago'],fiscalPapelHospedajeAnfitrion:['fechaVencimiento','fechaPago'],fiscalPapelBebidas:['fechaVencimiento','fechaPago'],fiscalDeclaraciones:['fechaPresentacion'],fiscalPagos:['fechaPago','vigenciaLineaCaptura']};
 function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
@@ -654,11 +658,22 @@ const BANCOS_CATALOGO=['BBVA','Santander','Banorte','HSBC','Citibanamex','Scotia
 // ===================== Declaraciones (1:N) y Pagos (1:N) — arquitectura común para los 9 papeles =====================
 // La determinación sigue siendo UN registro por obligación+cliente+ejercicio+periodo (sin cambios).
 // Declaraciones y Pagos son evidencia de cumplimiento de ESA determinación — nunca una segunda fuente.
+// Si un papel ya Revisado/Publicado se corrige, nace una versión con id nuevo (reemplazaA). Los
+// pagos/declaraciones registrados contra versiones anteriores siguen siendo evidencia de la misma
+// obligación: se consultan por todo el linaje, así nunca quedan huérfanos.
+function idsLinajePapel(tipoPapel,papelId){
+  let arr=db[PAPEL_ARRAY_DB[tipoPapel]]||[];
+  let ids=[papelId],cur=arr.find(x=>x.id===papelId),guard=0;
+  while(cur&&cur.reemplazaA&&guard++<50){ids.push(cur.reemplazaA);cur=arr.find(x=>x.id===cur.reemplazaA)}
+  return ids;
+}
 function getDeclaracionesPapel(tipoPapel,papelId){
-  return (db.fiscalDeclaraciones||[]).filter(d=>d.papelTipo===tipoPapel&&d.papelId===papelId).sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id);
+  let ids=idsLinajePapel(tipoPapel,papelId);
+  return (db.fiscalDeclaraciones||[]).filter(d=>d.papelTipo===tipoPapel&&ids.includes(d.papelId)).sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id);
 }
 function getPagosPapel(tipoPapel,papelId){
-  return (db.fiscalPagos||[]).filter(p=>p.papelTipo===tipoPapel&&p.papelId===papelId).sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id);
+  let ids=idsLinajePapel(tipoPapel,papelId);
+  return (db.fiscalPagos||[]).filter(p=>p.papelTipo===tipoPapel&&ids.includes(p.papelId)).sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id);
 }
 function getPagosDeDeclaracion(declaracionId){
   return (db.fiscalPagos||[]).filter(p=>p.declaracionId===declaracionId);
@@ -686,7 +701,7 @@ function agregarDeclaracion(tipoPapel,papelId,clientId,datos){
 function agregarPago(tipoPapel,papelId,clientId,datos){
   let nuevo=stamp({
     id:Date.now()+Math.floor(Math.random()*100000),client:clientId,papelTipo:tipoPapel,papelId,
-    declaracionId:datos.declaracionId||null,importe:datos.importe!=null?datos.importe:null,fechaPago:datos.fechaPago||null,
+    declaracionId:datos.declaracionId||null,conceptoRetencionId:datos.conceptoRetencionId!=null?String(datos.conceptoRetencionId):null,importe:datos.importe!=null?datos.importe:null,fechaPago:datos.fechaPago||null,
     bancoPago:datos.bancoPago||null,lineaCaptura:datos.lineaCaptura||null,vigenciaLineaCaptura:datos.vigenciaLineaCaptura||null,
     folioPago:datos.folioPago||null,observaciones:datos.observaciones||null,
     creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),
@@ -694,12 +709,25 @@ function agregarPago(tipoPapel,papelId,clientId,datos){
   });
   db.fiscalPagos=db.fiscalPagos||[];
   db.fiscalPagos.push(nuevo);
+  sincronizarLegadoRetenciones(tipoPapel,papelId);
   save();
   return nuevo;
 }
 function eliminarPago(id){
+  let pg=(db.fiscalPagos||[]).find(p=>p.id===id);
   db.fiscalPagos=(db.fiscalPagos||[]).filter(p=>p.id!==id);
+  if(pg)sincronizarLegadoRetenciones(pg.papelTipo,pg.papelId);
   save();
+}
+// Asignar un pago YA capturado a su concepto de retención (relación explícita por id estable).
+function asignarConceptoPago(pagoId,conceptoId){
+  let pg=(db.fiscalPagos||[]).find(x=>x.id===pagoId);if(!pg)return null;
+  pg.conceptoRetencionId=conceptoId!=null&&conceptoId!==''?String(conceptoId):null;
+  pg.actualizadoPor=currentStaff?currentStaff.id:null;pg.actualizadoEn=new Date().toISOString();
+  stamp(pg);
+  sincronizarLegadoRetenciones(pg.papelTipo,pg.papelId);
+  save();
+  return pg;
 }
 function eliminarDeclaracion(id){
   if(getPagosDeDeclaracion(id).length){alert('Esta declaración tiene pagos asociados — elimina primero los pagos.');return}
@@ -722,6 +750,7 @@ function refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix
   let p=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
   let el=document.getElementById(`${prefix}CumpBloque`);
   if(el)el.outerHTML=formularioCumplimientoHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo);
+  refrescarResumenRetencionesUI(tipoPapel);
 }
 function cambiarTipoCumplimientoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,nuevoTipo){
   let p=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);if(!p)return;
@@ -802,10 +831,280 @@ function resumenCumplimientoHtml(totalAPagar,tipoPapel,papelId){
     <tr style="border-top:1px solid var(--line)"><td style="padding:3px 0;font-weight:700">Pendiente</td><td style="padding:3px 0;text-align:right;font-weight:700">${fmtMoneyMX(r.pendiente)}</td></tr>`:'<tr><td colspan="2" class="role" style="padding:3px 0">Sin pagos registrados todavía</td></tr>'}
   </table>`;
 }
+// ===================== RETENCIONES ISR / IVA — Pagos por concepto de retención =====================
+// La obligación fiscal sigue siendo UNA (Retenciones ISR — enero 2025); dentro del papel hay conceptos
+// (Salarios y asimilados, Servicios profesionales, ...) que pueden declararse/pagarse por separado.
+// Cada pago de fiscal_pagos se relaciona EXPLÍCITAMENTE con su concepto mediante conceptoRetencionId:
+//   'salarios' (bloque de Salarios del papel) ó String(catalogoId) (id estable del catálogo).
+// Nunca se infiere por importe. Pagado / ajuste / pendiente SIEMPRE se derivan de fiscal_pagos; los
+// campos legados del papel (principalPagado, ajustes, fechaPago, totalPagado, diferenciaPendiente)
+// quedan en BD como ESPEJO de solo lectura (nadie los captura a mano cuando existen pagos).
+const TIPOS_RETENCIONES=['retenciones_isr','retenciones_iva'];
+function esPapelRetenciones(t){return TIPOS_RETENCIONES.includes(t)}
+function conceptosDeterminadosRetenciones(tipoPapel,salariosRetenido,conceptos){
+  let out=[];
+  if(tipoPapel==='retenciones_isr')out.push({id:'salarios',nombre:'Salarios y asimilados',retenido:Math.round((Number(salariosRetenido)||0)*100)/100});
+  (conceptos||[]).forEach(c=>{
+    let id=String(c.catalogoId),r=Number(c.retenidoConfirmado)||0;
+    let ex=out.find(x=>x.id===id);
+    if(ex)ex.retenido=Math.round((ex.retenido+r)*100)/100;
+    else out.push({id,nombre:c.nombre||'Concepto',retenido:Math.round(r*100)/100});
+  });
+  return out;
+}
+function claveConceptoDePago(pg){return pg.conceptoRetencionId==null?'':String(pg.conceptoRetencionId)}
+function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
+  let pagos=papelId!=null?getPagosPapel(tipoPapel,papelId):[];
+  let idsValidos=new Set(conceptosDet.map(c=>c.id));
+  // Redondeo evaluado POR CONCEPTO, con el mismo criterio ya validado (calcularAjusteCumplimiento).
+  let porConcepto=conceptosDet.map(c=>{
+    let pg=pagos.filter(p=>claveConceptoDePago(p)===c.id);
+    let pagado=pg.length?Math.round(pg.reduce((s,p)=>s+(Number(p.importe)||0),0)*100)/100:null;
+    let r=calcularAjusteCumplimiento(c.retenido,pagado);
+    return {id:c.id,nombre:c.nombre,retenido:c.retenido,pagado,ajuste:r.esRedondeo?r.ajusteRedondeo:null,esRedondeo:r.esRedondeo,pendiente:r.pendiente,pagos:pg};
+  });
+  let sinAsignar=pagos.filter(p=>!idsValidos.has(claveConceptoDePago(p)));
+  let totalPagado=pagos.length?Math.round(pagos.reduce((s,p)=>s+(Number(p.importe)||0),0)*100)/100:null;
+  let ajusteTotal=0,pendienteTotal;
+  if(!pagos.length){pendienteTotal=Math.round((totalRetenido||0)*100)/100}
+  else if(sinAsignar.length){
+    // Mientras haya pagos sin concepto no se puede atribuir redondeo por concepto: se evalúa contra el total.
+    let r=calcularAjusteCumplimiento(totalRetenido,totalPagado);
+    ajusteTotal=r.esRedondeo?r.ajusteRedondeo:0;pendienteTotal=r.pendiente;
+  }else{
+    ajusteTotal=Math.round(porConcepto.reduce((s,c)=>s+(c.ajuste||0),0)*100)/100;
+    pendienteTotal=Math.round(porConcepto.reduce((s,c)=>s+c.pendiente,0)*100)/100;
+  }
+  if(ajusteTotal===0)ajusteTotal=0; // evita -0
+  // Accesorios: mismo motor común (calcularAccesorios), aplicado con la fecha propia de CADA pago.
+  let act=0,rec=0,fechaPago=null;
+  pagos.forEach(p=>{
+    if(p.fechaPago&&(!fechaPago||p.fechaPago>fechaPago))fechaPago=p.fechaPago;
+    if(fechaVenc&&p.fechaPago&&p.importe){let a=calcularAccesorios(Number(p.importe),fechaVenc,p.fechaPago);act+=a.actualizacion||0;rec+=a.recargos||0}
+  });
+  act=Math.round(act*100)/100;rec=Math.round(rec*100)/100;
+  let principal=totalPagado||0;
+  let legado={
+    principalPagado:principal,fechaPago,actualizacion:act,recargos:rec,
+    ajustes:ajusteTotal===0?0:Math.round(-ajusteTotal*100)/100,
+    totalPagado:Math.round((principal+act+rec)*100)/100,
+    diferenciaPendiente:pendienteTotal,ajusteRedondeo:ajusteTotal
+  };
+  return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,totalRetenido,totalPagado,ajusteTotal,pendienteTotal,legado};
+}
+// Papel con los campos de pago "efectivos": derivados de fiscal_pagos si existen; si no, lo almacenado
+// (así los papeles anteriores a la captura por pagos no pierden su registro histórico).
+function efectivoRetenciones(tipoPapel,p){
+  if(!p)return p;
+  let pagos=getPagosPapel(tipoPapel,p.id);
+  if(!pagos.length)return p;
+  let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+  let der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
+  return {...p,...der.legado};
+}
+// Mantiene el espejo legado del papel coherente tras cada alta/baja/asignación de pagos.
+// No toca ningún campo de la determinación (retenido, conceptos, bases).
+function sincronizarLegadoRetenciones(tipoPapel,papelId){
+  if(!esPapelRetenciones(tipoPapel))return;
+  let arr=db[PAPEL_ARRAY_DB[tipoPapel]]||[];
+  let p0=arr.find(x=>x.id===papelId);if(!p0)return;
+  let p=PAPEL_GETTER_VIGENTE[tipoPapel](p0.client,p0.ejercicio,p0.periodo)||p0;
+  let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+  let der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
+  if(der.tienePagos)Object.assign(p,der.legado);
+  else Object.assign(p,{principalPagado:0,fechaPago:null,actualizacion:0,recargos:0,ajustes:0,totalPagado:0,diferenciaPendiente:Math.round((p.totalRetenido||0)*100)/100,ajusteRedondeo:null});
+  stamp(p);
+}
+function refrescarResumenRetencionesUI(tipoPapel){
+  try{
+    if(tipoPapel==='retenciones_isr'&&document.getElementById('retIsrResultado')&&__retIsrState.clientId)calcularPapelRetencionesISRUI();
+    if(tipoPapel==='retenciones_iva'&&document.getElementById('retIvaResultado')&&__retIvaState.clientId)calcularPapelRetencionesIVAUI();
+  }catch(e){console.error(e)}
+}
+function opcionesBancoHtml(){return BANCOS_CATALOGO.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('')}
+function tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix){
+  let partes=[`<b>${fmtMoneyMX(pg.importe)}</b>`,pg.fechaPago?fmtDate(pg.fechaPago):'Sin fecha'];
+  if(pg.bancoPago)partes.push(esc(pg.bancoPago));
+  if(pg.lineaCaptura)partes.push('Línea '+esc(pg.lineaCaptura));
+  if(pg.folioPago)partes.push('Operación '+esc(pg.folioPago));
+  return `<div data-pago-id="${pg.id}" style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 8px;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:11.5px">
+    <span>${partes.join(' · ')}</span>
+    ${isAdmin?`<button class="btn" style="padding:1px 7px;font-size:10px" title="Eliminar pago" onclick="eliminarPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">✕</button>`:''}
+  </div>`;
+}
+function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaraciones){
+  const id=s=>`${prefix}NP${key}${s}`;
+  return `<div id="${id('Form')}" class="card" style="display:none;background:#fff;padding:10px;margin-top:6px">
+    <div class="form-grid">
+      ${opcionesConcepto?`<div class="field"><label>Aplicar a</label><select id="${id('Aplicar')}"><option value="">— Selecciona el concepto —</option>${opcionesConcepto.map(c=>`<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select></div>`:''}
+      <div class="field"><label>Importe</label><input id="${id('Importe')}" class="money-input" type="number" step="0.01"></div>
+      <div class="field"><label>Fecha de pago</label><input id="${id('Fecha')}" type="date"></div>
+      <div class="field"><label>Banco</label><select id="${id('Banco')}" onchange="document.getElementById('${id('BancoOtroWrap')}').style.display=this.value==='Otro'?'block':'none'"><option value="">—</option>${opcionesBancoHtml()}</select></div>
+      <div class="field" id="${id('BancoOtroWrap')}" style="display:none"><label>Especificar banco</label><input id="${id('BancoOtro')}"></div>
+      <div class="field"><label>Línea de captura / referencia</label><input id="${id('Linea')}"></div>
+      <div class="field"><label>Vigencia de la línea</label><input id="${id('Vigencia')}" type="date"></div>
+      <div class="field"><label>Operación / folio del pago</label><input id="${id('Folio')}"></div>
+      ${declaraciones.length>1?`<div class="field"><label>Declaración</label><select id="${id('Decl')}"><option value="">—</option>${declaraciones.map(d=>`<option value="${d.id}">${d.tipo==='complementaria'?'Complementaria':'Normal'} · ${d.fechaPresentacion?fmtDate(d.fechaPresentacion):'s/f'}${d.folioDeclaracion?' · '+esc(d.folioDeclaracion):''}</option>`).join('')}</select></div>`:''}
+    </div>
+    <button class="btn primary" style="margin-top:6px" onclick="guardarPagoConceptoUI(${args},'${key}')">Guardar pago</button>
+  </div>`;
+}
+function alternarFormPagoConcepto(prefix,key){
+  let f=document.getElementById(`${prefix}NP${key}Form`);
+  if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key){
+  const el=s=>document.getElementById(`${prefix}NP${key}${s}`);
+  let conceptoId=key==='G'?(el('Aplicar')?el('Aplicar').value:''):key;
+  if(!conceptoId){alert('Selecciona el concepto al que se aplica este pago.');mostrarToast('No se registró el pago','Falta seleccionar el concepto','error');return null}
+  let importe=valorMonetario(el('Importe'));
+  if(!(importe>0)){alert('Captura el importe del pago.');mostrarToast('No se registró el pago','Falta el importe','error');return null}
+  let bancoSel=el('Banco'),banco=bancoSel?bancoSel.value:'';
+  if(banco==='Otro'){let o=el('BancoOtro');banco=o?o.value.trim():''}
+  let declaraciones=getDeclaracionesPapel(tipoPapel,papelId);
+  let declId=(el('Decl')&&el('Decl').value)?+el('Decl').value:(declaraciones.length===1?declaraciones[0].id:null);
+  let pg=agregarPago(tipoPapel,papelId,clientId,{
+    declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
+    lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
+  });
+  mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+  return pg;
+}
+function asignarConceptoPagoUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefix){
+  let sel=document.getElementById(`${prefix}Asig${pagoId}`);
+  if(!sel||!sel.value){alert('Selecciona el concepto al que corresponde este pago.');return}
+  asignarConceptoPago(pagoId,sel.value);
+  mostrarToast('✓ Pago asignado al concepto',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+}
+function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo){
+  const tipoCump=p.tipoCumplimiento||'normal';
+  const declaraciones=getDeclaracionesPapel(tipoPapel,p.id);
+  const det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+  const der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
+  const args=`'${tipoPapel}',${p.id},${clientId},${ejercicio},${periodo},'${prefix}'`;
+  const selector=`<div class="field" style="max-width:300px"><label>Tipo de cumplimiento</label>
+      <select id="${prefix}CumpTipo" onchange="cambiarTipoCumplimientoUI(${args},this.value)">
+        <option value="normal" ${tipoCump==='normal'?'selected':''}>Normal</option>
+        <option value="multiples_pagos" ${tipoCump==='multiples_pagos'?'selected':''}>Múltiples pagos</option>
+        <option value="complementaria" ${tipoCump==='complementaria'?'selected':''}>Complementaria</option>
+        <option value="en_ceros" ${tipoCump==='en_ceros'?'selected':''}>Presentada en ceros / Sin operaciones</option>
+      </select></div>`;
+  let cuerpo='';
+  if(tipoCump==='en_ceros'){
+    let decl=declaraciones[0];
+    cuerpo=`<div class="hint" style="margin-bottom:8px;color:var(--amber)">Presentada en ceros — no exige importe pagado, banco ni línea de captura.</div>
+      ${decl?tarjetaDeclaracionHtml(decl,prefix):`<div class="form-grid">
+        <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
+        <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
+        <div class="field full"><label>Observaciones</label><input id="${prefix}NuevaDeclObs"></div>
+      </div><button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},'normal',null)">Guardar</button>`}`;
+    return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px"><h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>${selector}<div style="margin-top:10px">${cuerpo}</div></div>`;
+  }
+  // Declaraciones (1:N) — igual que en el resto de los impuestos
+  let seccionDecl;
+  if(tipoCump==='complementaria'){
+    seccionDecl=`<b style="font-size:12px">Declaraciones</b>
+      ${declaraciones.map(d=>tarjetaDeclaracionHtml(d,prefix)).join('')||'<div class="role">Sin declaraciones registradas</div>'}
+      <div class="form-grid" style="margin-top:6px">
+        <div class="field"><label>Tipo</label><select id="${prefix}NuevaDeclTipo"><option value="normal">Normal</option><option value="complementaria" ${declaraciones.length?'selected':''}>Complementaria</option></select></div>
+        <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
+        <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
+      </div>
+      <button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},document.getElementById('${prefix}NuevaDeclTipo').value,${declaraciones.length?declaraciones[declaraciones.length-1].id:null})">+ Agregar declaración</button>`;
+  }else{
+    let decl=declaraciones[0];
+    seccionDecl=`<b style="font-size:12px">Declaración</b>
+      ${decl?tarjetaDeclaracionHtml(decl,prefix):`<div class="form-grid">
+        <div class="field"><label>Fecha de presentación</label><input id="${prefix}NuevaDeclFecha" type="date"></div>
+        <div class="field"><label>Folio / operación</label><input id="${prefix}NuevaDeclFolio"></div>
+      </div><button class="btn" style="margin-top:6px" onclick="guardarDeclaracionUI(${args},'normal',null)">Guardar declaración</button>`}`;
+  }
+  const fm=n=>n==null?'—':fmtMoneyMX(n);
+  const celda=(t,v)=>`<div><div class="role" style="font-size:10px;text-transform:uppercase">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
+  const conceptosHtml=der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).map(c=>`
+    <div class="card" style="padding:10px 12px;margin:8px 0;background:var(--bg)">
+      <div style="display:grid;grid-template-columns:1.8fr repeat(4,1fr);gap:8px;font-size:12.5px;align-items:center">
+        <b>${esc(c.nombre)}</b>
+        ${celda('Retenido',fm(c.retenido))}
+        ${celda('Pagado',fm(c.pagado))}
+        ${celda('Ajuste',c.pagado==null?'—':(c.esRedondeo?fm(c.ajuste):fm(0)))}
+        ${celda('Pendiente','<b>'+fm(c.pendiente)+'</b>')}
+      </div>
+      ${c.pagos.map(pg=>tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix)).join('')}
+      <button class="btn" style="margin-top:6px;padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','${c.id}')">+ Agregar pago</button>
+      ${formNuevoPagoConceptoHtml(prefix,c.id,null,args,declaraciones)}
+    </div>`).join('');
+  const sinAsignarHtml=der.sinAsignar.length?`
+    <div class="card" style="padding:10px 12px;margin:8px 0;border:1px dashed var(--amber);background:#fffaf0">
+      <b style="font-size:12.5px">Pagos sin asignar a un concepto (${der.sinAsignar.length})</b>
+      <div class="hint" style="margin:3px 0 6px">Asigna cada pago al concepto que liquida. No se vuelve a capturar nada: solo se establece la relación.</div>
+      ${der.sinAsignar.map(pg=>`${tarjetaPagoRetencionHtml(pg,tipoPapel,clientId,ejercicio,periodo,prefix)}
+        <div style="display:flex;gap:6px;align-items:center;margin:3px 0 6px 8px;font-size:11.5px">
+          <span>Aplicar a:</span>
+          <select id="${prefix}Asig${pg.id}" style="max-width:240px"><option value="">— Selecciona —</option>${det.map(c=>`<option value="${esc(c.id)}">${esc(c.nombre)}</option>`).join('')}</select>
+          <button class="btn" style="padding:2px 9px;font-size:11px" onclick="asignarConceptoPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">Asignar</button>
+        </div>`).join('')}
+    </div>`:'';
+  const generalHtml=`<div style="margin-top:8px"><button class="btn" style="padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','G')">+ Agregar pago (vista general)</button>
+      ${formNuevoPagoConceptoHtml(prefix,'G',det,args,declaraciones)}</div>`;
+  const totalHtml=`<div class="card" style="background:var(--nav);color:#fff;margin-top:10px;padding:10px 14px">
+      <div style="display:grid;grid-template-columns:1.8fr repeat(4,1fr);gap:8px;font-size:12.5px;align-items:center">
+        <b>Total del papel</b>
+        <div>Retenido<br>${fmtMoneyMX(der.totalRetenido)}</div>
+        <div>Pagado<br>${fm(der.totalPagado)}</div>
+        <div>Ajuste<br>${der.tienePagos?fm(der.ajusteTotal):'—'}</div>
+        <div>Pendiente<br><b>${fmtMoneyMX(der.pendienteTotal)}</b></div>
+      </div>
+      ${der.sinAsignar.length?`<div style="margin-top:6px;font-size:11px;color:#ffd98a">Hay pagos sin asignar: el redondeo por concepto se aplicará en cuanto los asignes.</div>`:''}
+    </div>`;
+  return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
+    <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
+    ${selector}
+    <div style="margin-top:10px">${seccionDecl}</div>
+    <div style="margin-top:14px"><b style="font-size:12px">Pagos por concepto de retención</b>
+      <div class="hint" style="margin:2px 0 4px">Cada concepto puede pagarse por separado y admite más de un pago.</div>
+      ${conceptosHtml||'<div class="role">Sin conceptos con retención en este papel</div>'}
+      ${sinAsignarHtml}${generalHtml}</div>
+    ${totalHtml}
+  </div>`;
+}
+// Sección de Cumplimiento del PDF para Retenciones: por concepto, con sus pagos. Mismos datos que la pantalla.
+function seccionCumplimientoRetencionesPdf(p,tipoPapel){
+  if(p.tipoCumplimiento==='en_ceros')return seccionCumplimientoPdf(p,tipoPapel);
+  let declaraciones=getDeclaracionesPapel(tipoPapel,p.id);
+  let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+  let der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
+  if(!declaraciones.length&&!der.tienePagos)return [];
+  let fm=n=>n==null?'—':fmtMoneyMX(n);
+  let filas=[];
+  declaraciones.forEach((d,i)=>{
+    let partes=[];
+    if(d.fechaPresentacion)partes.push(fmtDate(d.fechaPresentacion));
+    if(d.folioDeclaracion)partes.push('Folio '+d.folioDeclaracion);
+    filas.push([declaraciones.length>1?`Declaración ${i+1} (${d.tipo==='complementaria'?'Complementaria':'Normal'})`:'Declaración',partes.join(' · ')||'—']);
+  });
+  const detallePago=pg=>[pg.fechaPago?fmtDate(pg.fechaPago):null,pg.bancoPago,pg.lineaCaptura?'Línea '+pg.lineaCaptura:null,pg.folioPago?'Operación '+pg.folioPago:null].filter(Boolean).join(' · ');
+  der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).forEach(c=>{
+    filas.push([`${c.nombre} — retenido ${fm(c.retenido)}`,`Pagado ${fm(c.pagado)} · Ajuste ${c.pagado==null?'—':fm(c.esRedondeo?c.ajuste:0)} · Pendiente ${fm(c.pendiente)}`]);
+    c.pagos.forEach((pg,i)=>filas.push([`    Pago ${i+1}: ${detallePago(pg)}`,fm(pg.importe)]));
+  });
+  der.sinAsignar.forEach(pg=>filas.push([`Pago sin asignar a concepto: ${detallePago(pg)}`,fm(pg.importe)]));
+  filas.push(['Total retenido',fm(der.totalRetenido)]);
+  if(der.tienePagos){
+    filas.push(['Total efectivamente pagado',fm(der.totalPagado)]);
+    filas.push(['Ajuste por redondeo',fm(der.ajusteTotal)]);
+  }
+  filas.push(['Pendiente',fm(der.pendienteTotal)]);
+  return [{titulo:'Cumplimiento — Declaraciones y Pagos',filas,negritaUltima:true}];
+}
+
 // --- Bloque completo de Cumplimiento/Pago — ÚNICA implementación para los 9 papeles. Selector de
 // tipo + secciones dinámicas sobre la arquitectura 1:N (Declaraciones, Pagos). Cada acción persiste
 // de inmediato (igual que "Agregar concepto" en ISR PM) y refresca el bloque en sitio. ---
 function formularioCumplimientoHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo){
+  if(p&&esPapelRetenciones(tipoPapel))return formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejercicio,periodo);
   if(!p)return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px"><h3 style="margin:0 0 8px;font-size:13px">Cumplimiento / Pago</h3><div class="hint">Guarda el papel primero para registrar su cumplimiento.</div></div>`;
   tipoPapel=tipoPapel||prefix;
   let tipoCump=p.tipoCumplimiento||'normal';
@@ -1493,6 +1792,19 @@ function calcularListaConceptosRetencion(conceptosInput,fechaRef){
     return {catalogoId:c.catalogoId,nombre:catalogoItem.nombre,tipoCalculo:catalogoItem.tipoCalculo,base:r.base,ivaOperacion:r.ivaOperacion,tasaUsada:r.tasaUsada,parametroId:r.parametroId,retenidoPropuesto:r.retenido,retenidoConfirmado,ajustado};
   }).filter(Boolean);
 }
+// Si el papel de Retenciones ya tiene pagos en fiscal_pagos, el pago se DERIVA de ellos (única fuente);
+// si no, se conserva el comportamiento anterior (campos legados) para papeles históricos.
+function derivadoPagosRetenciones(tipoPapel,clientId,ejercicio,periodo,salariosRetenido,conceptos,totalRetenido,fechaVenc){
+  let ex=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
+  if(!ex||!getPagosPapel(tipoPapel,ex.id).length)return null;
+  return derivarCumplimientoRetenciones(tipoPapel,ex.id,conceptosDeterminadosRetenciones(tipoPapel,salariosRetenido,conceptos),totalRetenido,fechaVenc);
+}
+// Papel sin pagos registrados: los campos legados ya guardados pasan tal cual (solo lectura en UI).
+function legadoPasante(tipoPapel,clientId,ejercicio,periodo,inputs){
+  let ex=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
+  if(ex&&!getPagosPapel(tipoPapel,ex.id).length){inputs.principalPagado=ex.principalPagado;inputs.ajustes=ex.ajustes;inputs.fechaPago=ex.fechaPago}
+  return inputs;
+}
 function calcularAccesoriosYPago(totalRetenido,inputs){
   let principalPagado=Number(inputs.principalPagado)||0;
   let ajustes=Number(inputs.ajustes)||0;
@@ -1522,8 +1834,9 @@ function calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
   let salariosRetenido=Number(inputs.salariosRetenido)||0; // SIEMPRE manual — no es un motor de nómina
   let conceptos=calcularListaConceptosRetencion(inputs.conceptos,fechaRef);
   let totalRetenido=Math.round((salariosRetenido+conceptos.reduce((s,c)=>s+(Number(c.retenidoConfirmado)||0),0))*100)/100;
-  let pago=calcularAccesoriosYPago(totalRetenido,inputs);
-  return {salariosBaseGravada,salariosBaseExenta,salariosRetenido,conceptos,totalRetenido,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,...pago};
+  let der=derivadoPagosRetenciones('retenciones_isr',clientId,ejercicio,periodo,salariosRetenido,conceptos,totalRetenido,inputs.fechaVencimiento);
+  let pago=der?der.legado:calcularAccesoriosYPago(totalRetenido,inputs);
+  return {salariosBaseGravada,salariosBaseExenta,salariosRetenido,conceptos,totalRetenido,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:der?der.legado.fechaPago:(inputs.fechaPago||null),...pago,derivado:der};
 }
 function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -1536,7 +1849,7 @@ function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
     conceptos:calc.conceptos,totalRetenido:calc.totalRetenido,
     principalPagado:calc.principalPagado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,ajusteRedondeo:calc.ajusteRedondeo,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -1550,7 +1863,7 @@ function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
 }
 function getCedulaAnualRetencionesISR(clientId,ejercicio){
   let meses=[];
-  for(let p=1;p<=12;p++)meses.push(getPapelRetencionesISRVigente(clientId,ejercicio,p));
+  for(let p=1;p<=12;p++)meses.push(efectivoRetenciones('retenciones_isr',getPapelRetencionesISRVigente(clientId,ejercicio,p)));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
   function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let catalogoIds=[...new Set(meses.flatMap(m=>m?(m.conceptos||[]).map(c=>c.catalogoId):[]))];
@@ -1566,6 +1879,7 @@ function getCedulaAnualRetencionesISR(clientId,ejercicio){
     principal:{tipo:'suma',valores:meses.map(m=>m?Number(m.principalPagado||0):null),cierre:suma('principalPagado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
+    ajusteRedondeo:{tipo:'suma',valores:meses.map(m=>m&&getPagosPapel('retenciones_isr',m.id).length?Number(m.ajusteRedondeo||0):null),cierre:Math.round(meses.reduce((s,m)=>s+(m&&getPagosPapel('retenciones_isr',m.id).length?Number(m.ajusteRedondeo||0):0),0)*100)/100},
     totalPagado:{tipo:'suma',valores:meses.map(m=>m?totalPagadoPapel('retenciones_isr',m.id):null),cierre:Math.round(meses.reduce((s,m)=>s+(m?(totalPagadoPapel('retenciones_isr',m.id)||0):0),0)*100)/100},
     diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
   };
@@ -1585,8 +1899,9 @@ function calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
   let fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
   let conceptos=calcularListaConceptosRetencion(inputs.conceptos,fechaRef);
   let totalRetenido=Math.round(conceptos.reduce((s,c)=>s+(Number(c.retenidoConfirmado)||0),0)*100)/100;
-  let pago=calcularAccesoriosYPago(totalRetenido,inputs);
-  return {conceptos,totalRetenido,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,...pago};
+  let der=derivadoPagosRetenciones('retenciones_iva',clientId,ejercicio,periodo,0,conceptos,totalRetenido,inputs.fechaVencimiento);
+  let pago=der?der.legado:calcularAccesoriosYPago(totalRetenido,inputs);
+  return {conceptos,totalRetenido,fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:der?der.legado.fechaPago:(inputs.fechaPago||null),...pago,derivado:der};
 }
 function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
@@ -1598,7 +1913,7 @@ function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
     conceptos:calc.conceptos,totalRetenido:calc.totalRetenido,
     principalPagado:calc.principalPagado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
-    actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,
+    actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,ajusteRedondeo:calc.ajusteRedondeo,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
     creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
@@ -1612,7 +1927,7 @@ function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
 }
 function getCedulaAnualRetencionesIVA(clientId,ejercicio){
   let meses=[];
-  for(let p=1;p<=12;p++)meses.push(getPapelRetencionesIVAVigente(clientId,ejercicio,p));
+  for(let p=1;p<=12;p++)meses.push(efectivoRetenciones('retenciones_iva',getPapelRetencionesIVAVigente(clientId,ejercicio,p)));
   function suma(campo){return Math.round(meses.reduce((s,m)=>s+(m?Number(m[campo]||0):0),0)*100)/100}
   function sumaSiPagado(campo){return Math.round(meses.reduce((s,m)=>s+((m&&m.fechaPago)?Number(m[campo]||0):0),0)*100)/100}
   let catalogoIds=[...new Set(meses.flatMap(m=>m?(m.conceptos||[]).map(c=>c.catalogoId):[]))];
@@ -1626,6 +1941,7 @@ function getCedulaAnualRetencionesIVA(clientId,ejercicio){
     principal:{tipo:'suma',valores:meses.map(m=>m?Number(m.principalPagado||0):null),cierre:suma('principalPagado')},
     actualizacion:{tipo:'suma',valores:meses.map(m=>m?Number(m.actualizacion||0):null),cierre:suma('actualizacion')},
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
+    ajusteRedondeo:{tipo:'suma',valores:meses.map(m=>m&&getPagosPapel('retenciones_iva',m.id).length?Number(m.ajusteRedondeo||0):null),cierre:Math.round(meses.reduce((s,m)=>s+(m&&getPagosPapel('retenciones_iva',m.id).length?Number(m.ajusteRedondeo||0):0),0)*100)/100},
     totalPagado:{tipo:'suma',valores:meses.map(m=>m?totalPagadoPapel('retenciones_iva',m.id):null),cierre:Math.round(meses.reduce((s,m)=>s+(m?(totalPagadoPapel('retenciones_iva',m.id)||0):0),0)*100)/100},
     diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
   };
@@ -2545,7 +2861,6 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div id="retIsrResultado"></div>
 
       <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('retenciones_isr',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="retIsrVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIsrFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="retIsrObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('retIsr',existente,'retenciones_isr',clientId,ejercicio,periodo)}`,
@@ -2609,40 +2924,40 @@ function agregarConceptoNuevoAlCatalogoUI(ambito){
   if(c){save();alert('Concepto agregado. Ciérralo y vuelve a abrir el papel para verlo en la lista.')}
 }
 function calcularPapelRetencionesISRUI(){
+  if(!document.getElementById('retIsrResultado')||!document.getElementById('retIsrVencimiento'))return; // el modal ya se cerró
   let {clientId,ejercicio,periodo}=__retIsrState;
   let inputs={
     salariosBaseGravada:valorMonetario($('#retIsrSalBaseGravada')),
     salariosBaseExenta:valorMonetario($('#retIsrSalBaseExenta')),
     salariosRetenido:valorMonetario($('#retIsrSalRetenido')),
     conceptos:leerConceptosDelFormulario('retIsr','isr'),
-    fechaVencimiento:$('#retIsrVencimiento').value||null,fechaPago:$('#retIsrFechaPago').value||null
+    fechaVencimiento:$('#retIsrVencimiento').value||null
   };
-  if(__retIsrState.calc){
-    if($('#retIsrPrincipal'))inputs.principalPagado=valorMonetario($('#retIsrPrincipal'));
-    if($('#retIsrAjustes'))inputs.ajustes=valorMonetario($('#retIsrAjustes'));
-  }
+  legadoPasante('retenciones_isr',clientId,ejercicio,periodo,inputs);
   let calc=calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs);
   __retIsrState.calc=calc;
   $('#retIsrResultado').innerHTML=renderResultadoRetenciones(calc,'retIsr');
   inicializarInputsMonetarios($('#retIsrResultado'));
 }
 function renderResultadoRetenciones(calc,prefix){
+  const d=calc.derivado;
+  const fm=n=>n==null?'—':fmtMoneyMX(n);
+  const soloLegado=!d&&(Number(calc.principalPagado)>0||Number(calc.ajustes)!==0);
+  const textoPagado=d?fm(calc.totalPagado):(soloLegado?fm(calc.totalPagado)+' <span style="font-size:10px;opacity:.8">(registro anterior, solo lectura)</span>':'Sin pagos registrados');
   return `
     <div class="card" style="background:var(--bg);margin-top:6px">
       ${calc.conceptos.map(c=>`<div class="prow"><span>${esc(c.nombre)}${c.ajustado?' <span class="pill p-amber" style="font-size:9px">ajustado</span>':''}</span><b>${fmtMoneyMX(c.retenidoConfirmado)}</b></div>`).join('')}
       ${prefix==='retIsr'?`<div class="prow"><span>Salarios</span><b>${fmtMoneyMX(__retIsrState.calc.salariosRetenido)}</b></div>`:''}
       <div class="prow" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span style="font-weight:700">Total retenido</span><b>${fmtMoneyMX(calc.totalRetenido)}</b></div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px">
-      <div class="field" style="margin:0"><label>Principal pagado</label><input id="${prefix}Principal" class="money-input" type="number" step="0.01" value="${calc.principalPagado}" onchange="${prefix==='retIsr'?'calcularPapelRetencionesISRUI()':'calcularPapelRetencionesIVAUI()'}"></div>
-      <div class="field" style="margin:0"><label>Ajustes</label><input id="${prefix}Ajustes" class="money-input" type="number" step="0.01" value="${calc.ajustes}" onchange="${prefix==='retIsr'?'calcularPapelRetencionesISRUI()':'calcularPapelRetencionesIVAUI()'}"></div>
-    </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>Total pagado <span style="font-size:10px;opacity:.8">(suma de los pagos relacionados)</span></span><b style="color:#fff">${textoPagado}</b></div>
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>Ajuste por redondeo</span><b style="color:#fff">${d?fm(d.ajusteTotal):'—'}</b></div>
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Actualización</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion)}</b></div>
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Recargos</span><b style="color:#fff">${fmtMoneyMX(calc.recargos)}</b></div>
-      <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total pagado</span><b style="color:#fff">${fmtMoneyMX(calc.totalPagado)}</b></div>
-      <div class="prow" style="color:${calc.diferenciaPendiente>0?'#ffd98a':'rgba(255,255,255,.85)'}"><span>Diferencia pendiente</span><b style="color:${calc.diferenciaPendiente>0?'#ffd98a':'#fff'}">${fmtMoneyMX(calc.diferenciaPendiente)}</b></div>
+      <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px;color:${calc.diferenciaPendiente>0?'#ffd98a':'rgba(255,255,255,.85)'}"><span style="font-weight:700;color:${calc.diferenciaPendiente>0?'#ffd98a':'#fff'}">Diferencia pendiente</span><b style="color:${calc.diferenciaPendiente>0?'#ffd98a':'#fff'}">${fmtMoneyMX(calc.diferenciaPendiente)}</b></div>
     </div>
+    <div class="hint" style="margin-top:6px">Los pagos se registran por concepto en <b>Cumplimiento / Pago</b> (abajo); este resumen se calcula solo a partir de ellos.</div>
   `;
 }
 function guardarPapelRetencionesISRUI(){
@@ -2651,7 +2966,7 @@ function guardarPapelRetencionesISRUI(){
   let inputs={
     salariosBaseGravada:calc.salariosBaseGravada,salariosBaseExenta:calc.salariosBaseExenta,salariosRetenido:calc.salariosRetenido,
     conceptos:calc.conceptos,principalPagado:calc.principalPagado,ajustes:calc.ajustes,
-    fechaVencimiento:$('#retIsrVencimiento').value||null,fechaPago:$('#retIsrFechaPago').value||null,
+    fechaVencimiento:$('#retIsrVencimiento').value||null,fechaPago:calc.fechaPago,
     observaciones:$('#retIsrObservaciones').value.trim()||null
   };
   guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs);
@@ -2669,6 +2984,7 @@ function verCedulaRetencionesISR(clientId,ejercicio){
     ${fila('Principal',c.principal)}
     ${fila('Actualización',c.actualizacion)}
     ${fila('Recargos',c.recargos)}
+    ${fila('Ajuste por redondeo',c.ajusteRedondeo)}
     ${fila('Total pagado',c.totalPagado)}
     ${fila('Diferencia pendiente',c.diferenciaPendiente)}
   </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
@@ -2703,7 +3019,6 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div id="retIvaResultado"></div>
 
       <div class="field" style="margin-top:14px"><label>Fecha de vencimiento${!existente?' <span style="font-weight:400;color:var(--muted);font-size:10.5px">(propuesta automática — puedes ajustarla)</span>':''} ${origenTagVencimiento('retenciones_iva',clientId,ejercicio,periodo,fechaVencActual)}</label><input id="retIvaVencimiento" type="date" value="${fechaVencActual}" oninput="marcarFiscalDirty()"></div>
-      <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="retIvaFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}" oninput="marcarFiscalDirty()"></div>
       <div class="field full"><label>Observaciones</label><input id="retIvaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('retIva',existente,'retenciones_iva',clientId,ejercicio,periodo)}`,
@@ -2712,15 +3027,13 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
   if(existente)setTimeout(()=>calcularPapelRetencionesIVAUI(),0);
 }
 function calcularPapelRetencionesIVAUI(){
+  if(!document.getElementById('retIvaResultado')||!document.getElementById('retIvaVencimiento'))return; // el modal ya se cerró
   let {clientId,ejercicio,periodo}=__retIvaState;
   let inputs={
     conceptos:leerConceptosDelFormulario('retIva','iva'),
-    fechaVencimiento:$('#retIvaVencimiento').value||null,fechaPago:$('#retIvaFechaPago').value||null
+    fechaVencimiento:$('#retIvaVencimiento').value||null
   };
-  if(__retIvaState.calc){
-    if($('#retIvaPrincipal'))inputs.principalPagado=valorMonetario($('#retIvaPrincipal'));
-    if($('#retIvaAjustes'))inputs.ajustes=valorMonetario($('#retIvaAjustes'));
-  }
+  legadoPasante('retenciones_iva',clientId,ejercicio,periodo,inputs);
   let calc=calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs);
   __retIvaState.calc=calc;
   $('#retIvaResultado').innerHTML=renderResultadoRetenciones(calc,'retIva');
@@ -2731,7 +3044,7 @@ function guardarPapelRetencionesIVAUI(){
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
     conceptos:calc.conceptos,principalPagado:calc.principalPagado,ajustes:calc.ajustes,
-    fechaVencimiento:$('#retIvaVencimiento').value||null,fechaPago:$('#retIvaFechaPago').value||null,
+    fechaVencimiento:$('#retIvaVencimiento').value||null,fechaPago:calc.fechaPago,
     observaciones:$('#retIvaObservaciones').value.trim()||null
   };
   guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs);
@@ -2748,6 +3061,7 @@ function verCedulaRetencionesIVA(clientId,ejercicio){
     ${fila('Principal',c.principal)}
     ${fila('Actualización',c.actualizacion)}
     ${fila('Recargos',c.recargos)}
+    ${fila('Ajuste por redondeo',c.ajusteRedondeo)}
     ${fila('Total pagado',c.totalPagado)}
     ${fila('Diferencia pendiente',c.diferenciaPendiente)}
   </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
@@ -3183,7 +3497,7 @@ function construirConfigCedulaRetencionesISR(clientId,ejercicio){
       ...c.porConcepto.map(pc=>filaCedulaPdf(pc.nombre,pc)),
       filaCedulaPdf('Total retenido',c.totalRetenido),filaCedulaPdf('Principal',c.principal),
       filaCedulaPdf('Actualización',c.actualizacion),filaCedulaPdf('Recargos',c.recargos),
-      filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
+      filaCedulaPdf('Ajuste por redondeo',c.ajusteRedondeo),filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
     ],
     nombreArchivo:`Cedula_Retenciones_ISR_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
@@ -3202,7 +3516,7 @@ function construirConfigCedulaRetencionesIVA(clientId,ejercicio){
       ...c.porConcepto.map(pc=>filaCedulaPdf(pc.nombre,pc)),
       filaCedulaPdf('Total retenido',c.totalRetenido),filaCedulaPdf('Principal',c.principal),
       filaCedulaPdf('Actualización',c.actualizacion),filaCedulaPdf('Recargos',c.recargos),
-      filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
+      filaCedulaPdf('Ajuste por redondeo',c.ajusteRedondeo),filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
     ],
     nombreArchivo:`Cedula_Retenciones_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
@@ -4313,7 +4627,7 @@ function imprimirPapelIVA(clientId,ejercicio,periodo){
   generarPdfPapelFiscal(config);
 }
 function construirConfigPapelRetencionesISR(clientId,ejercicio,periodo){
-  let p=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
+  let p=efectivoRetenciones('retenciones_isr',getPapelRetencionesISRVigente(clientId,ejercicio,periodo));
   if(!p)return null;
   let c=client(clientId);
   return {
@@ -4330,10 +4644,11 @@ function construirConfigPapelRetencionesISR(clientId,ejercicio,periodo){
       {titulo:'Resultado',negritas:true,filas:[['Total retenido',fmtMoneyMX(p.totalRetenido)]]},
       {titulo:'Pago y accesorios',filas:[
         ['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],
-        ['Recargos',fmtMoneyMX(p.recargos)],['Ajustes',fmtMoneyMX(p.ajustes)],
+        ['Recargos',fmtMoneyMX(p.recargos)],
+        ...(getPagosPapel('retenciones_isr',p.id).length?[['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)]]:[['Ajustes',fmtMoneyMX(p.ajustes)]]),
         ['Total pagado',fmtMoneyMX(p.totalPagado)],['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
       ]}
-    ,...seccionCumplimientoPdf(p,'retenciones_isr')],
+    ,...seccionCumplimientoRetencionesPdf(p,'retenciones_isr')],
     observaciones:p.observaciones,
     nombreArchivo:`Retenciones_ISR_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
   };
@@ -4344,7 +4659,7 @@ function imprimirPapelRetencionesISR(clientId,ejercicio,periodo){
   generarPdfPapelFiscal(config);
 }
 function construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo){
-  let p=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
+  let p=efectivoRetenciones('retenciones_iva',getPapelRetencionesIVAVigente(clientId,ejercicio,periodo));
   if(!p)return null;
   let c=client(clientId);
   return {
@@ -4357,10 +4672,11 @@ function construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo){
       {titulo:'Resultado',negritas:true,filas:[['Total retenido',fmtMoneyMX(p.totalRetenido)]]},
       {titulo:'Pago y accesorios',filas:[
         ['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],
-        ['Recargos',fmtMoneyMX(p.recargos)],['Ajustes',fmtMoneyMX(p.ajustes)],
+        ['Recargos',fmtMoneyMX(p.recargos)],
+        ...(getPagosPapel('retenciones_iva',p.id).length?[['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)]]:[['Ajustes',fmtMoneyMX(p.ajustes)]]),
         ['Total pagado',fmtMoneyMX(p.totalPagado)],['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
       ]}
-    ,...seccionCumplimientoPdf(p,'retenciones_iva')],
+    ,...seccionCumplimientoRetencionesPdf(p,'retenciones_iva')],
     observaciones:p.observaciones,
     nombreArchivo:`Retenciones_IVA_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
   };
@@ -5340,10 +5656,10 @@ const RESUMEN_FISCAL_FILAS=[
   {tipo:'iva',label:'IVA',ambito:'federal',getter:getPapelIVAVigente,
     determinado:p=>p.ivaACargoDelPeriodo,pagado:p=>p.totalAPagar,pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelIVA(cid,ej,per)},
-  {tipo:'ret_isr',label:'Retenciones ISR',ambito:'federal',getter:getPapelRetencionesISRVigente,
+  {tipo:'ret_isr',label:'Retenciones ISR',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_isr',getPapelRetencionesISRVigente(cid,ej,per)),
     determinado:p=>p.totalRetenido,pagado:p=>p.totalPagado,pendiente:p=>p.diferenciaPendiente,
     abrir:(cid,ej,per)=>openPapelRetencionesISR(cid,ej,per)},
-  {tipo:'ret_iva',label:'Retenciones IVA',ambito:'federal',getter:getPapelRetencionesIVAVigente,
+  {tipo:'ret_iva',label:'Retenciones IVA',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_iva',getPapelRetencionesIVAVigente(cid,ej,per)),
     determinado:p=>p.totalRetenido,pagado:p=>p.totalPagado,pendiente:p=>p.diferenciaPendiente,
     abrir:(cid,ej,per)=>openPapelRetencionesIVA(cid,ej,per)},
   {tipo:'isn',label:'ISN',ambito:'estatal',getter:getPapelISNVigente,
