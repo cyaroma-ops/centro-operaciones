@@ -105,6 +105,10 @@ body.dark-mode .cal-chip{color:var(--nav)}*{box-sizing:border-box}body{margin:0;
 }.table{border-collapse:collapse;width:100%;min-width:820px;background:var(--card)}.table th,.table td{padding:12px 11px;border-bottom:1px solid var(--line);text-align:left}.table th{font-size:11px;text-transform:uppercase;color:var(--muted);background:var(--bg)}.table tr:hover td{background:var(--bg)}.pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.p-green{background:#e9f8f1;color:#17895a}.p-amber{background:#fff5db;color:#9b6810}.p-red{background:#ffebec;color:#b92e38}.p-blue{background:#eaf2ff;color:#145bac}.p-gray{background:#edf1f6;color:#607086}
 .cedula-table{border-collapse:collapse;width:100%;table-layout:fixed;background:var(--card)}
 .cedula-table th,.cedula-table td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;font-size:11.3px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cedula-table tr.ced-sub td{background:#f3f4f6!important;font-weight:700;border-top:1px solid #c9ced6;border-bottom:1px solid #c9ced6}
+.cedula-table tr.ced-base td{background:#eef4fb!important;font-weight:700}
+.cedula-table tr.ced-det td{background:#e2edf9!important;font-weight:700;border-top:1.5px solid #a9c0dc}
+.cedula-table tr.ced-res td{background:#d5e5f7!important;font-weight:800;color:#073b76;border-top:2px solid #073b76;border-bottom:2px solid #073b76;font-size:12px}
 .cedula-table th{font-size:9.5px;text-transform:uppercase;color:var(--muted);background:var(--bg);font-weight:700}
 .concepto-menu{position:relative;display:inline-block}
 .concepto-menu summary{list-style:none;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--muted);opacity:.35;font-size:15px;line-height:1}
@@ -494,11 +498,12 @@ const TABLE_MAP={
   fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',conceptosCubiertos:'conceptos_cubiertos',ejercicio:'ejercicio',periodo:'periodo',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalRetencionesConceptosCliente:{table:'fiscal_retenciones_conceptos_cliente',key:'id',cols:{id:'id',client:'client_id',ambito:'ambito',catalogoId:'catalogo_id',desde:'desde',desactivadoDesde:'desactivado_desde',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
-  fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',conceptoRetencionId:'concepto_retencion_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
+  fiscalPapelSnapshots:{table:'fiscal_papel_snapshots',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',ejercicio:'ejercicio',periodo:'periodo',version:'version_n',origen:'origen',creadoPor:'creado_por',creadoEn:'creado_en',huella:'huella',contenido:'contenido'}},
+  fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',conceptoRetencionId:'concepto_retencion_id',accesoriosEvento:'accesorios_evento',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
 };
 const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso'],vacationPeriods:['fechaInicio','fechaFin'],parametrosFiscales:['vigenciaDesde','vigenciaHasta'],fiscalPapelIsrPm:['fechaVencimiento','fechaPago'],fiscalPapelIva:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIsr:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIva:['fechaVencimiento','fechaPago'],fiscalPapelIsn:['fechaVencimiento','fechaPago'],fiscalPapelExtraccion:['fechaVencimiento','fechaPago'],fiscalPapelHospedaje:['fechaVencimiento','fechaPago'],fiscalPapelHospedajeAnfitrion:['fechaVencimiento','fechaPago'],fiscalPapelBebidas:['fechaVencimiento','fechaPago'],fiscalDeclaraciones:['fechaPresentacion'],fiscalPagos:['fechaPago','vigenciaLineaCaptura']};
 function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
-const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedaje:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedajeAnfitrion:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelBebidas:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalDeclaraciones:['id','client','papelId','declaracionAnteriorId','creadoPor','actualizadoPor'],fiscalRetencionesConceptosCliente:['id','client','catalogoId','creadoPor','actualizadoPor'],fiscalPagos:['id','client','papelId','declaracionId','creadoPor','actualizadoPor']};
+const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedaje:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedajeAnfitrion:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelBebidas:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalDeclaraciones:['id','client','papelId','declaracionAnteriorId','creadoPor','actualizadoPor'],fiscalRetencionesConceptosCliente:['id','client','catalogoId','creadoPor','actualizadoPor'],fiscalPapelSnapshots:['id','client','papelId','creadoPor'],fiscalPagos:['id','client','papelId','declaracionId','creadoPor','actualizadoPor']};
 const DECIMAL_FIELDS={controlesFiscales:['saldoOriginal'],controlesMovimientos:['importe','valorPropuesto','valorConfirmado'],fiscalPapelIsrPm:['totalIngresosMes','ingresosAcumulados','inventarioAcumulable','coeficienteValor','tasaIsr','utilidadFiscalAcumulada','ptuPropuesta','ptuConfirmada','perdidaPropuesta','perdidaConfirmada','baseIsr','isrDeterminadoAcumulado','pagosProvisionalesPropuestos','pagosProvisionalesConfirmados','isrRetenidoContribuyenteMes','isrRetenidoContribuyenteAcumulado','resultadoIsrCargo','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelIva:['baseGravada16','baseTasa0','baseExentos','baseNoObjeto','ivaTrasladado','acredBase16','acredBase0','acredExentosNoObjeto','ivaAcreditable','tasaIva','ivaRetenidoContribuyente','otrasCantidades','resultadoAntesAplicaciones','ivaACargoDelPeriodo','ivaAFavorGenerado','saldoFavorPropuesto','saldoFavorAplicado','ivaFinalAPagar','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelRetencionesIsr:['salariosBaseGravada','salariosBaseExenta','salariosRetenido','totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente','importePagado','ajusteRedondeo'],fiscalPapelRetencionesIva:['totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente','importePagado','ajusteRedondeo'],fiscalPapelIsn:['totalRemuneraciones','numeroTrabajadores','tasa','impuestoCausado','impuestoRetenidoTerceros','impuestoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelExtraccion:['totalImpuesto','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelHospedaje:['baseGravable','tasa','impuestoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelHospedajeAnfitrion:['baseGravable','tasa','impuestoCausado','impuestoRetenidoPlataforma','impuestoACargo','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelBebidas:['baseGravable','tasa','impuestoRetenidoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPagos:['importe']};
 function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let numFields=NUMERIC_ID_FIELDS[collectionKey]||[];let decFields=DECIMAL_FIELDS[collectionKey]||[];let item={};Object.keys(map).forEach(jsKey=>{let v=row[map[jsKey]];if(numFields.includes(jsKey)&&v!==null&&v!==undefined)v=Number(v);if(decFields.includes(jsKey)&&v!==null&&v!==undefined)v=parseFloat(v);item[jsKey]=v});return item}
 function summarizeChanges(before,after){
@@ -521,9 +526,24 @@ function summarizeChanges(before,after){
 let saveTimer=null;
 function save(){renderAll();clearTimeout(saveTimer);setSaveStatus('Guardando…');saveTimer=setTimeout(performSave,500)}
 let saveInProgress=false;
+// --- Señal de finalización del guardado. Una espera se resuelve con la PRIMERA corrida de performSave que
+// EMPEZÓ DESPUÉS de registrarse (así esa corrida incluyó el cambio). ok=true solo si la corrida terminó
+// sin ningún error de Supabase. No altera qué ni cómo se persiste. ---
+let saveRunSeq=0,saveWaiters=[];
+function esperarGuardado(maxMs){
+  return new Promise(resolve=>{
+    const w={despuesDe:saveRunSeq,resolve};
+    saveWaiters.push(w);
+    setTimeout(()=>{const i=saveWaiters.indexOf(w);if(i>=0){saveWaiters.splice(i,1);resolve({ok:false,tiempoAgotado:true})}},maxMs||30000);
+  });
+}
+function resolverEsperasDeGuardado(corridaId,ok){
+  saveWaiters=saveWaiters.filter(w=>{if(w.despuesDe<corridaId){w.resolve({ok});return false}return true});
+}
 async function performSave(){
   saveTimer=null;
   saveInProgress=true;
+  const corridaId=++saveRunSeq;let corridaOk=false;
   try{
   const changesSummary = lastSyncedSnapshot ? summarizeChanges(lastSyncedSnapshot, db) : '';
   let hadError=false;
@@ -563,12 +583,14 @@ async function performSave(){
   }
   setSaveStatus(hadError?'⚠️ Error al guardar — no cierres esta pestaña, avisa al administrador':'Guardado ✓');
   if(!hadError){lastSyncedSnapshot=JSON.parse(JSON.stringify(db))}
+  corridaOk=!hadError;
   renderAll();
   }catch(e){
     console.error('Error inesperado al guardar:',e);
     setSaveStatus('⚠️ Error al guardar — no cierres esta pestaña, avisa al administrador');
   }finally{
     saveInProgress=false;
+    resolverEsperasDeGuardado(corridaId,corridaOk);
   }
 }
 window.addEventListener('beforeunload',function(e){
@@ -609,7 +631,294 @@ function identidadFiscalCompleta(clientId){
 // ===================================================================
 
 // --- Parámetros Fiscales: siempre el PUBLICADO vigente para la fecha, nunca "el más reciente que exista" ---
+// ===================== SNAPSHOT DE DETERMINACIÓN AL MARCAR REVISADO =====================
+// Reglas:
+//  • Borrador                       → usa los datos maestros publicados vigentes.
+//  • Revisado + snapshot completo   → se reproduce EXCLUSIVAMENTE con su snapshot (sin respaldo silencioso al dato vivo).
+//  • Revisado sin snapshot / snapshot incompleto → se conserva lo persistido y se muestra advertencia
+//                                     (no se completa la determinación histórica con parámetros actuales).
+//  • Nueva versión Borrador derivada de un Revisado → vuelve a usar parámetros vigentes; al Revisarse genera su propio snapshot.
+// No hay motores nuevos: los motores existentes consultan sus parámetros por 5 funciones (getParametroVigente,
+// getCoeficienteVigente, getInpcPeriodo, getRecargoPeriodo, getTarifaMaterialVigente). Esas funciones consultan un
+// CONTEXTO opcional: 'vivo' (default), 'captura' (vivo + registro de lo consultado), 'exclusivo' (solo lo congelado)
+// o 'evento' (congelado + vivo registrado, para eventos de cumplimiento posteriores a la revisión).
+let __ctxParam=null;
+function nuevoContextoParametros(modo,base){
+  base=base||{};
+  return {modo,
+    base:{parametros:base.parametros||[],inpc:base.inpc||{},recargos:base.recargos||{},controles:base.controles||[]},
+    consultados:{parametros:[],inpc:{},recargos:{},controles:[]},
+    faltantes:[]};
+}
+function conContextoParametros(ctx,fn){const previo=__ctxParam;__ctxParam=ctx;try{return fn()}finally{__ctxParam=previo}}
+const copiaParametro=p=>({id:p.id,ambito:p.ambito,entidadFederativa:p.entidadFederativa||null,clave:p.clave,valor:p.valor,estatus:p.estatus,vigenciaDesde:p.vigenciaDesde,vigenciaHasta:p.vigenciaHasta||null,reemplazaA:p.reemplazaA||null,creadoEn:p.creadoEn||null});
+const copiaControl=c=>({id:c.id,client:c.client,tipo:c.tipo,ejercicio:c.ejercicio,datos:c.datos,estatus:c.estatus,reemplazaA:c.reemplazaA||null,creadoEn:c.creadoEn||null});
+function filaParamVivaPeriodo(clave,periodo){
+  let c=(db.parametrosFiscales||[]).filter(p=>p.ambito==='federal'&&p.clave===clave&&p.estatus==='publicado'&&p.valor&&p.valor.periodo===periodo);
+  return c.length?c[c.length-1]:null;
+}
+// Selección sobre la lista CONGELADA con el mismo criterio que usa el dato vivo (vigencia + desempate)
+function paramDeListaCongelada(lista,ambito,entidad,clave,fechaISO,material){
+  let cand=lista.filter(p=>p.ambito===ambito&&(ambito!=='estatal'||p.entidadFederativa===entidad)&&p.clave===clave&&
+    (material==null||(p.valor&&p.valor.material===material))&&p.vigenciaDesde<=fechaISO&&(!p.vigenciaHasta||p.vigenciaHasta>=fechaISO));
+  if(!cand.length)return null;
+  cand.sort((a,b)=>b.vigenciaDesde.localeCompare(a.vigenciaDesde)||(b.creadoEn||'').localeCompare(a.creadoEn||'')||b.id-a.id);
+  return cand[0];
+}
+function coefDeListaCongelada(lista,clientId,fechaISO){
+  let cand=lista.filter(c=>c.client===clientId&&c.tipo==='isr_coeficiente_utilidad')
+    .map(c=>({control:c,aplicarDesde:(c.datos&&c.datos.aplicarDesde)?c.datos.aplicarDesde:`${c.ejercicio}-01-01`})).filter(x=>x.aplicarDesde<=fechaISO);
+  if(!cand.length)return null;
+  cand.sort((a,b)=>b.aplicarDesde.localeCompare(a.aplicarDesde)||(b.control.creadoEn||'').localeCompare(a.control.creadoEn||''));
+  return cand[0].control;
+}
+// --- Huella SHA-256 (síncrona) para detectar cualquier alteración posterior de un snapshot ---
+function sha256Hex(texto){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes=[];const u=unescape(encodeURIComponent(texto));for(let i=0;i<u.length;i++)bytes.push(u.charCodeAt(i));
+  const bitLen=bytes.length*8;bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);
+  for(let i=7;i>=0;i--)bytes.push(i>=4?0:(bitLen>>>(i*8))&0xff);
+  const rotr=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let off=0;off<bytes.length;off+=64){
+    const w=new Array(64);
+    for(let i=0;i<16;i++)w[i]=(bytes[off+i*4]<<24)|(bytes[off+i*4+1]<<16)|(bytes[off+i*4+2]<<8)|bytes[off+i*4+3];
+    for(let i=16;i<64;i++){const s0=rotr(w[i-15],7)^rotr(w[i-15],18)^(w[i-15]>>>3),s1=rotr(w[i-2],17)^rotr(w[i-2],19)^(w[i-2]>>>10);w[i]=(w[i-16]+s0+w[i-7]+s1)|0}
+    let [a,b,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){
+      const S1=rotr(e,6)^rotr(e,11)^rotr(e,25),ch=(e&f)^(~e&g),t1=(h+S1+ch+K[i]+w[i])|0;
+      const S0=rotr(a,2)^rotr(a,13)^rotr(a,22),mj=(a&b)^(a&c)^(b&c),t2=(S0+mj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+    }
+    H=[(H[0]+a)|0,(H[1]+b)|0,(H[2]+c)|0,(H[3]+d)|0,(H[4]+e)|0,(H[5]+f)|0,(H[6]+g)|0,(H[7]+h)|0];
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,'0')).join('');
+}
+function jsonCanonico(x){
+  if(Array.isArray(x))return '['+x.map(jsonCanonico).join(',')+']';
+  if(x&&typeof x==='object')return '{'+Object.keys(x).filter(k=>x[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+jsonCanonico(x[k])).join(',')+'}';
+  return JSON.stringify(x===undefined?null:x);
+}
+function verificarHuellaSnapshot(snap){return !!snap&&!!snap.huella&&sha256Hex(jsonCanonico(snap.contenido))===snap.huella}
+
+// --- Consulta de snapshots de un papel (cada versión del papel tiene los suyos; nunca se reutilizan entre versiones) ---
+function snapshotsDePapel(tipoPapel,papelId){
+  return (db.fiscalPapelSnapshots||[]).filter(s=>s.papelTipo===tipoPapel&&s.papelId===papelId).sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||''));
+}
+function estadoSnapshotPapel(tipoPapel,p){
+  if(!p||p.estatus==='borrador')return {estado:'borrador'};
+  const lista=snapshotsDePapel(tipoPapel,p.id);
+  if(!lista.length)return {estado:'sin_snapshot'};
+  const ordenados=[...lista.filter(s=>s.origen==='revision'),...lista.filter(s=>s.origen!=='revision')];
+  const completo=ordenados.find(s=>s.contenido&&s.contenido.completo);
+  if(completo)return {estado:'completo',snapshot:completo};
+  return {estado:'incompleto',snapshot:ordenados[0]};
+}
+// Contexto EXCLUSIVO de un papel: lo congelado en su snapshot + los parámetros registrados por sus eventos de
+// cumplimiento posteriores (pagos con accesorios). Nunca el dato vivo.
+function contextoExclusivoDePapel(tipoPapel,p,snap){
+  const c=snap.contenido||{};
+  const base={parametros:[...(c.parametros||[])],inpc:{...(c.inpc||{})},recargos:{...(c.recargos||{})},controles:[...(c.controles||[])]};
+  getPagosPapel(tipoPapel,p.id).forEach(pg=>{
+    ((pg.accesoriosEvento&&pg.accesoriosEvento.registros)||[]).forEach(r=>{
+      const pa=r.parametros||{};
+      Object.keys(pa.inpc||{}).forEach(k=>{if(!(k in base.inpc))base.inpc[k]=pa.inpc[k]});
+      Object.keys(pa.recargos||{}).forEach(k=>{if(!(k in base.recargos))base.recargos[k]=pa.recargos[k]});
+    });
+  });
+  return nuevoContextoParametros('exclusivo',base);
+}
+function vencimientoPropuestoSeguro(tipoPapel,p){
+  try{return proponerVencimientoFiscal(tipoPapel,p.client,p.ejercicio,p.periodo)||null}catch(e){return null}
+}
+// Construye el snapshot (sin persistirlo). pRev = el papel tal como queda al revisarse.
+function construirSnapshotPapel(tipoPapel,pRev,origen){
+  const ahora=new Date().toISOString();
+  const ctx=nuevoContextoParametros('captura');
+  const papelCopia=JSON.parse(JSON.stringify(pRev));delete papelCopia._ts;
+  // Referencias por id que el propio papel ya guarda (tasas, tarifas, UMA, coeficiente, controles...)
+  const refsParam=new Set(),refsCtrl=new Set();
+  (function escanear(o){
+    if(Array.isArray(o)){o.forEach(escanear);return}
+    if(o&&typeof o==='object')Object.keys(o).forEach(k=>{
+      const v=o[k];
+      if(typeof v==='number'&&(/ParamId$/.test(k)||k==='parametroId'))refsParam.add(v);
+      else if(typeof v==='number'&&(/ControlId$/.test(k)||k==='controlId'||k==='controlGeneradoId'))refsCtrl.add(v);
+      else escanear(v);
+    });
+  })(papelCopia);
+  const parametros=[],controles=[],sinResolver=[];
+  refsParam.forEach(id=>{const r=(db.parametrosFiscales||[]).find(x=>x.id===id);if(r)parametros.push(copiaParametro(r));else sinResolver.push('parámetro #'+id)});
+  refsCtrl.forEach(id=>{const r=(db.controlesFiscales||[]).find(x=>x.id===id);if(r)controles.push(copiaControl(r));else sinResolver.push('control #'+id)});
+  // INPC y recargos: se registran con el MISMO motor de accesorios, consultando sus getters en modo captura
+  let cumplimiento=null;
+  conContextoParametros(ctx,()=>{
+    if(esPapelRetenciones(tipoPapel)){
+      const det=conceptosDeterminadosRetenciones(tipoPapel,pRev.salariosRetenido,pRev.conceptos);
+      const der=derivarCumplimientoRetencionesCore(tipoPapel,pRev.id,det,pRev.totalRetenido,pRev.fechaVencimiento);
+      cumplimiento={
+        conceptos:der.porConcepto.map(c=>({id:c.id,nombre:c.nombre,retenido:c.retenido,actualizacion:c.actualizacion,recargos:c.recargos,totalDeterminado:c.totalDeterminado,pagado:c.pagado,ajuste:c.ajuste,pendiente:c.pendiente,pagos:c.pagos.map(x=>x.id)})),
+        total:{retenido:der.totalRetenido,actualizacion:der.actualizacionTotal,recargos:der.recargosTotal,totalDeterminado:der.totalDeterminado,pagado:der.totalPagado,ajuste:der.ajusteTotal,pendiente:der.pendienteTotal}
+      };
+    }else if(pRev.fechaVencimiento&&pRev.fechaPago){
+      calcularAccesorios(1,pRev.fechaVencimiento,pRev.fechaPago);
+    }
+  });
+  ctx.consultados.parametros.forEach(cp=>{if(!parametros.some(x=>x.id===cp.id))parametros.push(cp)});
+  const previos=(db.fiscalPapelSnapshots||[]).filter(s=>s.client===pRev.client&&s.papelTipo===tipoPapel&&s.ejercicio===pRev.ejercicio&&s.periodo===pRev.periodo)
+    .sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||''));
+  const faltantes=[...new Set(ctx.faltantes)];
+  const contenido={
+    esquema:1,origen,tipoPapel,papel:papelCopia,
+    vencimientoEfectivo:pRev.fechaVencimiento||vencimientoPropuestoSeguro(tipoPapel,pRev),
+    parametros,inpc:ctx.consultados.inpc,recargos:ctx.consultados.recargos,controles,cumplimiento,
+    completo:faltantes.length===0&&sinResolver.length===0,faltantes,referenciasSinResolver:sinResolver,
+    snapshotAnteriorId:previos.length?previos[previos.length-1].id:null,
+    generado:{por:currentStaff?currentStaff.id:null,porNombre:currentStaff?currentStaff.name:(currentUserEmail||null),en:ahora,
+      texto:origen==='revision'?'Snapshot original: congelado en el momento de marcar el papel como Revisado.':'Snapshot generado POSTERIORMENTE con "Congelar ahora": NO es el snapshot original de la revisión; congela lo publicado a la fecha indicada.'}
+  };
+  return stamp({
+    id:Date.now()+Math.floor(Math.random()*100000),client:pRev.client,papelTipo:tipoPapel,papelId:pRev.id,ejercicio:pRev.ejercicio,periodo:pRev.periodo,
+    version:previos.length+1,origen,creadoPor:currentStaff?currentStaff.id:null,creadoEn:ahora,huella:sha256Hex(jsonCanonico(contenido)),contenido
+  });
+}
+// --- Estado del snapshot a la vista del usuario ---
+function bannerRevisionHtml(tipoPapel,p){
+  if(!p||p.estatus==='borrador')return '';
+  const st=estadoSnapshotPapel(tipoPapel,p);
+  const fcorta=iso=>iso?fmtDate(String(iso).slice(0,10)):'';
+  const quien=s=>{const g=s.contenido&&s.contenido.generado;return g&&g.porNombre?g.porNombre:'usuario no identificado'};
+  const caja=(borde,fondo,html)=>`<div id="bannerRevision" style="margin:0 0 12px;padding:9px 12px;border-radius:9px;border:1px solid ${borde};background:${fondo};font-size:12px;line-height:1.5">${html}</div>`;
+  const btn=isAdmin?` <button class="btn" style="padding:2px 9px;font-size:11px;margin-left:6px" onclick="congelarAhoraUI('${tipoPapel}',${p.id})">Congelar ahora</button>`:'';
+  if(st.estado==='completo'){
+    const s=st.snapshot,original=s.origen==='revision',integro=verificarHuellaSnapshot(s);
+    return caja(original?'#9bc3a0':'#d7b46a',original?'#f2faf3':'#fff8e6',
+      `🔒 <b>Revisado · snapshot v${s.version}${original?'':' POSTERIOR'}</b> del ${fcorta(s.creadoEn)} por ${esc(quien(s))}. ${original?'La determinación está congelada con los parámetros con que se revisó.':'<b>No es el snapshot original de la revisión</b>: fue generado después y congela lo publicado a esa fecha.'} Si guardas cambios se creará una <b>nueva versión Borrador</b> con los parámetros vigentes. ${integro?'<span style="color:#2f7a3d">✓ íntegro</span>':'<span style="color:var(--red)"><b>⚠ la huella no coincide: el snapshot fue alterado</b></span>'}`);
+  }
+  if(st.estado==='incompleto'){
+    const s=st.snapshot,f=(s.contenido&&s.contenido.faltantes||[]).concat(s.contenido&&s.contenido.referenciasSinResolver||[]);
+    return caja('#d7b46a','#fff8e6',`⚠ <b>Revisado con snapshot incompleto</b> (v${s.version}, ${fcorta(s.creadoEn)}). Faltan: ${esc(f.join('; ')||'datos de parámetros')}. Se conserva lo persistido; <b>no</b> se completa con parámetros actuales.${btn}`);
+  }
+  return caja('#d7b46a','#fff8e6',`⚠ <b>Revisado sin snapshot</b> — papel revisado antes de que existiera esta función. Sus parámetros no están congelados: se conserva lo persistido y no se completa con datos actuales.${btn}`);
+}
+function inyectarBannerRevision(tipoPapel,clientId,ejercicio,periodo,hostId){
+  const p=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
+  const host=document.getElementById(hostId||'modalBody');if(!host)return;
+  const previo=document.getElementById('bannerRevision');if(previo)previo.remove();
+  const html=bannerRevisionHtml(tipoPapel,p);
+  if(html)host.insertAdjacentHTML('afterbegin',html);
+}
+function congelarAhoraUI(tipoPapel,papelId){
+  if(!isAdmin){alert('Solo un administrador puede congelar un papel.');return}
+  const p=papelPorId(tipoPapel,papelId);if(!p||p.estatus==='borrador')return;
+  if(estadoSnapshotPapel(tipoPapel,p).estado==='completo'){alert('Este papel ya tiene un snapshot completo.');return}
+  if(snapshotsDePapel(tipoPapel,p.id).some(s=>s.origen==='posterior')){alert('Este papel ya tiene un snapshot posterior.');return}
+  const quien=currentStaff?currentStaff.name:(currentUserEmail||'usuario actual');
+  if(!confirm(`Se generará un snapshot POSTERIOR de este papel:\n\n• Fecha: ${fmtDate(new Date().toISOString().slice(0,10))}\n• Usuario: ${quien}\n\nNO es el snapshot original de la revisión (no se sabe con qué parámetros se revisó). Congela lo que está publicado HOY y, desde ahora, el papel se reproducirá solo con ese snapshot.\n\n¿Continuar?`))return;
+  let snap;
+  try{snap=construirSnapshotPapel(tipoPapel,p,'posterior')}
+  catch(e){console.error(e);alert('No se pudo generar el snapshot.');return}
+  db.fiscalPapelSnapshots=db.fiscalPapelSnapshots||[];db.fiscalPapelSnapshots.push(snap);
+  save();
+  mostrarToast('✓ Snapshot posterior generado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[p.periodo-1]} ${p.ejercicio} · ${snap.contenido.completo?'completo':'INCOMPLETO'}`);
+  const b=document.getElementById('bannerRevision');if(b)b.outerHTML=bannerRevisionHtml(tipoPapel,p);
+}
+// Vencimiento que muestran los PDFs: Borrador → persistido o propuesta viva; Revisado → persistido o el congelado en su snapshot;
+// Revisado sin snapshot → solo lo persistido (no se completa con la regla viva).
+function vencimientoEfectivoPapel(tipoPapel,p,clientId,ejercicio,periodo){
+  if(p.fechaVencimiento)return p.fechaVencimiento;
+  if(p.estatus==='borrador')return proponerVencimientoFiscal(tipoPapel,clientId,ejercicio,periodo)||null;
+  const st=estadoSnapshotPapel(tipoPapel,p);
+  return st.snapshot&&st.snapshot.contenido?(st.snapshot.contenido.vencimientoEfectivo||null):null;
+}
+function vencimientoPdfPapel(tipoPapel,p,clientId,ejercicio,periodo){
+  const f=vencimientoEfectivoPapel(tipoPapel,p,clientId,ejercicio,periodo);
+  return f?fmtDate(f):'—';
+}
+// Preview de la UI al abrir un papel: Revisado con snapshot completo y SIN edición en curso → exclusivo (congelado);
+// si el usuario ya está editando se creará una nueva versión Borrador → datos vigentes.
+function conContextoRevisionUI(tipoPapel,clientId,ejercicio,periodo,fn){
+  const p=PAPEL_GETTER_VIGENTE[tipoPapel](clientId,ejercicio,periodo);
+  if(!p||p.estatus==='borrador')return fn();
+  if(__fiscalDirty)return conContextoParametros({modo:'vivo'},fn);
+  const st=estadoSnapshotPapel(tipoPapel,p);
+  if(st.estado==='completo')return conContextoParametros(contextoExclusivoDePapel(tipoPapel,p,st.snapshot),fn);
+  return fn();
+}
+// Evento de cumplimiento POSTERIOR a la revisión (pago con accesorios): registra, EN EL PROPIO PAGO y de forma
+// append-only, las versiones de INPC/recargos con las que se calcularon. Jamás toca el snapshot original.
+function registrarEventoAccesoriosPago(pg,motivo){
+  if(!esPapelRetenciones(pg.papelTipo))return;
+  const p=papelVigenteDePago(pg);
+  if(!p||p.estatus==='borrador')return;
+  const st=estadoSnapshotPapel(pg.papelTipo,p);
+  if(st.estado!=='completo')return;
+  const ctxBase=contextoExclusivoDePapel(pg.papelTipo,p,st.snapshot);
+  const ctx=nuevoContextoParametros('evento',ctxBase.base);
+  const det=conceptosDeterminadosRetenciones(pg.papelTipo,p.salariosRetenido,p.conceptos);
+  const der=conContextoParametros(ctx,()=>derivarCumplimientoRetencionesCore(pg.papelTipo,p.id,det,p.totalRetenido,p.fechaVencimiento));
+  const cid=claveConceptoDePago(pg);
+  const pc=der.porConcepto.find(x=>x.id===cid);
+  const registro={
+    version:((pg.accesoriosEvento&&pg.accesoriosEvento.registros)||[]).length+1,motivo,
+    calculadoEn:new Date().toISOString(),calculadoPor:currentStaff?currentStaff.id:null,snapshotId:st.snapshot.id,estatusPapel:p.estatus,
+    parametros:{inpc:ctx.consultados.inpc,recargos:ctx.consultados.recargos},faltantes:[...new Set(ctx.faltantes)],
+    resultadoConcepto:pc?{conceptoId:pc.id,actualizacion:pc.actualizacion,recargos:pc.recargos}:null
+  };
+  pg.accesoriosEvento={registros:[...((pg.accesoriosEvento&&pg.accesoriosEvento.registros)||[]),registro]};
+}
+
 function getParametroVigente(ambito,entidadFederativa,clave,fechaISO){
+  const ctx=__ctxParam;
+  if(!ctx||ctx.modo==='vivo')return _getParametroVigenteVivo(ambito,entidadFederativa,clave,fechaISO);
+  const congelado=paramDeListaCongelada(ctx.base.parametros,ambito,entidadFederativa,clave,fechaISO);
+  if(congelado)return congelado;
+  if(ctx.modo==='exclusivo'){ctx.faltantes.push(`parámetro ${ambito}/${clave} vigente al ${fechaISO}`);return null}
+  const r=_getParametroVigenteVivo(ambito,entidadFederativa,clave,fechaISO);
+  if(r)ctx.consultados.parametros.push(copiaParametro(r));else ctx.faltantes.push(`parámetro ${ambito}/${clave} vigente al ${fechaISO}`);
+  return r;
+}
+function getTarifaMaterialVigente(entidadFederativa,material,fechaISO){
+  const ctx=__ctxParam;
+  if(!ctx||ctx.modo==='vivo')return _getTarifaMaterialVigenteVivo(entidadFederativa,material,fechaISO);
+  const congelado=paramDeListaCongelada(ctx.base.parametros,'estatal',entidadFederativa,'extraccion_tarifa_material',fechaISO,material);
+  if(congelado)return congelado;
+  if(ctx.modo==='exclusivo'){ctx.faltantes.push(`tarifa de ${material} (${entidadFederativa}) vigente al ${fechaISO}`);return null}
+  const r=_getTarifaMaterialVigenteVivo(entidadFederativa,material,fechaISO);
+  if(r)ctx.consultados.parametros.push(copiaParametro(r));else ctx.faltantes.push(`tarifa de ${material} (${entidadFederativa}) vigente al ${fechaISO}`);
+  return r;
+}
+function getCoeficienteVigente(clientId,fechaISO){
+  const ctx=__ctxParam;
+  if(!ctx||ctx.modo==='vivo')return _getCoeficienteVigenteVivo(clientId,fechaISO);
+  const congelado=coefDeListaCongelada(ctx.base.controles,clientId,fechaISO);
+  if(congelado)return congelado;
+  if(ctx.modo==='exclusivo'){ctx.faltantes.push(`coeficiente de utilidad vigente al ${fechaISO}`);return null}
+  const r=_getCoeficienteVigenteVivo(clientId,fechaISO);
+  if(r)ctx.consultados.controles.push(copiaControl(r));else ctx.faltantes.push(`coeficiente de utilidad vigente al ${fechaISO}`);
+  return r;
+}
+function getInpcPeriodo(periodoYYYYMM){
+  const ctx=__ctxParam;
+  if(!ctx||ctx.modo==='vivo')return _getInpcPeriodoVivo(periodoYYYYMM);
+  if(Object.prototype.hasOwnProperty.call(ctx.base.inpc,periodoYYYYMM))return ctx.base.inpc[periodoYYYYMM].valor;
+  if(ctx.modo==='exclusivo'){ctx.faltantes.push('INPC '+periodoYYYYMM);return null}
+  const v=_getInpcPeriodoVivo(periodoYYYYMM);
+  if(v!=null){const fila=filaParamVivaPeriodo('inpc_mensual',periodoYYYYMM);ctx.consultados.inpc[periodoYYYYMM]={periodo:periodoYYYYMM,valor:v,paramId:fila?fila.id:null}}
+  else ctx.faltantes.push('INPC '+periodoYYYYMM);
+  return v;
+}
+function getRecargoPeriodo(periodoYYYYMM){
+  const ctx=__ctxParam;
+  if(!ctx||ctx.modo==='vivo')return _getRecargoPeriodoVivo(periodoYYYYMM);
+  if(Object.prototype.hasOwnProperty.call(ctx.base.recargos,periodoYYYYMM))return ctx.base.recargos[periodoYYYYMM].tasa;
+  if(ctx.modo==='exclusivo'){ctx.faltantes.push('recargo '+periodoYYYYMM);return null}
+  const v=_getRecargoPeriodoVivo(periodoYYYYMM);
+  if(v!=null){const fila=filaParamVivaPeriodo('recargos_mensual',periodoYYYYMM);ctx.consultados.recargos[periodoYYYYMM]={periodo:periodoYYYYMM,tasa:v,paramId:fila?fila.id:null}}
+  else ctx.faltantes.push('recargo '+periodoYYYYMM);
+  return v;
+}
+function _getParametroVigenteVivo(ambito,entidadFederativa,clave,fechaISO){
   let candidatos=(db.parametrosFiscales||[]).filter(p=>
     p.ambito===ambito &&
     (ambito!=='estatal'||p.entidadFederativa===entidadFederativa) &&
@@ -630,11 +939,11 @@ function getHistorialParametro(ambito,entidadFederativa,clave){
 // --- Motor Común de Accesorios (actualización + recargos) ---
 // INPC y recargos viven como parámetros federales versionados por mes:
 // clave 'inpc_mensual' → valor:{periodo:'YYYY-MM',valor:n}; clave 'recargos_mensual' → valor:{periodo:'YYYY-MM',tasa:n}
-function getInpcPeriodo(periodoYYYYMM){
+function _getInpcPeriodoVivo(periodoYYYYMM){
   let c=(db.parametrosFiscales||[]).filter(p=>p.ambito==='federal'&&p.clave==='inpc_mensual'&&p.estatus==='publicado'&&p.valor&&p.valor.periodo===periodoYYYYMM);
   return c.length?c[c.length-1].valor.valor:null;
 }
-function getRecargoPeriodo(periodoYYYYMM){
+function _getRecargoPeriodoVivo(periodoYYYYMM){
   let c=(db.parametrosFiscales||[]).filter(p=>p.ambito==='federal'&&p.clave==='recargos_mensual'&&p.estatus==='publicado'&&p.valor&&p.valor.periodo===periodoYYYYMM);
   return c.length?c[c.length-1].valor.tasa:null;
 }
@@ -690,6 +999,24 @@ function getPagosDeDeclaracion(declaracionId){
 }
 // Total pagado = SUMA de los pagos reales registrados — NUNCA la determinación. Única fuente para
 // cédulas, resúmenes, PDFs y Expediente.
+// Posibles pagos duplicados de un papel/linaje: pagos con los MISMOS datos de evidencia (importe, fecha, banco, folio,
+// línea, concepto). Solo se ALERTA para revisión: nunca se ocultan, descuentan ni deduplican automáticamente
+// (puede haber pagos legítimamente iguales). Se marca si comparten folio de operación, o si cuelgan de filas
+// distintas del mismo periodo (el origen conocido: filas hermanas que dejó el bug de guardado).
+function posiblesDuplicadosPagos(tipoPapel,papelId){
+  let grupos={};
+  getPagosPapel(tipoPapel,papelId).forEach(pg=>{
+    if(pg.importe==null)return;
+    let k=[pg.importe,pg.fechaPago||'',pg.bancoPago||'',pg.folioPago||'',pg.lineaCaptura||'',pg.conceptoRetencionId||''].join('|');
+    (grupos[k]=grupos[k]||[]).push(pg);
+  });
+  return Object.values(grupos).filter(g=>g.length>1&&(g.some(x=>x.folioPago)||new Set(g.map(x=>x.papelId)).size>1));
+}
+function avisoPosiblesDuplicadosHtml(tipoPapel,p){
+  let g=posiblesDuplicadosPagos(tipoPapel,p.id);
+  if(!g.length)return '';
+  return `<div class="card" style="margin:8px 0;padding:8px 12px;border:1px dashed var(--amber);background:#fffaf0;font-size:12px"><b>⚠ Posibles pagos duplicados (${g.length}):</b> ${g.map(x=>`${x.length} pagos de ${fmtMoneyMX(x[0].importe)}${x[0].fechaPago?' del '+fmtDate(x[0].fechaPago):''}${x[0].folioPago?' · operación '+esc(x[0].folioPago):''}`).join('; ')}. Revísalos: <b>no se ocultó ni se descontó ninguno</b>; si son duplicados de datos, elimina el sobrante explícitamente.</div>`;
+}
 function totalPagadoPapel(tipoPapel,papelId){
   let pagos=getPagosPapel(tipoPapel,papelId);
   if(!pagos.length)return null;
@@ -732,6 +1059,7 @@ function agregarPago(tipoPapel,papelId,clientId,datos){
   });
   db.fiscalPagos=db.fiscalPagos||[];
   db.fiscalPagos.push(nuevo);
+  registrarEventoAccesoriosPago(nuevo,'alta');
   sincronizarLegadoRetenciones(tipoPapel,papelId);
   save();
   return nuevo;
@@ -752,6 +1080,7 @@ function asignarConceptoPago(pagoId,conceptoId){
   }
   pg.actualizadoPor=currentStaff?currentStaff.id:null;pg.actualizadoEn=new Date().toISOString();
   stamp(pg);
+  registrarEventoAccesoriosPago(pg,'asignacion_concepto');
   sincronizarLegadoRetenciones(pg.papelTipo,pg.papelId);
   save();
   return pg;
@@ -855,16 +1184,10 @@ function validarCoberturaRetenciones(tipoPapel,p,ids){
   return {ok:true,ids:limpio};
 }
 function tocarRegistro(o){o.actualizadoPor=currentStaff?currentStaff.id:null;o.actualizadoEn=new Date().toISOString();stamp(o)}
-// Los pagos del concepto que aún no tienen declaración se ligan a ESTA declaración solo si es la única que cubre ese concepto.
-function autovincularPagosADeclaracion(tipoPapel,p,d,ids){
-  let n=0;
-  getPagosPapel(tipoPapel,p.id).forEach(pg=>{
-    let cid=claveConceptoDePago(pg);
-    if(!cid||pg.declaracionId||!ids.includes(cid))return;
-    let cubren=declaracionesQueCubren(tipoPapel,p,cid);
-    if(cubren.length===1&&cubren[0].id===d.id){pg.declaracionId=d.id;tocarRegistro(pg);n++}
-  });
-  return n;
+// Pagos de los conceptos que cubre esta declaración y que aún no tienen declaración vinculada. NO se vinculan solos:
+// la interfaz los muestra y el usuario confirma la relación (o los deja sin vincular y lo hace pago por pago).
+function candidatosVinculacionADeclaracion(tipoPapel,p,ids){
+  return getPagosPapel(tipoPapel,p.id).filter(pg=>{let cid=claveConceptoDePago(pg);return cid&&!pg.declaracionId&&ids.includes(cid)});
 }
 // Alta de una declaración desde el contexto de un concepto. Si el folio ya existe en el periodo NO se duplica:
 // se amplía la cobertura de la existente.
@@ -888,9 +1211,9 @@ function registrarDeclaracionRetenciones(tipoPapel,papelId,clientId,datos){
     d=agregarDeclaracion(tipoPapel,papelId,clientId,{tipo:datos.tipo||'normal',fechaPresentacion:datos.fechaPresentacion,folioDeclaracion:datos.folioDeclaracion,observaciones:datos.observaciones,declaracionAnteriorId:anterior,conceptosCubiertos:v.ids});
     creada=true;
   }
-  let pagosVinculados=autovincularPagosADeclaracion(tipoPapel,p,d,v.ids);
+  let pagosCandidatos=candidatosVinculacionADeclaracion(tipoPapel,p,v.ids);
   save();
-  return {ok:true,declaracion:d,creada,ampliados,pagosVinculados};
+  return {ok:true,declaracion:d,creada,ampliados,pagosCandidatos};
 }
 function quitarConceptoDeDeclaracion(declId,cid){
   let d=(db.fiscalDeclaraciones||[]).find(x=>x.id===declId);if(!d)return {ok:false,error:'Declaración no encontrada.'};
@@ -1015,7 +1338,7 @@ function asignarPagoAPrincipalConcepto(principalPendiente,importe,fechaVenc,fech
 // Los accesorios de un concepto dependen solo de SUS pagos (y de sus fechas): un concepto pagado
 // oportunamente jamás se ve afectado por otro pagado fuera de plazo. El total del papel es únicamente
 // la SUMA de los conceptos (no es una segunda fuente editable).
-function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
+function derivarCumplimientoRetencionesCore(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
   const r2=n=>Math.round(n*100)/100;
   let pagos=papelId!=null?getPagosPapel(tipoPapel,papelId):[];
   let idsValidos=new Set(conceptosDet.map(c=>c.id));
@@ -1064,6 +1387,32 @@ function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRete
   };
   return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,totalRetenido:r2(totalRetenido||0),
     actualizacionTotal:actTotal,recargosTotal:recTotal,totalDeterminado,totalPagado,ajusteTotal,pendienteTotal,legado};
+}
+// Selección del contexto de lectura según el ESTATUS del papel (a menos que quien llama imponga uno: vivo forzado al
+// guardar una nueva versión, captura al revisar, evento al registrar un pago posterior, exclusivo en el preview de la UI).
+function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
+  const core=()=>derivarCumplimientoRetencionesCore(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc);
+  if(__ctxParam){const der=core();der.contexto={modo:__ctxParam.modo};der.advertencias=der.advertencias||[];return der}
+  const papelRow=papelId!=null?papelPorId(tipoPapel,papelId):null;
+  if(!papelRow||papelRow.estatus==='borrador'){const der=core();der.contexto={modo:'vivo'};der.advertencias=[];return der}
+  const st=estadoSnapshotPapel(tipoPapel,papelRow);
+  if(st.estado==='completo'){
+    const ctx=contextoExclusivoDePapel(tipoPapel,papelRow,st.snapshot);
+    const der=conContextoParametros(ctx,core);
+    const falt=[...new Set(ctx.faltantes)];
+    der.contexto={modo:'exclusivo',snapshotId:st.snapshot.id,snapshotVersion:st.snapshot.version,origen:st.snapshot.origen};
+    der.advertencias=falt.length?[`Faltan parámetros en el snapshot congelado (${falt.join('; ')}). No se completaron con datos vigentes: esos accesorios no se calcularon.`]:[];
+    return der;
+  }
+  // Revisado sin snapshot / snapshot incompleto: se conserva lo persistido; NINGUNA consulta al dato vivo
+  const ctx=nuevoContextoParametros('exclusivo');
+  const der=conContextoParametros(ctx,core);
+  der.contexto={modo:'sin_snapshot',estado:st.estado};
+  der.legado.actualizacion=Number(papelRow.actualizacion)||0;der.legado.recargos=Number(papelRow.recargos)||0;
+  der.advertencias=[st.estado==='incompleto'
+    ?'Revisado con snapshot incompleto: los accesorios no se recalculan con parámetros vigentes; se conservan los valores persistidos del papel.'
+    :'Revisado sin snapshot: los accesorios no se recalculan con parámetros vigentes; se conservan los valores persistidos del papel.'];
+  return der;
 }
 // Papel con los campos de pago "efectivos": derivados de fiscal_pagos si existen; si no, lo almacenado
 // (así los papeles anteriores a la captura por pagos no pierden su registro histórico).
@@ -1159,7 +1508,7 @@ function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaracione
       <div class="field"><label>Línea de captura / referencia</label><input id="${id('Linea')}"></div>
       <div class="field"><label>Vigencia de la línea</label><input id="${id('Vigencia')}" type="date"></div>
       <div class="field"><label>Operación / folio del pago</label><input id="${id('Folio')}"></div>
-      ${declaracionesElegibles.length>1?`<div class="field"><label>Declaración que respalda este pago</label><select id="${id('Decl')}">${declaracionesElegibles.map((d,i)=>`<option value="${d.id}" ${i===declaracionesElegibles.length-1?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select></div>`:''}
+      ${declaracionesElegibles.length>=1?`<div class="field"><label>Declaración que respalda este pago <span class="role" style="font-size:10px;font-weight:400">(propuesta: confírmala o elige "sin declaración")</span></label><select id="${id('Decl')}"><option value="">— Sin declaración vinculada —</option>${declaracionesElegibles.map((d,i)=>`<option value="${d.id}" ${i===declaracionesElegibles.length-1?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select></div>`:''}
     </div>
     ${sinDeclaracionAviso?'<div class="hint" style="margin-top:4px">Aún no hay una declaración registrada para esto: el pago se guardará sin declaración vinculada y podrás vincularlo después.</div>':''}
     <button class="btn primary" style="margin-top:6px" onclick="guardarPagoConceptoUI(${args},'${key}')">Guardar pago</button>
@@ -1191,7 +1540,15 @@ function guardarDeclaracionConceptoUI(tipoPapel,papelId,clientId,ejercicio,perio
   }
   let r=registrarDeclaracionRetenciones(tipoPapel,papelId,clientId,{tipo,fechaPresentacion:fecha,folioDeclaracion:folio||null,conceptos:ids});
   if(!r.ok){alert(r.error);mostrarToast('No se registró la declaración',r.error,'error');return null}
-  mostrarToast(r.creada?'✓ Declaración registrada':'✓ Declaración compartida: se amplió lo que cubre',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${r.pagosVinculados?` · ${r.pagosVinculados} pago(s) vinculado(s)`:''}`);
+  let vinculados=0;
+  if(r.pagosCandidatos.length){
+    let det2=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
+    let lista=r.pagosCandidatos.map(pg=>`• ${fmtMoneyMX(pg.importe)} · ${pg.fechaPago?fmtDate(pg.fechaPago):'sin fecha'}${pg.folioPago?' · Operación '+pg.folioPago:''} (${(det2.find(x=>x.id===claveConceptoDePago(pg))||{}).nombre||'concepto'})`).join('\n');
+    if(confirm(`Estos pagos cubren conceptos de esta declaración y aún no tienen declaración vinculada:\n\n${lista}\n\n¿Vincularlos a esta declaración?\n\nSi cancelas quedan sin vincular y puedes hacerlo después, pago por pago.`)){
+      r.pagosCandidatos.forEach(pg=>{if(vincularPagoADeclaracion(pg.id,r.declaracion.id).ok)vinculados++});
+    }
+  }
+  mostrarToast(r.creada?'✓ Declaración registrada':'✓ Declaración compartida: se amplió lo que cubre',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${vinculados?` · ${vinculados} pago(s) vinculado(s) con tu confirmación`:''}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
   return r.declaracion;
 }
@@ -1210,21 +1567,21 @@ function vincularPagoDeclaracionUI(pagoId,tipoPapel,clientId,ejercicio,periodo,p
 }
 function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key){
   const el=s=>document.getElementById(`${prefix}NP${key}${s}`);
-  let conceptoId=key==='G'?(el('Aplicar')?el('Aplicar').value:''):key;
-  if(!conceptoId){alert('Selecciona el concepto al que se aplica este pago.');mostrarToast('No se registró el pago','Falta seleccionar el concepto','error');return null}
+  let conceptoId=key; // los pagos se registran exclusivamente desde cada concepto
   let importe=valorMonetario(el('Importe'));
   if(!(importe>0)){alert('Captura el importe del pago.');mostrarToast('No se registró el pago','Falta el importe','error');return null}
   let bancoSel=el('Banco'),banco=bancoSel?bancoSel.value:'';
   if(banco==='Otro'){let o=el('BancoOtro');banco=o?o.value.trim():''}
   let p=papelPorId(tipoPapel,papelId);
-  // Declaración que respalda el pago: solo una que CUBRA su concepto. Una sola → automática; varias → la elegida (por defecto, la vigente); ninguna → "sin declaración vinculada".
+  // Declaración que respalda el pago: SOLO la que el usuario confirma en el formulario (el selector la propone,
+  // pero no se vincula nada en silencio). Debe CUBRIR el concepto del pago; "sin declaración" es válido.
   let cubren=p?declaracionesQueCubren(tipoPapel,p,conceptoId):[];
   let elegido=(el('Decl')&&el('Decl').value)?+el('Decl').value:null;
   let declId=null;
   if(elegido){
     if(!cubren.some(d=>d.id===elegido)){alert('La declaración elegida no cubre este concepto.');mostrarToast('No se registró el pago','La declaración no cubre el concepto','error');return null}
     declId=elegido;
-  }else if(cubren.length)declId=cubren[cubren.length-1].id;
+  }
   let pg=agregarPago(tipoPapel,papelId,clientId,{
     declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
     lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
@@ -1313,8 +1670,6 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
           <button class="btn" style="padding:2px 9px;font-size:11px" onclick="asignarConceptoPagoUI(${pg.id},'${tipoPapel}','${clientId}',${ejercicio},${periodo},'${prefix}')">Asignar</button>
         </div>`).join('')}
     </div>`:'';
-  const generalHtml=`<div style="margin-top:8px"><button class="btn" style="padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','G')">+ Agregar pago (vista general)</button>
-      ${formNuevoPagoConceptoHtml(prefix,'G',det,args,declaraciones.length>1?declaraciones:[],declaraciones.length===0)}</div>`;
   const etiquetaTotal=tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA';
   const celdaT=(t,v)=>`<div><div style="font-size:10px;text-transform:uppercase;opacity:.8">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
   const nSinDecl=pagosSinDeclaracion(tipoPapel,p.id).length;
@@ -1335,12 +1690,14 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
     </div>`;
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
     <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
+    ${avisoPosiblesDuplicadosHtml(tipoPapel,p)}
+    ${(der.advertencias||[]).map(a=>`<div class="card" style="margin:8px 0;padding:8px 12px;border:1px dashed var(--amber);background:#fffaf0;font-size:12px">⚠ ${esc(a)}</div>`).join('')}
     ${selector}
     <div style="margin-top:10px">${seccionDecl}</div>
     <div style="margin-top:14px"><b style="font-size:12px">Conceptos de retención: declaraciones y pagos</b>
       <div class="hint" style="margin:2px 0 4px">Cada concepto puede tener sus declaraciones y pagarse por separado; admite más de un pago.</div>
       ${conceptosHtml||'<div class="role">Sin conceptos con retención en este papel</div>'}
-      ${sinAsignarHtml}${generalHtml}</div>
+      ${sinAsignarHtml}</div>
     ${totalHtml}
   </div>`;
 }
@@ -1497,7 +1854,8 @@ function seccionCumplimientoRetencionesPdf(p,tipoPapel){
   secciones.push({titulo:tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA',negritas:true,filas:[
     ['Principal retenido',fm(der.totalRetenido)],['Actualización',fm(der.actualizacionTotal)],['Recargos',fm(der.recargosTotal)],['Total determinado',fm(der.totalDeterminado)],
     ['Pagado',fm(der.totalPagado)],['Ajuste por redondeo',der.tienePagos?fm(der.ajusteTotal):'—'],['Pendiente',fm(der.pendienteTotal)],
-    ...(nSinDecl?[['Pagos sin declaración vinculada (evidencia por completar, no es un pendiente de pago)',String(nSinDecl)]]:[])
+    ...(nSinDecl?[['Pagos sin declaración vinculada (evidencia por completar, no es un pendiente de pago)',String(nSinDecl)]]:[]),
+    ...((der.advertencias||[]).map(a=>['Advertencia',a]))
   ]});
   return secciones;
 }
@@ -1558,6 +1916,7 @@ function formularioCumplimientoHtml(prefix,p,tipoPapel,clientId,ejercicio,period
   }
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
     <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
+    ${avisoPosiblesDuplicadosHtml(tipoPapel,p)}
     <div class="field" style="max-width:300px"><label>Tipo de cumplimiento</label>
       <select id="${prefix}CumpTipo" onchange="cambiarTipoCumplimientoUI(${args},this.value)">
         <option value="normal" ${tipoCump==='normal'?'selected':''}>Normal</option>
@@ -1642,7 +2001,7 @@ function getControlVigente(clientId,tipo,ejercicio){
 // Fiscal: la vigencia con "aplicarDesde" más reciente que no sea posterior a la fecha del papel.
 // Compatible con registros antiguos que solo tenían "ejercicio" (sin aplicarDesde): se asume
 // 1-enero de ese ejercicio, preservando el comportamiento previo para esos casos.
-function getCoeficienteVigente(clientId,fechaISO){
+function _getCoeficienteVigenteVivo(clientId,fechaISO){
   let candidatos=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo==='isr_coeficiente_utilidad'&&c.estatus!=='vencido');
   if(!candidatos.length)return null;
   let reemplazados=new Set(candidatos.map(c=>c.reemplazaA).filter(Boolean));
@@ -2242,7 +2601,7 @@ function calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
 }
 function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
-  let calc=calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoParametros({modo:'vivo'},()=>calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs));
   let anteriorVigente=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
@@ -2333,10 +2692,22 @@ function tablaExtraDeclaracionesPdf(detalle){
 }
 function cedulaRetencionesFilasHtml(detalle,fila,tituloTotal){
   const cab=t=>`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">${t}</td></tr>`;
-  const filaTexto=(label,o)=>`<tr><td class="lbl">${label}</td>${o.valores.map(v=>`<td style="text-align:right;font-size:11px;white-space:nowrap">${v==null?'—':esc(String(v))}</td>`).join('')}<td style="text-align:right;background:#fbf8f0">—</td></tr>`;
-  const bloque=(titulo,f)=>cab(titulo)+fila('Retenido',f.retenido)+fila('Actualización',f.actualizacion)+fila('Recargos',f.recargos)+fila('Total determinado',f.totalDeterminado)+fila('Pagado',f.pagado)+fila('Ajuste por redondeo',f.ajuste)+fila('Pendiente',f.pendiente)+(f.declaracion?filaTexto('Declaración (fecha de presentación)',f.declaracion):'');
+  const filaTexto=(label,o)=>`<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${o.valores.map(v=>`<td style="text-align:right;font-size:11px;white-space:nowrap">${v==null?'—':esc(String(v))}</td>`).join('')}<td style="text-align:right;background:#fbf8f0">—</td></tr>`;
+  const conClase=(html,clase)=>clase?html.replace('<tr class="">','<tr class="'+clase+'">'):html;
+  const bloque=(titulo,f,esTotal)=>cab(titulo)+fila('Retenido',f.retenido)+fila('Actualización',f.actualizacion)+fila('Recargos',f.recargos)+conClase(fila('Total determinado',f.totalDeterminado),esTotal?'ced-det':'ced-base')+fila('Pagado',f.pagado)+fila('Ajuste por redondeo',f.ajuste)+conClase(fila('Pendiente',f.pendiente),esTotal?'ced-res':'')+(f.declaracion?filaTexto('Declaración (fecha de presentación)',f.declaracion):'');
   let t=detalle.total;
-  return detalle.conceptos.map(cn=>bloque(esc(cn.nombre),cn.filas)).join('')+bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente});
+  return detalle.conceptos.map(cn=>bloque(esc(cn.nombre),cn.filas)).join('')+bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente},true);
+}
+// Estilos de jerarquía paralelos a las filas del PDF (mismo criterio que en pantalla)
+function cedulaRetencionesPdfConEstilos(detalle,tituloTotal){
+  let filas=cedulaRetencionesFilasPdf(detalle,tituloTotal),enTotal=false;
+  let estilosFila=filas.map(f=>{
+    if(f.length===14&&f[1]===''&&f[2]==='')enTotal=(f[0]===String(tituloTotal).toUpperCase());
+    if(f[0]==='Total determinado')return enTotal?'ced-det':'ced-base';
+    if(f[0]==='Pendiente')return enTotal?'ced-res':null;
+    return null;
+  });
+  return {filas,estilosFila};
 }
 function cedulaRetencionesFilasPdf(detalle,tituloTotal){
   const vacia=t=>[t.toUpperCase(),...Array(13).fill('')];
@@ -2389,7 +2760,7 @@ function calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
 }
 function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
-  let calc=calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoParametros({modo:'vivo'},()=>calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs));
   let anteriorVigente=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
@@ -2441,7 +2812,7 @@ function getCedulaAnualRetencionesIVA(clientId,ejercicio){
 // PUBLICADA vigente para el periodo (parametros_fiscales, ambito='estatal').
 
 // --- Tarifas por material (Extracción) — un material puede tener su propia vigencia independiente ---
-function getTarifaMaterialVigente(entidadFederativa,material,fechaISO){
+function _getTarifaMaterialVigenteVivo(entidadFederativa,material,fechaISO){
   let candidatos=(db.parametrosFiscales||[]).filter(p=>
     p.ambito==='estatal'&&p.entidadFederativa===entidadFederativa&&p.clave==='extraccion_tarifa_material'&&
     p.valor&&p.valor.material===material&&p.estatus==='publicado'&&
@@ -2841,8 +3212,9 @@ function openPapelISRPM(clientId,ejercicio,periodo){
       <div class="field"><label>Fecha de pago (si ya se pagó)</label><input id="isrPmFechaPago" type="date" value="${existente&&existente.fechaPago?existente.fechaPago:''}"></div>
       <div class="field full"><label>Observaciones</label><input id="isrPmObservaciones" value="${esc(existente&&existente.observaciones||'')}"></div>
     </div>`,
-    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn" onclick="imprimirPapelISRPM(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarPapelISRPMUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="closeModal()">Cancelar</button><button class="btn" onclick="imprimirPapelISRPM(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button><button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelISRPMUI)">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelISRPMUI(),0);
+  inyectarBannerRevision('isr_pm',clientId,ejercicio,periodo,'modalBody');
 }
 function agregarConceptoIngresoUI(clientId,ejercicio,periodo){
   let nombre=prompt('Nombre del nuevo concepto de ingreso (ej. Venta de alimentos):');
@@ -2883,7 +3255,7 @@ function calcularPapelISRPMUI(){
     let existente=getPapelISRPMVigente(clientId,ejercicio,periodo);
     if(existente)inputs.isrRetenidoContribuyenteMes=existente.isrRetenidoContribuyenteMes||0;
   }
-  let calc=calcularPapelISRPM(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoRevisionUI('isr_pm',clientId,ejercicio,periodo,()=>calcularPapelISRPM(clientId,ejercicio,periodo,inputs));
   __isrPmState.calc=calc;
   // Actualizar el TOTAL del Bloque 1 sin reconstruir sus inputs (para no perder el foco al escribir)
   let totalDisplay=$('#isrPmTotalIngresosDisplay');
@@ -2925,7 +3297,7 @@ function calcularPapelISRPMUI(){
   `;
   inicializarInputsMonetarios($('#fiscalWorkspace'));
 }
-function guardarPapelISRPMUI(){
+function guardarPapelISRPMUI(opts){
   let {clientId,ejercicio,periodo,calc}=__isrPmState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -2937,10 +3309,46 @@ function guardarPapelISRPMUI(){
     observaciones:$('#isrPmObservaciones').value.trim()||null
   };
   guardarPapelISRPM(clientId,ejercicio,periodo,inputs);
-  limpiarFiscalDirty();
-  mostrarToast('✓ Borrador guardado correctamente',`ISR Personas Morales · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
-  if($('#modal')&&$('#modal').classList.contains('show')){closeModal();openClient(clientId)}
-  else{abrirPapelISRPMRediseñado(clientId,ejercicio,periodo)}
+  return finalizarGuardadoBorrador(opts,'isr_pm',clientId,ejercicio,periodo,
+    ()=>{limpiarFiscalDirty();if($('#modal')&&$('#modal').classList.contains('show')){closeModal();openClient(clientId)}else{abrirPapelISRPMRediseñado(clientId,ejercicio,periodo)}},
+    ()=>mostrarToast('✓ Borrador guardado correctamente',`ISR Personas Morales · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`));
+}
+// --- Guardar como Borrador con confirmación REAL: botón deshabilitado + "Guardando…", sin doble envío,
+// y el toast de éxito solo cuando la corrida de guardado terminó sin errores. En error se conservan el modal
+// y los datos (nada se cierra) y se vuelve a habilitar el botón. La persistencia en sí no cambia: las
+// funciones guardarPapelXxxUI siguen llamando a guardarPapelXxx exactamente como antes. ---
+let __guardandoBorrador=false;
+async function guardarBorradorUI(btn,fnGuardarUI){
+  if(__guardandoBorrador)return;
+  const textoOriginal=btn?btn.textContent:'';
+  __guardandoBorrador=true;
+  if(btn){btn.disabled=true;btn.textContent='Guardando…'}
+  const restaurar=()=>{__guardandoBorrador=false;if(btn){btn.disabled=false;btn.textContent=textoOriginal}};
+  try{
+    const r=fnGuardarUI({diferirCierre:true});   // valida + persiste en memoria + programa el guardado; NO cierra nada
+    if(!r||!r.cerrar){restaurar();return null}    // validación fallida (ya se avisó al usuario)
+    const etiqueta=`${PAPEL_NOMBRE_AMIGABLE[r.tipoPapel]||r.tipoPapel} · ${MESES_NOMBRE[r.periodo-1]} ${r.ejercicio}`;
+    const res=await esperarGuardado();
+    if(res.ok){
+      mostrarToast(`✓ Borrador guardado — ${etiqueta}`);
+      __guardandoBorrador=false;
+      r.cerrar();
+      return true;
+    }
+    mostrarToast('No se pudo guardar el borrador',`${etiqueta} · tus datos siguen en pantalla; revisa tu conexión e intenta de nuevo`,'error');
+    restaurar();
+    return false;
+  }catch(e){
+    console.error(e);
+    mostrarToast('No se pudo guardar el borrador','Ocurrió un error inesperado; tus datos siguen en pantalla','error');
+    restaurar();
+    return false;
+  }
+}
+function finalizarGuardadoBorrador(opts,tipoPapel,clientId,ejercicio,periodo,cerrar,legado){
+  if(opts&&opts.diferirCierre)return {cerrar,tipoPapel,clientId,ejercicio,periodo};
+  if(legado)legado();
+  cerrar();
 }
 // --- Homologación Borrador → Revisado: ÚNICA lógica reutilizable para los 9 papeles fiscales. ---
 const PAPEL_ARRAY_DB={
@@ -2959,8 +3367,20 @@ function avanzarEstatusPapelGenerico(tipoPapel,id,nuevoEstatus,ejercicio,periodo
     let sinDecl=pagosSinDeclaracion(tipoPapel,p.id);
     if(sinDecl.length&&!confirm(`Este papel tiene ${sinDecl.length} pago(s) sin declaración vinculada.\n\nNo es un pendiente de pago: solo significa que aún no se relacionó cada pago con la declaración que lo respalda. Puedes marcarlo como revisado de todas formas y vincularlos después.\n\n¿Marcar como revisado?`))return;
   }
+  let snapNuevo=null;
+  if(nuevoEstatus!=='borrador'&&p.estatus==='borrador'&&!snapshotsDePapel(tipoPapel,p.id).some(s=>s.origen==='revision')){
+    try{
+      snapNuevo=construirSnapshotPapel(tipoPapel,{...p,estatus:nuevoEstatus,revisadoPor:currentStaff?currentStaff.id:null,revisadoEn:new Date().toISOString()},'revision');
+    }catch(e){
+      console.error('Error al generar el snapshot de la revisión:',e);
+      alert('No se pudo generar el snapshot de la revisión. El papel NO se marcó como revisado; avisa al administrador.');
+      mostrarToast('No se marcó como revisado','Falló el snapshot de la determinación','error');
+      return;
+    }
+  }
   p.estatus=nuevoEstatus;
   if(nuevoEstatus==='revisado'){p.revisadoPor=currentStaff?currentStaff.id:null;p.revisadoEn=new Date().toISOString()}
+  if(snapNuevo){db.fiscalPapelSnapshots=db.fiscalPapelSnapshots||[];db.fiscalPapelSnapshots.push(snapNuevo)}
   save();
   if(nuevoEstatus==='revisado'){
     mostrarToast(`✓ Papel marcado como revisado`,`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
@@ -3037,13 +3457,14 @@ function abrirPapelISRPMRediseñado(clientId,ejercicio,periodo){
 
     <div class="card" style="margin-top:14px;display:flex;gap:8px;position:sticky;bottom:0;background:var(--card-bg,#fff);padding:10px 16px">
       <button class="btn" onclick="confirmarSalidaFiscal(()=>cambiarFiscalTab('federal'))">Volver</button>
-      <button class="btn primary" onclick="guardarPapelISRPMUI()">Guardar borrador</button>
+      <button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelISRPMUI)">Guardar borrador</button>
       ${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelISRPM(${existente.id},'revisado');abrirPapelISRPMRediseñado(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}
       ${isAdmin?`<button class="btn" onclick="recalcularMesesPosterioresUI(${clientId},${ejercicio},${periodo})" title="Si este mes cambió, recalcula los meses posteriores para que el acumulado quede correcto">🔄 Recalcular meses posteriores</button>`:''}
       <button class="btn" onclick="imprimirPapelISRPM(${clientId},${ejercicio},${periodo})">PDF</button>
     </div>
   `;
   calcularPapelISRPMUI();limpiarFiscalDirty();
+  inyectarBannerRevision('isr_pm',clientId,ejercicio,periodo,'fiscalWorkspace');
 }
 function agregarConceptoIngresoUIRediseño(clientId,ejercicio,periodo){
   let nombre=prompt('Nombre del nuevo concepto de ingreso (ej. Venta de alimentos):');
@@ -3121,9 +3542,9 @@ function verCedulaISRPM(clientId,ejercicio){
   function fila(label,obj,esMoneda){
     let esPorcentaje=!esMoneda&&label.toLowerCase().includes('tasa');
     let fmtValor=v=>v==null?'—':(esMoneda?fmtMoneyMX(v):(esPorcentaje?v+'%':v));
-    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${obj.tipo==='suma'?'#fff3cd':(obj.tipo==='ultimo'?'#eaf2ff':'#edf1f6')};color:${obj.tipo==='suma'?'#8a6500':(obj.tipo==='ultimo'?'#0c63ce':'#8a93a3')}">${obj.tipo==='suma'?'Σ':(obj.tipo==='ultimo'?'Últ.':'Ref.')}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${fmtValor(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtValor(obj.cierre)}</td></tr>`;
+    return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${fmtValor(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtValor(obj.cierre)}</td></tr>`;
   }
-  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre/Ref.</th></tr></thead><tbody>
+  mostrarCedulaFullPage(`Cédula Anual — ISR PM ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Cierre</th></tr></thead><tbody>
     ${c.conceptosDesglose.length?`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Desglose de ingresos por concepto</td></tr>${c.conceptosDesglose.map(cd=>fila(cd.nombre,cd,true)).join('')}`:''}
     ${fila('Ingresos nominales del mes',c.ingresosNominalesDelMes,true)}
     ${fila('Ingresos nominales acumulados',c.ingresosNominalesAcumulados,true)}
@@ -3142,7 +3563,7 @@ function verCedulaISRPM(clientId,ejercicio){
     ${fila('Actualización',c.actualizacion,true)}
     ${fila('Recargos',c.recargos,true)}
     ${fila('Total pagado',c.totalPagado,true)}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio (flujos del mes) · Últ. = valor del último periodo capturado (no se suma) · Ref. = constante, no aplica sumar.</div>`,`<button class="btn primary" onclick="imprimirCedulaISRPM(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>`,`<button class="btn primary" onclick="imprimirCedulaISRPM(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== IVA — Interfaz de captura =====================
@@ -3200,10 +3621,11 @@ function openPapelIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
       <div class="field full"><label>Observaciones</label><input id="ivaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('iva',existente,'iva',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('iva',${existente.id},'revisado',${ejercicio},${periodo});openPapelIVA(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelIVAUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('iva',${existente.id},'revisado',${ejercicio},${periodo});openPapelIVA(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelIVAUI)">Guardar como Borrador</button>`);
   actualizarTotalAcreditableIVA();
   inicializarInputsMonetarios($('#ivaBody'));
   if(existente)setTimeout(()=>calcularPapelIVAUI(),0);
+  inyectarBannerRevision('iva',clientId,ejercicio,periodo,'modalBody');
 }
 function actualizarTotalAcreditableIVA(){
   let suma=['ivaAcredBienes','ivaAcredServicios','ivaAcredUsoGoce','ivaAcredInversiones','ivaAcredSinClasificar'].reduce((s,id)=>s+valorMonetario($('#'+id)),0);
@@ -3231,7 +3653,7 @@ function calcularPapelIVAUI(){
     fechaVencimiento:$('#ivaVencimiento').value||null,fechaPago:$('#ivaFechaPago').value||null
   };
   if(__ivaState.calc&&$('#ivaSaldoFavorAplicado'))inputs.saldoFavorAplicado=valorMonetario($('#ivaSaldoFavorAplicado'));
-  let calc=calcularPapelIVA(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoRevisionUI('iva',clientId,ejercicio,periodo,()=>calcularPapelIVA(clientId,ejercicio,periodo,inputs));
   calc.acredDesglose=leerDesgloseAcreditableIVA();
   __ivaState.calc=calc;
   $('#ivaResultado').innerHTML=`
@@ -3254,7 +3676,7 @@ function calcularPapelIVAUI(){
     </div>
   `;
 }
-function guardarPapelIVAUI(){
+function guardarPapelIVAUI(opts){
   let {clientId,ejercicio,periodo,calc}=__ivaState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -3267,10 +3689,9 @@ function guardarPapelIVAUI(){
     observaciones:$('#ivaObservaciones').value.trim()||null
   };
   guardarPapelIVA(clientId,ejercicio,periodo,inputs);
-  limpiarFiscalDirty();__fiscalModalOpen=false;
-  mostrarToast('✓ Borrador guardado correctamente',`IVA · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
-  closeModal();
-  openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'iva',clientId,ejercicio,periodo,
+    ()=>{limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId)},
+    ()=>mostrarToast('✓ Borrador guardado correctamente',`IVA · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`));
 }
 function avanzarEstatusPapelIVA(id,nuevoEstatus){
   let p=(db.fiscalPapelIva||[]).find(x=>x.id===id);
@@ -3279,7 +3700,7 @@ function avanzarEstatusPapelIVA(id,nuevoEstatus){
 function verCedulaIVA(clientId,ejercicio){
   let c=getCedulaAnualIVA(clientId,ejercicio);
   function fila(label,obj){
-    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`;
+    return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
   mostrarCedulaFullPage(`Cédula Anual — IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Base gravada 16%',c.baseGravada16)}
@@ -3295,7 +3716,7 @@ function verCedulaIVA(clientId,ejercicio){
     ${fila('Total pagado',c.totalPagado)}
   </tbody></table></div>
   <div class="card" style="margin-top:12px;background:#fffbf0;border:1px solid #f4d582"><b>Saldo a favor disponible HOY: ${fmtMoneyMX(c.saldoDisponibleHoy.cierre)}</b><div class="hint" style="margin-top:4px">Este importe viene del Control de IVA a Favor — nunca se obtiene sumando esta cédula.</div></div>
-  <div class="hint" style="margin-top:10px">Σ = suma del ejercicio — IVA es mensual, todos los flujos se suman. El saldo disponible es la única excepción (viene del Control, no de la suma).</div>`,`<button class="btn primary" onclick="imprimirCedulaIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  <div class="hint" style="margin-top:10px">El saldo a favor disponible es la única excepción: viene del Control, no de la suma del ejercicio.</div>`,`<button class="btn primary" onclick="imprimirCedulaIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== Retenciones ISR — Interfaz de captura =====================
@@ -3358,9 +3779,10 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div class="field full"><label>Observaciones</label><input id="retIsrObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('retIsr',existente,'retenciones_isr',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesISR(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('retenciones_isr',${existente.id},'revisado',${ejercicio},${periodo});openPapelRetencionesISR(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelRetencionesISRUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesISR(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('retenciones_isr',${existente.id},'revisado',${ejercicio},${periodo});openPapelRetencionesISR(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelRetencionesISRUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelRetencionesISRUI(),0);
+  inyectarBannerRevision('retenciones_isr',clientId,ejercicio,periodo,'modalBody');
 }
 function refrescarFilaConcepto(prefix,idx){} // el recálculo real ocurre al dar "Calcular"
 function leerConceptosDelFormulario(prefix,ambito){
@@ -3411,7 +3833,7 @@ function calcularPapelRetencionesISRUI(){
     fechaVencimiento:$('#retIsrVencimiento').value||null
   };
   legadoPasante('retenciones_isr',clientId,ejercicio,periodo,inputs);
-  let calc=calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoRevisionUI('retenciones_isr',clientId,ejercicio,periodo,()=>calcularPapelRetencionesISR(clientId,ejercicio,periodo,inputs));
   __retIsrState.calc=calc;
   $('#retIsrResultado').innerHTML=renderResultadoRetenciones(calc,'retIsr');
   inicializarInputsMonetarios($('#retIsrResultado'));
@@ -3420,7 +3842,7 @@ function renderResultadoRetenciones(calc,prefix){
   const d=calc.derivado;
   const fm=n=>n==null?'—':fmtMoneyMX(n);
   const soloLegado=!d&&(Number(calc.principalPagado)>0||Number(calc.ajustes)!==0);
-  const textoPagado=d?fm(calc.totalPagado):(soloLegado?fm(calc.totalPagado)+' <span style="font-size:10px;opacity:.8">(registro anterior, solo lectura)</span>':'Sin pagos registrados');
+  const textoPagado=d?fm(calc.totalPagado):'Sin pagos registrados';
   return `
     <div class="card" style="background:var(--bg);margin-top:6px">
       ${calc.conceptos.map(c=>`<div class="prow"><span>${esc(c.nombre)}${c.ajustado?' <span class="pill p-amber" style="font-size:9px">ajustado</span>':''}</span><b>${fmtMoneyMX(c.retenidoConfirmado)}</b></div>`).join('')}
@@ -3436,9 +3858,10 @@ function renderResultadoRetenciones(calc,prefix){
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px;color:${calc.diferenciaPendiente>0?'#ffd98a':'rgba(255,255,255,.85)'}"><span style="font-weight:700;color:${calc.diferenciaPendiente>0?'#ffd98a':'#fff'}">Diferencia pendiente</span><b style="color:${calc.diferenciaPendiente>0?'#ffd98a':'#fff'}">${fmtMoneyMX(calc.diferenciaPendiente)}</b></div>
     </div>
     <div class="hint" style="margin-top:6px">Los pagos se registran por concepto en <b>Cumplimiento / Pago</b> (abajo); este resumen se calcula solo a partir de ellos.</div>
+    ${soloLegado?`<div class="hint" style="margin-top:4px;color:var(--amber)">Nota informativa: este papel conserva un dato histórico de pago anterior a la captura por pagos (principal ${fmtMoneyMX(calc.principalPagado)}). No se cuenta como "Pagado": regístralo como pago en el concepto correspondiente si aplica.</div>`:''}
   `;
 }
-function guardarPapelRetencionesISRUI(){
+function guardarPapelRetencionesISRUI(opts){
   let {clientId,ejercicio,periodo,calc}=__retIsrState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -3448,15 +3871,14 @@ function guardarPapelRetencionesISRUI(){
     observaciones:$('#retIsrObservaciones').value.trim()||null
   };
   guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs);
-  closeModal();
-  openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'retenciones_isr',clientId,ejercicio,periodo,()=>{closeModal();openClient(clientId)});
 }
 function verCedulaRetencionesISR(clientId,ejercicio){
   let c=getCedulaAnualRetencionesISR(clientId,ejercicio);
-  function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
+  function fila(label,obj){return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES ISR')}
-  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}<div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== Retenciones IVA — Interfaz de captura =====================
@@ -3492,9 +3914,10 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
       <div class="field full"><label>Observaciones</label><input id="retIvaObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('retIva',existente,'retenciones_iva',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('retenciones_iva',${existente.id},'revisado',${ejercicio},${periodo});openPapelRetencionesIVA(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelRetencionesIVAUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesIVA(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('retenciones_iva',${existente.id},'revisado',${ejercicio},${periodo});openPapelRetencionesIVA(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelRetencionesIVAUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelRetencionesIVAUI(),0);
+  inyectarBannerRevision('retenciones_iva',clientId,ejercicio,periodo,'modalBody');
 }
 function calcularPapelRetencionesIVAUI(){
   if(!document.getElementById('retIvaResultado')||!document.getElementById('retIvaVencimiento'))return; // el modal ya se cerró
@@ -3504,12 +3927,12 @@ function calcularPapelRetencionesIVAUI(){
     fechaVencimiento:$('#retIvaVencimiento').value||null
   };
   legadoPasante('retenciones_iva',clientId,ejercicio,periodo,inputs);
-  let calc=calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs);
+  let calc=conContextoRevisionUI('retenciones_iva',clientId,ejercicio,periodo,()=>calcularPapelRetencionesIVA(clientId,ejercicio,periodo,inputs));
   __retIvaState.calc=calc;
   $('#retIvaResultado').innerHTML=renderResultadoRetenciones(calc,'retIva');
   inicializarInputsMonetarios($('#retIvaResultado'));
 }
-function guardarPapelRetencionesIVAUI(){
+function guardarPapelRetencionesIVAUI(opts){
   let {clientId,ejercicio,periodo,calc}=__retIvaState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -3518,15 +3941,14 @@ function guardarPapelRetencionesIVAUI(){
     observaciones:$('#retIvaObservaciones').value.trim()||null
   };
   guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs);
-  closeModal();
-  openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'retenciones_iva',clientId,ejercicio,periodo,()=>{closeModal();openClient(clientId)});
 }
 function verCedulaRetencionesIVA(clientId,ejercicio){
   let c=getCedulaAnualRetencionesIVA(clientId,ejercicio);
-  function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
+  function fila(label,obj){return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES IVA')}
-  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}<div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>${tablaDeclaracionesEjercicioHtml(c.detalle)}`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== ISN — Interfaz de captura =====================
@@ -3564,9 +3986,10 @@ function openPapelISN(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiar
       <div class="field full"><label>Observaciones</label><input id="isnObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('isn',existente,'isn',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelISN(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('isn',${existente.id},'revisado',${ejercicio},${periodo});openPapelISN(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelISNUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelISN(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('isn',${existente.id},'revisado',${ejercicio},${periodo});openPapelISN(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelISNUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelISNUI(),0);
+  inyectarBannerRevision('isn',clientId,ejercicio,periodo,'modalBody');
 }
 function calcularPapelISNUI(){
   let {clientId,ejercicio,periodo}=__isnState;
@@ -3576,7 +3999,7 @@ function calcularPapelISNUI(){
     numeroTrabajadores:$('#isnNumeroTrabajadores').value!==''?+$('#isnNumeroTrabajadores').value:null,
     fechaVencimiento:$('#isnVencimiento').value||null,fechaPago:$('#isnFechaPago').value||null
   };
-  let calc=calcularPapelISN(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
+  let calc=conContextoRevisionUI('isn',clientId,ejercicio,periodo,()=>calcularPapelISN(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs));
   __isnState.calc=calc;
   $('#isnResultado').innerHTML=`
     <div class="card" style="background:var(--bg);margin-top:6px">
@@ -3593,7 +4016,7 @@ function calcularPapelISNUI(){
     </div>
   `;
 }
-function guardarPapelISNUI(){
+function guardarPapelISNUI(opts){
   let {clientId,ejercicio,periodo,calc}=__isnState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -3602,15 +4025,13 @@ function guardarPapelISNUI(){
     observaciones:$('#isnObservaciones').value.trim()||null
   };
   guardarPapelISN(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
-  closeModal();
-  openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'isn',clientId,ejercicio,periodo,()=>{closeModal();openClient(clientId)});
 }
 function verCedulaISN(clientId,ejercicio){
   let c=getCedulaAnualISN(clientId,ejercicio);
   function fila(label,obj,tipo){
-    let tag=tipo==='suma'?'Σ':'Ref.';
     let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
-    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
+    return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
   mostrarCedulaFullPage(`Cédula Anual — ISN ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${fila('Total remuneraciones',c.totalRemuneraciones,'suma')}
@@ -3620,7 +4041,7 @@ function verCedulaISN(clientId,ejercicio){
     ${fila('Actualización',c.actualizacion,'suma')}
     ${fila('Recargos',c.recargos,'suma')}
     ${fila('Total pagado',c.totalPagado,'suma')}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio · Ref. = tasa, no se suma.</div>`,`<button class="btn primary" onclick="imprimirCedulaISN(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>`,`<button class="btn primary" onclick="imprimirCedulaISN(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== Extracción de Materiales — Interfaz de captura =====================
@@ -3662,8 +4083,9 @@ function openPapelExtraccion(clientId,ejercicio,periodo){__fiscalModalOpen=true;
       <div class="field full"><label>Observaciones</label><input id="extraccionObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('extraccion',existente,'extraccion',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelExtraccion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('extraccion',${existente.id},'revisado',${ejercicio},${periodo});openPapelExtraccion(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelExtraccionUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelExtraccion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('extraccion',${existente.id},'revisado',${ejercicio},${periodo});openPapelExtraccion(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelExtraccionUI)">Guardar como Borrador</button>`);
   if(existente)setTimeout(()=>calcularPapelExtraccionUI(),0);
+  inyectarBannerRevision('extraccion',clientId,ejercicio,periodo,'modalBody');
 }
 function agregarFilaMaterial(){
   let materialesDisponibles=getMaterialesConTarifaPublicada(entidadFederativaDeCliente(__extraccionState.clientId));
@@ -3692,7 +4114,7 @@ function calcularPapelExtraccionUI(){
     materiales:leerMaterialesDelFormulario(),
     fechaVencimiento:$('#extraccionVencimiento').value||null,fechaPago:$('#extraccionFechaPago').value||null
   };
-  let calc=calcularPapelExtraccion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
+  let calc=conContextoRevisionUI('extraccion',clientId,ejercicio,periodo,()=>calcularPapelExtraccion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs));
   __extraccionState.calc=calc;
   $('#extraccionResultado').innerHTML=`
     <div class="card" style="background:var(--bg);margin-top:6px">
@@ -3707,7 +4129,7 @@ function calcularPapelExtraccionUI(){
     </div>
   `;
 }
-function guardarPapelExtraccionUI(){
+function guardarPapelExtraccionUI(opts){
   let {clientId,ejercicio,periodo,calc}=__extraccionState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={
@@ -3716,12 +4138,11 @@ function guardarPapelExtraccionUI(){
     observaciones:$('#extraccionObservaciones').value.trim()||null
   };
   guardarPapelExtraccion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
-  closeModal();
-  openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'extraccion',clientId,ejercicio,periodo,()=>{closeModal();openClient(clientId)});
 }
 function verCedulaExtraccion(clientId,ejercicio){
   let c=getCedulaAnualExtraccion(clientId,ejercicio);
-  function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
+  function fila(label,obj){return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Extracción de Materiales ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Material</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${c.porMaterial.map(pm=>fila(esc(pm.nombre),pm)).join('')||'<tr><td colspan="14" class="empty">Sin materiales capturados este ejercicio</td></tr>'}
     ${fila('Total impuesto',c.totalImpuesto)}
@@ -3729,7 +4150,7 @@ function verCedulaExtraccion(clientId,ejercicio){
     ${fila('Actualización',c.actualizacion)}
     ${fila('Recargos',c.recargos)}
     ${fila('Total pagado',c.totalPagado)}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — un renglón por material.</div>`,`<button class="btn primary" onclick="imprimirCedulaExtraccion(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+  </tbody></table></div>`,`<button class="btn primary" onclick="imprimirCedulaExtraccion(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
 // ===================== Impuesto al Hospedaje — Interfaz de captura =====================
@@ -3759,23 +4180,24 @@ function openPapelHospedaje(clientId,ejercicio,periodo){__fiscalModalOpen=true;l
       <div class="field full"><label>Observaciones</label><input id="hospObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('hosp',existente,'hospedaje',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedaje(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('hospedaje',${existente.id},'revisado',${ejercicio},${periodo});openPapelHospedaje(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelHospedajeUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedaje(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('hospedaje',${existente.id},'revisado',${ejercicio},${periodo});openPapelHospedaje(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelHospedajeUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelHospedajeUI(),0);
+  inyectarBannerRevision('hospedaje',clientId,ejercicio,periodo,'modalBody');
 }
 function calcularPapelHospedajeUI(){
   let {clientId,ejercicio,periodo}=__hospedajeState;
   let inputs={baseGravable:valorMonetario($('#hospBaseGravable')),tipoEstablecimiento:$('#hospTipoEstablecimiento').value.trim()||null,fechaVencimiento:$('#hospVencimiento').value||null,fechaPago:$('#hospFechaPago').value||null};
-  let calc=calcularPapelHospedaje(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
+  let calc=conContextoRevisionUI('hospedaje',clientId,ejercicio,periodo,()=>calcularPapelHospedaje(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs));
   __hospedajeState.calc=calc;
   $('#hospResultado').innerHTML=renderResultadoEstatalSimple(calc,'tasa','impuestoDeterminado','Impuesto determinado');
 }
-function guardarPapelHospedajeUI(){
+function guardarPapelHospedajeUI(opts){
   let {clientId,ejercicio,periodo,calc}=__hospedajeState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={baseGravable:calc.baseGravable,tipoEstablecimiento:calc.tipoEstablecimiento,fechaVencimiento:$('#hospVencimiento').value||null,fechaPago:$('#hospFechaPago').value||null,observaciones:$('#hospObservaciones').value.trim()||null};
   guardarPapelHospedaje(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
-  limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'hospedaje',clientId,ejercicio,periodo,()=>{limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId)});
 }
 function verCedulaHospedaje(clientId,ejercicio){
   let c=getCedulaAnualHospedaje(clientId,ejercicio);
@@ -3809,14 +4231,15 @@ function openPapelHospedajeAnfitrion(clientId,ejercicio,periodo){__fiscalModalOp
       <div class="field full"><label>Observaciones</label><input id="hospAnfObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('hospAnf',existente,'hospedaje_anfitrion',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedajeAnfitrion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('hospedaje_anfitrion',${existente.id},'revisado',${ejercicio},${periodo});openPapelHospedajeAnfitrion(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelHospedajeAnfitrionUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelHospedajeAnfitrion(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('hospedaje_anfitrion',${existente.id},'revisado',${ejercicio},${periodo});openPapelHospedajeAnfitrion(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelHospedajeAnfitrionUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelHospedajeAnfitrionUI(),0);
+  inyectarBannerRevision('hospedaje_anfitrion',clientId,ejercicio,periodo,'modalBody');
 }
 function calcularPapelHospedajeAnfitrionUI(){
   let {clientId,ejercicio,periodo}=__hospAnfState;
   let inputs={baseGravable:valorMonetario($('#hospAnfBaseGravable')),impuestoRetenidoPlataforma:valorMonetario($('#hospAnfRetenidoPlataforma')),fechaVencimiento:$('#hospAnfVencimiento').value||null,fechaPago:$('#hospAnfFechaPago').value||null};
-  let calc=calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
+  let calc=conContextoRevisionUI('hospedaje_anfitrion',clientId,ejercicio,periodo,()=>calcularPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs));
   __hospAnfState.calc=calc;
   $('#hospAnfResultado').innerHTML=`
     <div class="card" style="background:var(--bg);margin-top:6px">
@@ -3832,12 +4255,12 @@ function calcularPapelHospedajeAnfitrionUI(){
       <div class="prow" style="border-top:1px solid rgba(255,255,255,.3);margin-top:6px;padding-top:8px"><span style="color:#fff;font-weight:700">Total a pagar</span><b style="color:#fff">${calc.totalAPagar!=null?fmtMoneyMX(calc.totalAPagar):'—'}</b></div>
     </div>`;
 }
-function guardarPapelHospedajeAnfitrionUI(){
+function guardarPapelHospedajeAnfitrionUI(opts){
   let {clientId,ejercicio,periodo,calc}=__hospAnfState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={baseGravable:calc.baseGravable,impuestoRetenidoPlataforma:calc.impuestoRetenidoPlataforma,fechaVencimiento:$('#hospAnfVencimiento').value||null,fechaPago:$('#hospAnfFechaPago').value||null,observaciones:$('#hospAnfObservaciones').value.trim()||null};
   guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
-  limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'hospedaje_anfitrion',clientId,ejercicio,periodo,()=>{limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId)});
 }
 function verCedulaHospedajeAnfitrion(clientId,ejercicio){
   let c=getCedulaAnualHospedajeAnfitrion(clientId,ejercicio);
@@ -3867,23 +4290,24 @@ function openPapelBebidas(clientId,ejercicio,periodo){__fiscalModalOpen=true;lim
       <div class="field full"><label>Observaciones</label><input id="bebObservaciones" value="${esc(existente&&existente.observaciones||'')}" oninput="marcarFiscalDirty()"></div>
     </div>
     ${formularioCumplimientoHtml('beb',existente,'bebidas',clientId,ejercicio,periodo)}`,
-    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelBebidas(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('bebidas',${existente.id},'revisado',${ejercicio},${periodo});openPapelBebidas(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelBebidasUI()">Guardar como Borrador</button>`);
+    `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelBebidas(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('bebidas',${existente.id},'revisado',${ejercicio},${periodo});openPapelBebidas(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarBorradorUI(this,guardarPapelBebidasUI)">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelBebidasUI(),0);
+  inyectarBannerRevision('bebidas',clientId,ejercicio,periodo,'modalBody');
 }
 function calcularPapelBebidasUI(){
   let {clientId,ejercicio,periodo}=__bebidasState;
   let inputs={baseGravable:valorMonetario($('#bebBaseGravable')),fechaVencimiento:$('#bebVencimiento').value||null,fechaPago:$('#bebFechaPago').value||null};
-  let calc=calcularPapelBebidas(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
+  let calc=conContextoRevisionUI('bebidas',clientId,ejercicio,periodo,()=>calcularPapelBebidas(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs));
   __bebidasState.calc=calc;
   $('#bebResultado').innerHTML=renderResultadoEstatalSimple(calc,'tasa','impuestoRetenidoDeterminado','Impuesto retenido determinado');
 }
-function guardarPapelBebidasUI(){
+function guardarPapelBebidasUI(opts){
   let {clientId,ejercicio,periodo,calc}=__bebidasState;
   if(!calc){alert('Da clic en "Calcular" antes de guardar.');return}
   let inputs={baseGravable:calc.baseGravable,fechaVencimiento:$('#bebVencimiento').value||null,fechaPago:$('#bebFechaPago').value||null,observaciones:$('#bebObservaciones').value.trim()||null};
   guardarPapelBebidas(clientId,ejercicio,periodo,entidadFederativaDeCliente(clientId),inputs);
-  limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId);
+  return finalizarGuardadoBorrador(opts,'bebidas',clientId,ejercicio,periodo,()=>{limpiarFiscalDirty();__fiscalModalOpen=false;closeModal();openClient(clientId)});
 }
 function verCedulaBebidas(clientId,ejercicio){
   let c=getCedulaAnualBebidas(clientId,ejercicio);
@@ -3891,6 +4315,25 @@ function verCedulaBebidas(clientId,ejercicio){
 }
 
 // --- Impresión de cédulas ENE-DIC: SIEMPRE lee de los papeles ya guardados (getCedulaAnualX ya hace esto) ---
+// --- Jerarquía visual sobria de las cédulas: SOLO subtotales / bases / resultados relevantes.
+// (Coeficiente, tasa, PTU, pérdidas y pagos anteriores NO se resaltan.) Es presentación: no altera datos ni cálculos.
+const ESTILO_FILA_CEDULA={
+  'Ingresos nominales del mes':'ced-sub',
+  'Ingresos nominales acumulados':'ced-base','Base ISR':'ced-base',
+  'ISR determinado (acum.)':'ced-det',
+  'Resultado determinado (a pagar el mes)':'ced-res',
+  'Resultado determinado':'ced-res', // etiqueta con que aparece en el PDF de ISR PM
+  'Base gravada 16%':'ced-base','IVA a cargo del periodo':'ced-det','IVA final a pagar':'ced-res',
+  'Total remuneraciones':'ced-base','Base gravable':'ced-base',
+  'Impuesto determinado':'ced-det','Total impuesto':'ced-det','Impuesto retenido determinado':'ced-det','Impuesto a cargo':'ced-res'
+};
+function claseFilaCedula(label){return ESTILO_FILA_CEDULA[String(label).replace(/<[^>]*>/g,'').trim()]||''}
+const ESTILO_PDF_CEDULA={
+  'ced-sub':{fillColor:[245,246,248],fontStyle:'bold',lineWidth:0.3,lineColor:[170,177,188]},
+  'ced-base':{fillColor:[236,243,251],fontStyle:'bold'},
+  'ced-det':{fillColor:[222,235,249],fontStyle:'bold'},
+  'ced-res':{fillColor:[203,222,245],fontStyle:'bold',fontSize:7.6,textColor:[7,59,118],lineWidth:0.4,lineColor:[7,59,118]}
+};
 function filaCedulaPdf(label,obj){
   let esCoeficiente=label.toLowerCase().includes('coeficiente');
   let fmt=v=>v==null?'—':(obj.tipo==='texto'?String(v):(obj.tipo==='referencia'?(esCoeficiente?v:v+'%'):fmtMoneyMX(v)));
@@ -3901,7 +4344,7 @@ function construirConfigCedulaISRPM(clientId,ejercicio){
   let cl=client(clientId);
   return {
     titulo:'Cédula Anual — ISR Pago Provisional',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
-    encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Cierre/Ref.'],
+    encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Cierre'],
     filas:[
       ...c.conceptosDesglose.map(cd=>filaCedulaPdf(cd.nombre,cd)),
       filaCedulaPdf('Ingresos nominales del mes',c.ingresosNominalesDelMes),
@@ -3919,7 +4362,6 @@ function construirConfigCedulaISRPM(clientId,ejercicio){
       filaCedulaPdf('Principal',c.principal),filaCedulaPdf('Actualización',c.actualizacion),
       filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
-    notaPie:'Σ = suma · Últ. = último valor del periodo (no se suma) · Ref. = constante. Ver leyenda completa en pantalla.',
     nombreArchivo:`Cedula_ISR_PM_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
@@ -3954,7 +4396,7 @@ function construirConfigCedulaRetencionesISR(clientId,ejercicio){
   return {
     titulo:'Cédula Anual — Retenciones ISR',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
-    filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES ISR'),
+    ...cedulaRetencionesPdfConEstilos(c.detalle,'TOTAL RETENCIONES ISR'),
     tablaExtra:tablaExtraDeclaracionesPdf(c.detalle),
     nombreArchivo:`Cedula_Retenciones_ISR_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
@@ -3969,7 +4411,7 @@ function construirConfigCedulaRetencionesIVA(clientId,ejercicio){
   return {
     titulo:'Cédula Anual — Retenciones IVA',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
-    filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES IVA'),
+    ...cedulaRetencionesPdfConEstilos(c.detalle,'TOTAL RETENCIONES IVA'),
     tablaExtra:tablaExtraDeclaracionesPdf(c.detalle),
     nombreArchivo:`Cedula_Retenciones_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
@@ -4086,8 +4528,7 @@ function renderResultadoEstatalSimple(calc,campoTasa,campoResultado,labelResulta
 }
 function renderCedulaEstatalSimpleHtml(c,filas){
   function fila(label,obj,tipo){
-    let tag=tipo==='suma'?'Σ':'Ref.';let bg=tipo==='suma'?'#fff3cd':'#edf1f6';let col=tipo==='suma'?'#8a6500':'#8a93a3';
-    return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:${bg};color:${col}">${tag}</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
+    return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${label}</td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':(tipo==='suma'?fmtMoneyMX(v):v+'%')}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${obj.cierre==null?'—':fmtMoneyMX(obj.cierre)}</td></tr>`;
   }
   return `<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
     ${filas.map(([label,campo,tipo])=>fila(label,c[campo],tipo)).join('')}
@@ -4095,7 +4536,7 @@ function renderCedulaEstatalSimpleHtml(c,filas){
     ${fila('Actualización',c.actualizacion,'suma')}
     ${fila('Recargos',c.recargos,'suma')}
     ${fila('Total pagado',c.totalPagado,'suma')}
-  </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio · Ref. = tasa, no se suma.</div>`;
+  </tbody></table></div>`;
 }
 
 
@@ -4692,6 +5133,11 @@ function dibujarCedulaFiscalEnDoc(doc,config){
     didParseCell:function(data){
       if(data.section==='head'&&data.column.index===config.encabezados.length-1){data.cell.styles.fillColor=[201,169,97]}
       if(data.section==='body'&&data.column.index===config.encabezados.length-1){data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[251,248,240]}
+      if(data.section==='body'){
+        let est=(config.estilosFila||[])[data.row.index];
+        if(est===undefined&&!config.estilosFila)est=claseFilaCedula(data.row.raw&&data.row.raw[0]);
+        if(est&&ESTILO_PDF_CEDULA[est])Object.assign(data.cell.styles,ESTILO_PDF_CEDULA[est]);
+      }
     }
   });
   if(config.notaPie){
@@ -5021,7 +5467,7 @@ function construirConfigPapelISRPM(clientId,ejercicio,periodo){
       ]},
       {titulo:'Resultado',negritas:true,filas:[['ISR a cargo',fmtMoneyMX(p.resultadoIsrCargo)]]},
       {titulo:'Pago y accesorios',filas:[
-        ['Fecha de vencimiento',(()=>{let f=p.fechaVencimiento||proponerVencimientoFiscal('isr_pm',clientId,ejercicio,periodo);return f?fmtDate(f):'—'})()],
+        ['Fecha de vencimiento',vencimientoPdfPapel('isr_pm',p,clientId,ejercicio,periodo)],
         ['Fecha de pago',p.fechaPago?fmtDate(p.fechaPago):'—'],
         ['Actualización',fmtMoneyMX(p.actualizacion)],
         ['Recargos',fmtMoneyMX(p.recargos)],
@@ -5105,10 +5551,11 @@ function construirConfigPapelRetencionesISR(clientId,ejercicio,periodo){
       {titulo:'Otros conceptos',filas:(p.conceptos||[]).map(x=>[`${x.nombre}${x.ajustado?' (ajustado)':''}`,fmtMoneyMX(x.retenidoConfirmado)])},
       {titulo:'Resultado',negritas:true,filas:[['Total retenido',fmtMoneyMX(p.totalRetenido)]]},
       {titulo:'Pago y accesorios',filas:[
-        ['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],
-        ['Recargos',fmtMoneyMX(p.recargos)],
-        ...(getPagosPapel('retenciones_isr',p.id).length?[['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)]]:[['Ajustes',fmtMoneyMX(p.ajustes)]]),
-        ['Total pagado',fmtMoneyMX(p.totalPagado)],['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
+        ...(getPagosPapel('retenciones_isr',p.id).length
+          ?[['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)],['Total pagado',fmtMoneyMX(p.totalPagado)]]
+          // "Pagado" es SOLO la suma de pagos reales de fiscal_pagos: sin pagos registrados no se muestra ninguna cifra de pagado
+          :[['Principal pagado','—'],['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Total pagado','—']]),
+        ['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
       ]}
     ,...seccionCumplimientoRetencionesPdf(p,'retenciones_isr')],
     observaciones:p.observaciones,
@@ -5133,10 +5580,11 @@ function construirConfigPapelRetencionesIVA(clientId,ejercicio,periodo){
       {titulo:'Conceptos',filas:(p.conceptos||[]).map(x=>[`${x.nombre}${x.ajustado?' (ajustado)':''}`,fmtMoneyMX(x.retenidoConfirmado)])},
       {titulo:'Resultado',negritas:true,filas:[['Total retenido',fmtMoneyMX(p.totalRetenido)]]},
       {titulo:'Pago y accesorios',filas:[
-        ['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],
-        ['Recargos',fmtMoneyMX(p.recargos)],
-        ...(getPagosPapel('retenciones_iva',p.id).length?[['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)]]:[['Ajustes',fmtMoneyMX(p.ajustes)]]),
-        ['Total pagado',fmtMoneyMX(p.totalPagado)],['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
+        ...(getPagosPapel('retenciones_iva',p.id).length
+          ?[['Principal pagado',fmtMoneyMX(p.principalPagado)],['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Ajuste por redondeo',fmtMoneyMX(p.ajusteRedondeo||0)],['Total pagado',fmtMoneyMX(p.totalPagado)]]
+          // "Pagado" es SOLO la suma de pagos reales de fiscal_pagos: sin pagos registrados no se muestra ninguna cifra de pagado
+          :[['Principal pagado','—'],['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Total pagado','—']]),
+        ['Diferencia pendiente',fmtMoneyMX(p.diferenciaPendiente)]
       ]}
     ,...seccionCumplimientoRetencionesPdf(p,'retenciones_iva')],
     observaciones:p.observaciones,
@@ -5167,7 +5615,7 @@ function construirConfigPapelISN(clientId,ejercicio,periodo){
       ]},
       {titulo:'Resultado',negritas:true,filas:[['Impuesto determinado',fmtMoneyMX(p.impuestoDeterminado)]]},
       {titulo:'Pago y accesorios',filas:[
-        ['Fecha de vencimiento',(()=>{let f=p.fechaVencimiento||proponerVencimientoFiscal('isn',clientId,ejercicio,periodo);return f?fmtDate(f):'—'})()],
+        ['Fecha de vencimiento',vencimientoPdfPapel('isn',p,clientId,ejercicio,periodo)],
         ['Fecha de pago',p.fechaPago?fmtDate(p.fechaPago):'—'],
         ['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Total a pagar',fmtMoneyMX(p.totalAPagar)]
       ]}
@@ -5220,7 +5668,7 @@ function construirConfigPapelHospedaje(clientId,ejercicio,periodo){
       {titulo:'Determinación',filas:[['Tasa vigente usada',fmtPct(p.tasa)]]},
       {titulo:'Resultado',negritas:true,filas:[['Impuesto determinado',fmtMoneyMX(p.impuestoDeterminado)]]},
       {titulo:'Pago y accesorios',filas:[
-      ['Fecha de vencimiento',(()=>{let f=p.fechaVencimiento||proponerVencimientoFiscal('hospedaje',clientId,ejercicio,periodo);return f?fmtDate(f):'—'})()],
+      ['Fecha de vencimiento',vencimientoPdfPapel('hospedaje',p,clientId,ejercicio,periodo)],
       ['Fecha de pago',p.fechaPago?fmtDate(p.fechaPago):'—'],
       ['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Total a pagar',fmtMoneyMX(p.totalAPagar)]]}
     ,...seccionCumplimientoPdf(p,'hospedaje')],
@@ -5246,7 +5694,7 @@ function construirConfigPapelHospedajeAnfitrion(clientId,ejercicio,periodo){
       {titulo:'Determinación',filas:[['Tasa vigente usada',fmtPct(p.tasa)],['Impuesto causado',fmtMoneyMX(p.impuestoCausado)],['Retenido y enterado por plataforma',fmtMoneyMX(p.impuestoRetenidoPlataforma)]]},
       {titulo:'Resultado',negritas:true,filas:[['Impuesto a cargo',fmtMoneyMX(p.impuestoACargo)]]},
       {titulo:'Pago y accesorios',filas:[
-      ['Fecha de vencimiento',(()=>{let f=p.fechaVencimiento||proponerVencimientoFiscal('hospedaje_anfitrion',clientId,ejercicio,periodo);return f?fmtDate(f):'—'})()],
+      ['Fecha de vencimiento',vencimientoPdfPapel('hospedaje_anfitrion',p,clientId,ejercicio,periodo)],
       ['Fecha de pago',p.fechaPago?fmtDate(p.fechaPago):'—'],
       ['Actualización',fmtMoneyMX(p.actualizacion)],['Recargos',fmtMoneyMX(p.recargos)],['Total a pagar',fmtMoneyMX(p.totalAPagar)]]}
     ,...seccionCumplimientoPdf(p,'hospedaje_anfitrion')],
@@ -5829,7 +6277,14 @@ const CONTROL_TIPOS=[
   {tipo:'isr_ptu',label:'PTU',ambito:'ISR',tieneSaldo:true},
   {tipo:'iva_saldo_favor',label:'Saldo a favor de IVA',ambito:'IVA',tieneSaldo:true}
 ];
-function fmtMoneyMX(n){return '$'+(Number(n)||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})}
+// Formateador monetario ÚNICO de toda la app (UI, cédulas, PDFs, Expediente y Resumen). El signo va antes
+// del símbolo: -$0.32, nunca $-0.32. Un valor que redondea a cero se muestra como $0.00 (no "-$0.00").
+// Solo cambia la presentación: el valor numérico no se altera.
+function fmtMoneyMX(n){
+  let v=Number(n)||0;
+  let s=Math.abs(v).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (v<0&&s!=='0.00'?'-':'')+'$'+s;
+}
 
 // ===================================================================
 // CAPTURA MONETARIA — componente único y reutilizable para TODO Fiscal
@@ -6112,32 +6567,32 @@ function mostrarCedulaFullPage(titulo,contenidoHtml,botonesHtml){
 
 // ===================== RESUMEN FISCAL (solo lectura — nunca calcula, solo lee) =====================
 const RESUMEN_FISCAL_FILAS=[
-  {tipo:'isr_pm',label:'ISR Personas Morales',ambito:'federal',getter:getPapelISRPMVigente,
-    determinado:p=>p.isrDeterminadoAcumulado,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'isr_pm',tipoPapel:'isr_pm',label:'ISR Personas Morales',ambito:'federal',getter:getPapelISRPMVigente,
+    determinado:p=>p.isrDeterminadoAcumulado,pagado:p=>totalPagadoPapel('isr_pm',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>abrirPapelISRPMRediseñado(cid,ej,per)},
-  {tipo:'iva',label:'IVA',ambito:'federal',getter:getPapelIVAVigente,
-    determinado:p=>p.ivaACargoDelPeriodo,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'iva',tipoPapel:'iva',label:'IVA',ambito:'federal',getter:getPapelIVAVigente,
+    determinado:p=>p.ivaACargoDelPeriodo,pagado:p=>totalPagadoPapel('iva',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelIVA(cid,ej,per)},
-  {tipo:'ret_isr',label:'Retenciones ISR',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_isr',getPapelRetencionesISRVigente(cid,ej,per)),
-    determinado:p=>p.totalRetenido,pagado:p=>p.totalPagado,pendiente:p=>p.diferenciaPendiente,
+  {tipo:'ret_isr',tipoPapel:'retenciones_isr',label:'Retenciones ISR',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_isr',getPapelRetencionesISRVigente(cid,ej,per)),
+    determinado:p=>p.totalRetenido,pagado:p=>totalPagadoPapel('retenciones_isr',p.id),pendiente:p=>p.diferenciaPendiente,
     abrir:(cid,ej,per)=>openPapelRetencionesISR(cid,ej,per)},
-  {tipo:'ret_iva',label:'Retenciones IVA',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_iva',getPapelRetencionesIVAVigente(cid,ej,per)),
-    determinado:p=>p.totalRetenido,pagado:p=>p.totalPagado,pendiente:p=>p.diferenciaPendiente,
+  {tipo:'ret_iva',tipoPapel:'retenciones_iva',label:'Retenciones IVA',ambito:'federal',getter:(cid,ej,per)=>efectivoRetenciones('retenciones_iva',getPapelRetencionesIVAVigente(cid,ej,per)),
+    determinado:p=>p.totalRetenido,pagado:p=>totalPagadoPapel('retenciones_iva',p.id),pendiente:p=>p.diferenciaPendiente,
     abrir:(cid,ej,per)=>openPapelRetencionesIVA(cid,ej,per)},
-  {tipo:'isn',label:'ISN',ambito:'estatal',getter:getPapelISNVigente,
-    determinado:p=>p.impuestoDeterminado,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'isn',tipoPapel:'isn',label:'ISN',ambito:'estatal',getter:getPapelISNVigente,
+    determinado:p=>p.impuestoDeterminado,pagado:p=>totalPagadoPapel('isn',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelISN(cid,ej,per)},
-  {tipo:'extraccion',label:'Extracción de Materiales',ambito:'estatal',getter:getPapelExtraccionVigente,
-    determinado:p=>p.totalImpuesto,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'extraccion',tipoPapel:'extraccion',label:'Extracción de Materiales',ambito:'estatal',getter:getPapelExtraccionVigente,
+    determinado:p=>p.totalImpuesto,pagado:p=>totalPagadoPapel('extraccion',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelExtraccion(cid,ej,per)},
-  {tipo:'hospedaje',label:'Impuesto al Hospedaje',ambito:'estatal',getter:getPapelHospedajeVigente,
-    determinado:p=>p.impuestoDeterminado,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'hospedaje',tipoPapel:'hospedaje',label:'Impuesto al Hospedaje',ambito:'estatal',getter:getPapelHospedajeVigente,
+    determinado:p=>p.impuestoDeterminado,pagado:p=>totalPagadoPapel('hospedaje',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelHospedaje(cid,ej,per)},
-  {tipo:'hospedaje_anfitrion',label:'Hospedaje Anfitrión',ambito:'estatal',getter:getPapelHospedajeAnfitrionVigente,
-    determinado:p=>p.impuestoACargo,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'hospedaje_anfitrion',tipoPapel:'hospedaje_anfitrion',label:'Hospedaje Anfitrión',ambito:'estatal',getter:getPapelHospedajeAnfitrionVigente,
+    determinado:p=>p.impuestoACargo,pagado:p=>totalPagadoPapel('hospedaje_anfitrion',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelHospedajeAnfitrion(cid,ej,per)},
-  {tipo:'bebidas',label:'Bebidas con Contenido Alcohólico',ambito:'estatal',getter:getPapelBebidasVigente,
-    determinado:p=>p.impuestoRetenidoDeterminado,pagado:p=>p.totalAPagar,pendiente:()=>null,
+  {tipo:'bebidas',tipoPapel:'bebidas',label:'Bebidas con Contenido Alcohólico',ambito:'estatal',getter:getPapelBebidasVigente,
+    determinado:p=>p.impuestoRetenidoDeterminado,pagado:p=>totalPagadoPapel('bebidas',p.id),pendiente:()=>null,
     abrir:(cid,ej,per)=>openPapelBebidas(cid,ej,per)}
 ];
 let __resumenFiscalState={clientId:null,ejercicio:null};
@@ -6171,6 +6626,8 @@ function renderResumenFiscal(){
         let papeles=[];for(let p=1;p<=12;p++)papeles.push(f.getter(clientId,ejercicio,p));
         let determinadoTotal=papeles.reduce((s,p)=>s+(p?Number(f.determinado(p)||0):0),0);
         let pagadoTotal=papeles.reduce((s,p)=>s+(p?Number(f.pagado(p)||0):0),0);
+        let hayPagado=papeles.some(p=>p&&f.pagado(p)!=null);
+        let dupes=papeles.map((p,i)=>p?{mes:MESES_NOMBRE[i],g:posiblesDuplicadosPagos(f.tipoPapel,p.id)}:null).filter(x=>x&&x.g.length);
         let pendienteVals=papeles.map(p=>p?f.pendiente(p):null).filter(v=>v!=null);
         let pendienteTotal=pendienteVals.length?pendienteVals.reduce((s,v)=>s+Number(v||0),0):null;
         return `<tr><td class="lbl"><b>${esc(f.label)}</b><div class="role" style="font-size:10px">${f.ambito==='estatal'?'Estatal':'Federal'}</div></td>
@@ -6181,7 +6638,7 @@ function renderResumenFiscal(){
             return `<td style="text-align:center;cursor:pointer" onclick="resumenFiscalAbrirCelda('${f.tipo}',${clientId},${ejercicio},${periodo})" title="Abrir ${esc(f.label)} — ${MESES_NOMBRE[i]}">${estadoPillHtml(p.estatus)}<div style="font-size:10px;margin-top:2px">${val!=null?fmtMoneyMX(val):'—'}</div></td>`;
           }).join('')}
           <td style="text-align:right;font-weight:700">${fmtMoneyMX(determinadoTotal)}</td>
-          <td style="text-align:right">${fmtMoneyMX(pagadoTotal)}</td>
+          <td style="text-align:right">${hayPagado?fmtMoneyMX(pagadoTotal):'—'}${dupes.length?` <span class="pill p-amber" style="font-size:9px" title="Posibles pagos duplicados en: ${esc(dupes.map(d=>d.mes).join(', '))}. Revísalos; no se ocultó ni se descontó ninguno.">⚠ posible duplicado</span>`:''}</td>
           <td style="text-align:right;color:${pendienteTotal>0?'var(--red)':'inherit'}">${pendienteTotal==null?'—':fmtMoneyMX(pendienteTotal)}</td>
         </tr>`;
       }).join('')}</tbody>
@@ -6203,12 +6660,13 @@ function imprimirResumenFiscal(clientId,ejercicio){
     let papeles=[];for(let p=1;p<=12;p++)papeles.push(f.getter(clientId,ejercicio,p));
     let determinadoTotal=papeles.reduce((s,p)=>s+(p?Number(f.determinado(p)||0):0),0);
     let pagadoTotal=papeles.reduce((s,p)=>s+(p?Number(f.pagado(p)||0):0),0);
+    let hayPagado=papeles.some(p=>p&&f.pagado(p)!=null);
     let pendienteVals=papeles.map(p=>p?f.pendiente(p):null).filter(v=>v!=null);
     let pendienteTotal=pendienteVals.length?pendienteVals.reduce((s,v)=>s+Number(v||0),0):null;
     return [
       `${f.label} (${f.ambito==='estatal'?'Estatal':'Federal'})`,
       ...papeles.map(p=>p?(estadoLabel(p.estatus)+' · '+fmtMoneyMX(f.determinado(p))):'Sin iniciar'),
-      fmtMoneyMX(determinadoTotal),fmtMoneyMX(pagadoTotal),pendienteTotal==null?'—':fmtMoneyMX(pendienteTotal)
+      fmtMoneyMX(determinadoTotal),hayPagado?fmtMoneyMX(pagadoTotal):'—',pendienteTotal==null?'—':fmtMoneyMX(pendienteTotal)
     ];
   });
   generarPdfCedulaFiscal({
