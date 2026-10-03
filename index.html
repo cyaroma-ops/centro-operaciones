@@ -1076,17 +1076,77 @@ function buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos,excluir
   });
   return out;
 }
-function mensajeReferenciasRepetidas(coincidencias){
-  const detalle=x=>`  • ${x.obligacion}${x.concepto?' · '+x.concepto:''} · ${fmtMoneyMX(x.pago.importe)}${x.pago.fechaPago?' · '+fmtDate(x.pago.fechaPago):''}`;
-  const bloques=[];
-  const porLinea=coincidencias.filter(x=>x.coincide.includes('linea')),porOp=coincidencias.filter(x=>x.coincide.includes('operacion'));
-  if(porLinea.length)bloques.push('Esta línea de captura ya está registrada en otro pago de este periodo:\n'+porLinea.map(detalle).join('\n'));
-  if(porOp.length)bloques.push('Esta operación bancaria ya está registrada en otro pago de este periodo:\n'+porOp.map(detalle).join('\n'));
-  return bloques.join('\n\n')+'\n\nVerifica si corresponde al mismo comprobante o si estás duplicando la referencia. Un mismo comprobante puede respaldar más de un concepto u obligación.\n\n¿Guardar el pago de todas formas?';
+// --- Aviso INTEGRADO de referencias repetidas y feedback PROPIO del guardado de pagos. Sin confirm(): no depende de
+// diálogos del navegador (que pueden estar suprimidos). Nada se guarda ni se borra del formulario hasta que el usuario decide. ---
+const __pagosPendientes={};   // avisoId -> acción "guardar de todas formas" (con los datos tal como se capturaron)
+const __feedbackPago={};      // prefix -> html que el bloque Cumplimiento/Pago pinta al redibujarse (una sola vez)
+function cajaFeedbackPagoHtml(tipo,titulo,detalle){
+  const e={guardando:['#9db6d3','#eef4fb','#073b76'],ok:['#9bc3a0','#f2faf3','#1d6b32'],error:['#e0a0a6','#fff0f1','#8f1d27']}[tipo];
+  return `<div class="feedback-pago feedback-${tipo}" role="status" style="margin:8px 0;padding:9px 12px;border-radius:9px;border:1px solid ${e[0]};background:${e[1]};color:${e[2]};font-size:12.5px;line-height:1.5"><b>${titulo}</b>${detalle?`<br><span style="font-size:11.5px">${detalle}</span>`:''}</div>`;
 }
-function confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos){
-  const c=buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datos);
-  return c.length?confirm(mensajeReferenciasRepetidas(c)):true;
+function descripcionPagoHtml(pg){
+  const p=[fmtMoneyMX(pg.importe),pg.fechaPago?fmtDate(pg.fechaPago):'sin fecha'];
+  if(pg.bancoPago)p.push(esc(pg.bancoPago));
+  if(pg.lineaCaptura)p.push('Línea '+esc(pg.lineaCaptura));
+  if(pg.folioPago)p.push('Operación '+esc(pg.folioPago));
+  return p.join(' · ');
+}
+function feedbackPagoBloqueHtml(prefix){
+  const f=__feedbackPago[prefix];delete __feedbackPago[prefix];
+  return `<div id="${prefix}PagoFeedback">${f||''}</div>`;
+}
+function pintarAvisoPago(avisoId,html){const el=document.getElementById(avisoId);if(el)el.innerHTML=html}
+// Nunca una salida silenciosa: mensaje visible DENTRO del formulario (sin borrar lo capturado) + aviso emergente
+function avisoPagoError(avisoId,motivo){
+  pintarAvisoPago(avisoId,cajaFeedbackPagoHtml('error','El pago no fue guardado',esc(motivo)));
+  mostrarToast('El pago no fue guardado',motivo,'error');
+  return null;
+}
+function avisoReferenciasRepetidasHtml(coincidencias,datos,avisoId){
+  const filas=[];
+  coincidencias.forEach(x=>{
+    const donde=`${esc(x.obligacion)}${x.concepto?' · '+esc(x.concepto):''} · ${fmtMoneyMX(x.pago.importe)} · ${x.pago.fechaPago?fmtDate(x.pago.fechaPago):'sin fecha'}`;
+    if(x.coincide.includes('linea'))filas.push(`<li><b>Línea de captura</b> ${esc(datos.lineaCaptura)} — ya registrada en: ${donde}</li>`);
+    if(x.coincide.includes('operacion'))filas.push(`<li><b>Operación bancaria</b> ${esc(datos.folioPago)} — ya registrada en: ${donde}</li>`);
+  });
+  return `<div class="aviso-ref-pago" role="alert" style="margin:8px 0;padding:10px 12px;border-radius:9px;border:1px solid #e0b250;background:#fff8e6;color:#5c4300;font-size:12px;line-height:1.5">
+    <b>⚠ Referencia repetida — el pago NO se ha guardado todavía</b>
+    <ul style="margin:6px 0 6px 18px;padding:0">${filas.join('')}</ul>
+    Verifica si corresponde al mismo comprobante o si estás duplicando la referencia. Un mismo comprobante puede respaldar más de un concepto u obligación. Tus datos siguen intactos en el formulario.
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="ejecutarPagoPendienteUI('${avisoId}')">Guardar de todas formas</button><button class="btn" onclick="revisarPagoUI('${avisoId}')">Revisar</button></div>
+  </div>`;
+}
+// leerRefs() devuelve [línea, operación] del formulario en este momento; reintentar(forzar) vuelve a guardar con lo capturado
+function mostrarAvisoReferencias(avisoId,coincidencias,datos,leerRefs,reintentar,focoId){
+  const norm=a=>a.map(normalizarReferenciaPago).join('|');
+  const refs0=norm([datos.lineaCaptura,datos.folioPago]);
+  __pagosPendientes[avisoId]={focoId,ejecutar:()=>reintentar(norm(leerRefs())===refs0)}; // si cambió la referencia, se vuelve a evaluar en vez de forzar
+  pintarAvisoPago(avisoId,avisoReferenciasRepetidasHtml(coincidencias,datos,avisoId));
+}
+function ejecutarPagoPendienteUI(avisoId){
+  const a=__pagosPendientes[avisoId];if(!a)return;
+  delete __pagosPendientes[avisoId];
+  a.ejecutar();
+}
+function revisarPagoUI(avisoId){
+  const a=__pagosPendientes[avisoId];delete __pagosPendientes[avisoId];
+  pintarAvisoPago(avisoId,'');
+  const f=a&&a.focoId&&document.getElementById(a.focoId);if(f)f.focus();
+}
+// Tras insertar: redibuja con "Guardando…" y confirma con feedback PROPIO solo cuando la base lo confirma (no usa el "Guardado ✓" global)
+function finalizarPagoGuardado(tipoPapel,clientId,ejercicio,periodo,prefix,pg,sinDeclaracion){
+  const espera=esperarGuardado();
+  const ctx=`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${sinDeclaracion?' · sin declaración vinculada':''}`;
+  __feedbackPago[prefix]=cajaFeedbackPagoHtml('guardando','Guardando pago…',descripcionPagoHtml(pg));
+  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+  espera.then(res=>{
+    const ok=res&&res.ok;
+    const html=ok?cajaFeedbackPagoHtml('ok','✓ Pago guardado',descripcionPagoHtml(pg)+' · '+esc(ctx))
+      :cajaFeedbackPagoHtml('error','El pago no fue guardado en la base','No se pudo confirmar la escritura (falló la conexión o la base). El pago sigue en pantalla y se reintentará con el siguiente guardado: NO lo captures de nuevo. No cierres la pestaña y verifica antes de salir.');
+    const el=document.getElementById(`${prefix}PagoFeedback`);
+    if(el)el.innerHTML=html;else __feedbackPago[prefix]=html;
+    if(ok)mostrarToast('✓ Pago guardado',ctx);else mostrarToast('El pago no fue guardado en la base','Reintenta; no lo captures de nuevo','error');
+  });
 }
 function agregarPago(tipoPapel,papelId,clientId,datos){
   let nuevo=stamp({
@@ -1168,23 +1228,37 @@ function guardarDeclaracionUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefi
   mostrarToast('✓ Declaración registrada',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
 }
-function guardarPagoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,declaracionId){
-  let bancoSel=document.getElementById(`${prefix}NuevoPagoBanco`);
-  let banco=bancoSel?bancoSel.value:'';
-  if(banco==='Otro'){let otro=document.getElementById(`${prefix}NuevoPagoBancoOtro`);banco=otro?otro.value.trim():''}
-  let importe=valorMonetario(document.getElementById(`${prefix}NuevoPagoImporte`));
-  const datosPago={
-    declaracionId:declaracionId||null,importe,
-    fechaPago:document.getElementById(`${prefix}NuevoPagoFecha`).value||null,
-    bancoPago:banco||null,
-    lineaCaptura:document.getElementById(`${prefix}NuevoPagoLinea`).value.trim()||null,
-    vigenciaLineaCaptura:document.getElementById(`${prefix}NuevoPagoVigencia`)?document.getElementById(`${prefix}NuevoPagoVigencia`).value||null:null,
-    folioPago:document.getElementById(`${prefix}NuevoPagoFolio`).value.trim()||null
-  };
-  if(!confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago))return null;
-  agregarPago(tipoPapel,papelId,clientId,datosPago);
-  mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
-  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+function guardarPagoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,declaracionId,forzar){
+  const avisoId=`${prefix}PagoAviso`;
+  delete __pagosPendientes[avisoId];pintarAvisoPago(avisoId,'');
+  let datosPago;
+  try{
+    let bancoSel=document.getElementById(`${prefix}NuevoPagoBanco`);
+    let banco=bancoSel?bancoSel.value:'';
+    if(banco==='Otro'){let otro=document.getElementById(`${prefix}NuevoPagoBancoOtro`);banco=otro?otro.value.trim():''}
+    let importe=valorMonetario(document.getElementById(`${prefix}NuevoPagoImporte`));
+    datosPago={
+      declaracionId:declaracionId||null,importe,
+      fechaPago:document.getElementById(`${prefix}NuevoPagoFecha`).value||null,
+      bancoPago:banco||null,
+      lineaCaptura:document.getElementById(`${prefix}NuevoPagoLinea`).value.trim()||null,
+      vigenciaLineaCaptura:document.getElementById(`${prefix}NuevoPagoVigencia`)?document.getElementById(`${prefix}NuevoPagoVigencia`).value||null:null,
+      folioPago:document.getElementById(`${prefix}NuevoPagoFolio`).value.trim()||null
+    };
+  }catch(e){console.error(e);return avisoPagoError(avisoId,'No se pudieron leer los datos del formulario ('+e.message+'). Vuelve a abrir el papel e inténtalo de nuevo.')}
+  if(!forzar){
+    const coinc=buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago);
+    if(coinc.length){
+      const leerRefs=()=>[(document.getElementById(`${prefix}NuevoPagoLinea`)||{}).value||'',(document.getElementById(`${prefix}NuevoPagoFolio`)||{}).value||''];
+      mostrarAvisoReferencias(avisoId,coinc,datosPago,leerRefs,f=>guardarPagoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,declaracionId,f),`${prefix}NuevoPagoLinea`);
+      return null;
+    }
+  }
+  let pg;
+  try{pg=agregarPago(tipoPapel,papelId,clientId,datosPago)}
+  catch(e){console.error(e);return avisoPagoError(avisoId,'Ocurrió un error al registrar el pago ('+e.message+'). Revisa los datos e inténtalo de nuevo.')}
+  finalizarPagoGuardado(tipoPapel,clientId,ejercicio,periodo,prefix,pg,false);
+  return pg;
 }
 function eliminarPagoUI(id,tipoPapel,clientId,ejercicio,periodo,prefix){
   if(!confirm('¿Eliminar este pago? Esta acción no se puede deshacer.'))return;
@@ -1318,6 +1392,7 @@ function formularioNuevoPagoHtml(prefix,mostrarLinea){
       ${mostrarLinea?`<div class="field"><label>Línea de captura / referencia</label><input id="${prefix}NuevoPagoLinea"></div><div class="field"><label>Vigencia de la línea</label><input id="${prefix}NuevoPagoVigencia" type="date"></div>`:`<input type="hidden" id="${prefix}NuevoPagoLinea" value="">`}
       <div class="field"><label>Folio / operación</label><input id="${prefix}NuevoPagoFolio"></div>
     </div>
+    <div id="${prefix}PagoAviso"></div>
   </div>`;
 }
 function resumenCumplimientoHtml(totalAPagar,tipoPapel,papelId){
@@ -1584,6 +1659,7 @@ function formNuevoPagoConceptoHtml(prefix,key,opcionesConcepto,args,declaracione
       ${declaracionesElegibles.length>=1?`<div class="field"><label>Declaración que respalda este pago <span class="role" style="font-size:10px;font-weight:400">(propuesta: confírmala o elige "sin declaración")</span></label><select id="${id('Decl')}"><option value="">— Sin declaración vinculada —</option>${declaracionesElegibles.map((d,i)=>`<option value="${d.id}" ${i===declaracionesElegibles.length-1?'selected':''}>${esc(etiquetaDeclaracion(d))}</option>`).join('')}</select></div>`:''}
     </div>
     ${sinDeclaracionAviso?'<div class="hint" style="margin-top:4px">Aún no hay una declaración registrada para esto: el pago se guardará sin declaración vinculada y podrás vincularlo después.</div>':''}
+    <div id="${id('Aviso')}"></div>
     <button class="btn primary" style="margin-top:6px" onclick="guardarPagoConceptoUI(${args},'${key}')">Guardar pago</button>
   </div>`;
 }
@@ -1638,31 +1714,43 @@ function vincularPagoDeclaracionUI(pagoId,tipoPapel,clientId,ejercicio,periodo,p
   mostrarToast(sel.value?'✓ Pago vinculado a la declaración':'Vínculo quitado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}`);
   refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
 }
-function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key){
+function guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key,forzar){
   const el=s=>document.getElementById(`${prefix}NP${key}${s}`);
+  const avisoId=`${prefix}NP${key}Aviso`;
+  delete __pagosPendientes[avisoId];pintarAvisoPago(avisoId,'');
   let conceptoId=key; // los pagos se registran exclusivamente desde cada concepto
-  let importe=valorMonetario(el('Importe'));
-  if(!(importe>0)){alert('Captura el importe del pago.');mostrarToast('No se registró el pago','Falta el importe','error');return null}
-  let bancoSel=el('Banco'),banco=bancoSel?bancoSel.value:'';
-  if(banco==='Otro'){let o=el('BancoOtro');banco=o?o.value.trim():''}
-  let p=papelPorId(tipoPapel,papelId);
-  // Declaración que respalda el pago: SOLO la que el usuario confirma en el formulario (el selector la propone,
-  // pero no se vincula nada en silencio). Debe CUBRIR el concepto del pago; "sin declaración" es válido.
-  let cubren=p?declaracionesQueCubren(tipoPapel,p,conceptoId):[];
-  let elegido=(el('Decl')&&el('Decl').value)?+el('Decl').value:null;
-  let declId=null;
-  if(elegido){
-    if(!cubren.some(d=>d.id===elegido)){alert('La declaración elegida no cubre este concepto.');mostrarToast('No se registró el pago','La declaración no cubre el concepto','error');return null}
-    declId=elegido;
+  let datosPago,declId=null;
+  try{
+    let importe=valorMonetario(el('Importe'));
+    if(!(importe>0)){alert('Captura el importe del pago.');return avisoPagoError(avisoId,'Falta el importe del pago.')}
+    let bancoSel=el('Banco'),banco=bancoSel?bancoSel.value:'';
+    if(banco==='Otro'){let o=el('BancoOtro');banco=o?o.value.trim():''}
+    let p=papelPorId(tipoPapel,papelId);
+    // Declaración que respalda el pago: SOLO la que el usuario confirma en el formulario (el selector la propone,
+    // pero no se vincula nada en silencio). Debe CUBRIR el concepto del pago; "sin declaración" es válido.
+    let cubren=p?declaracionesQueCubren(tipoPapel,p,conceptoId):[];
+    let elegido=(el('Decl')&&el('Decl').value)?+el('Decl').value:null;
+    if(elegido){
+      if(!cubren.some(d=>d.id===elegido)){alert('La declaración elegida no cubre este concepto.');return avisoPagoError(avisoId,'La declaración elegida no cubre este concepto.')}
+      declId=elegido;
+    }
+    datosPago={
+      declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
+      lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
+    };
+  }catch(e){console.error(e);return avisoPagoError(avisoId,'No se pudieron leer los datos del formulario ('+e.message+'). Vuelve a abrir el papel e inténtalo de nuevo.')}
+  if(!forzar){
+    const coinc=buscarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago);
+    if(coinc.length){
+      const leerRefs=()=>[(el('Linea')||{}).value||'',(el('Folio')||{}).value||''];
+      mostrarAvisoReferencias(avisoId,coinc,datosPago,leerRefs,f=>guardarPagoConceptoUI(tipoPapel,papelId,clientId,ejercicio,periodo,prefix,key,f),`${prefix}NP${key}Linea`);
+      return null;
+    }
   }
-  const datosPago={
-    declaracionId:declId,conceptoRetencionId:conceptoId,importe,fechaPago:el('Fecha').value||null,bancoPago:banco||null,
-    lineaCaptura:el('Linea').value.trim()||null,vigenciaLineaCaptura:el('Vigencia').value||null,folioPago:el('Folio').value.trim()||null
-  };
-  if(!confirmarReferenciasPagoRepetidas(clientId,ejercicio,periodo,datosPago))return null;
-  let pg=agregarPago(tipoPapel,papelId,clientId,datosPago);
-  mostrarToast('✓ Pago registrado',`${PAPEL_NOMBRE_AMIGABLE[tipoPapel]||tipoPapel} · ${MESES_NOMBRE[periodo-1]} ${ejercicio}${declId?'':' · sin declaración vinculada'}`);
-  refrescarBloqueCumplimiento(tipoPapel,clientId,ejercicio,periodo,prefix);
+  let pg;
+  try{pg=agregarPago(tipoPapel,papelId,clientId,datosPago)}
+  catch(e){console.error(e);return avisoPagoError(avisoId,'Ocurrió un error al registrar el pago ('+e.message+'). Revisa los datos e inténtalo de nuevo.')}
+  finalizarPagoGuardado(tipoPapel,clientId,ejercicio,periodo,prefix,pg,!declId);
   return pg;
 }
 function asignarConceptoPagoUI(pagoId,tipoPapel,clientId,ejercicio,periodo,prefix){
@@ -1767,6 +1855,7 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
     </div>`;
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
     <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
+    ${feedbackPagoBloqueHtml(prefix)}
     ${avisoPosiblesDuplicadosHtml(tipoPapel,p)}
     ${(der.advertencias||[]).map(a=>`<div class="card" style="margin:8px 0;padding:8px 12px;border:1px dashed var(--amber);background:#fffaf0;font-size:12px">⚠ ${esc(a)}</div>`).join('')}
     ${selector}
@@ -1993,6 +2082,7 @@ function formularioCumplimientoHtml(prefix,p,tipoPapel,clientId,ejercicio,period
   }
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
     <h3 style="margin:0 0 10px;font-size:13px">Cumplimiento / Pago</h3>
+    ${feedbackPagoBloqueHtml(prefix)}
     ${avisoPosiblesDuplicadosHtml(tipoPapel,p)}
     <div class="field" style="max-width:300px"><label>Tipo de cumplimiento</label>
       <select id="${prefix}CumpTipo" onchange="cambiarTipoCumplimientoUI(${args},this.value)">
