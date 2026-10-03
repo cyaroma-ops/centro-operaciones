@@ -493,11 +493,12 @@ const TABLE_MAP={
   fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
+  fiscalRetencionesConceptosCliente:{table:'fiscal_retenciones_conceptos_cliente',key:'id',cols:{id:'id',client:'client_id',ambito:'ambito',catalogoId:'catalogo_id',desde:'desde',desactivadoDesde:'desactivado_desde',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
   fiscalPagos:{table:'fiscal_pagos',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',declaracionId:'declaracion_id',importe:'importe',fechaPago:'fecha_pago',bancoPago:'banco_pago',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',folioPago:'folio_pago',conceptoRetencionId:'concepto_retencion_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}}
 };
 const DATE_FIELDS={clients:['fiel','csd'],obligations:['due'],payrollMovs:['fechaSolicitud'],incapacidades:['inicio','fin'],bankRequests:['date'],tasks:['due'],staff:['fechaIngreso'],vacationPeriods:['fechaInicio','fechaFin'],parametrosFiscales:['vigenciaDesde','vigenciaHasta'],fiscalPapelIsrPm:['fechaVencimiento','fechaPago'],fiscalPapelIva:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIsr:['fechaVencimiento','fechaPago'],fiscalPapelRetencionesIva:['fechaVencimiento','fechaPago'],fiscalPapelIsn:['fechaVencimiento','fechaPago'],fiscalPapelExtraccion:['fechaVencimiento','fechaPago'],fiscalPapelHospedaje:['fechaVencimiento','fechaPago'],fiscalPapelHospedajeAnfitrion:['fechaVencimiento','fechaPago'],fiscalPapelBebidas:['fechaVencimiento','fechaPago'],fiscalDeclaraciones:['fechaPresentacion'],fiscalPagos:['fechaPago','vigenciaLineaCaptura']};
 function toRow(collectionKey,item){let map=TABLE_MAP[collectionKey].cols;let dateKeys=DATE_FIELDS[collectionKey]||[];let row={};Object.keys(map).forEach(jsKey=>{let v=item[jsKey];if(v===undefined||v===''&&dateKeys.includes(jsKey))v=null;row[map[jsKey]]=v===undefined?null:v});return row}
-const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedaje:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedajeAnfitrion:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelBebidas:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalDeclaraciones:['id','client','papelId','declaracionAnteriorId','creadoPor','actualizadoPor'],fiscalPagos:['id','client','papelId','declaracionId','creadoPor','actualizadoPor']};
+const NUMERIC_ID_FIELDS={staff:['id'],clients:['id','supervisor','accountant'],catalog:[],obligations:['id','client','owner'],payroll:['id','client','responsable'],payrollMovs:['id','client','responsable'],incapacidades:['id','client','responsable'],bankRequests:['id','client'],tasks:['id','client','owner'],auditLog:['id'],vacationPeriods:['id','staff','createdBy'],staffRoles:['id'],notes:['id','client','obligation','author'],regimenesFiscales:['id'],parametrosFiscales:['id','reemplazaA','creadoPor','revisadoPor','publicadoPor'],controlesFiscales:['id','client','reemplazaA','creadoPor'],controlesMovimientos:['id','control','usuario'],fiscalConceptosIngreso:['id','client','creadoPor'],fiscalPapelIsrPm:['id','client','coeficienteControlId','tasaIsrParamId','ptuControlId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIva:['id','client','tasaIvaParamId','controlGeneradoId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalCatalogoRetenciones:['id','creadoPor'],fiscalPapelRetencionesIsr:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelRetencionesIva:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelIsn:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelExtraccion:['id','client','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedaje:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelHospedajeAnfitrion:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalPapelBebidas:['id','client','tasaParamId','obligacionRelacionadaId','elaboradoPor','revisadoPor','reemplazaA','creadoPor'],fiscalDeclaraciones:['id','client','papelId','declaracionAnteriorId','creadoPor','actualizadoPor'],fiscalRetencionesConceptosCliente:['id','client','catalogoId','creadoPor','actualizadoPor'],fiscalPagos:['id','client','papelId','declaracionId','creadoPor','actualizadoPor']};
 const DECIMAL_FIELDS={controlesFiscales:['saldoOriginal'],controlesMovimientos:['importe','valorPropuesto','valorConfirmado'],fiscalPapelIsrPm:['totalIngresosMes','ingresosAcumulados','inventarioAcumulable','coeficienteValor','tasaIsr','utilidadFiscalAcumulada','ptuPropuesta','ptuConfirmada','perdidaPropuesta','perdidaConfirmada','baseIsr','isrDeterminadoAcumulado','pagosProvisionalesPropuestos','pagosProvisionalesConfirmados','isrRetenidoContribuyenteMes','isrRetenidoContribuyenteAcumulado','resultadoIsrCargo','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelIva:['baseGravada16','baseTasa0','baseExentos','baseNoObjeto','ivaTrasladado','acredBase16','acredBase0','acredExentosNoObjeto','ivaAcreditable','tasaIva','ivaRetenidoContribuyente','otrasCantidades','resultadoAntesAplicaciones','ivaACargoDelPeriodo','ivaAFavorGenerado','saldoFavorPropuesto','saldoFavorAplicado','ivaFinalAPagar','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelRetencionesIsr:['salariosBaseGravada','salariosBaseExenta','salariosRetenido','totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente','importePagado','ajusteRedondeo'],fiscalPapelRetencionesIva:['totalRetenido','principalPagado','actualizacion','recargos','ajustes','totalPagado','diferenciaPendiente','importePagado','ajusteRedondeo'],fiscalPapelIsn:['totalRemuneraciones','numeroTrabajadores','tasa','impuestoCausado','impuestoRetenidoTerceros','impuestoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelExtraccion:['totalImpuesto','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelHospedaje:['baseGravable','tasa','impuestoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelHospedajeAnfitrion:['baseGravable','tasa','impuestoCausado','impuestoRetenidoPlataforma','impuestoACargo','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPapelBebidas:['baseGravable','tasa','impuestoRetenidoDeterminado','actualizacion','recargos','totalAPagar','importePagado','ajusteRedondeo'],fiscalPagos:['importe']};
 function fromRow(collectionKey,row){let map=TABLE_MAP[collectionKey].cols;let numFields=NUMERIC_ID_FIELDS[collectionKey]||[];let decFields=DECIMAL_FIELDS[collectionKey]||[];let item={};Object.keys(map).forEach(jsKey=>{let v=row[map[jsKey]];if(numFields.includes(jsKey)&&v!==null&&v!==undefined)v=Number(v);if(decFields.includes(jsKey)&&v!==null&&v!==undefined)v=parseFloat(v);item[jsKey]=v});return item}
 function summarizeChanges(before,after){
@@ -661,11 +662,20 @@ const BANCOS_CATALOGO=['BBVA','Santander','Banorte','HSBC','Citibanamex','Scotia
 // Si un papel ya Revisado/Publicado se corrige, nace una versión con id nuevo (reemplazaA). Los
 // pagos/declaraciones registrados contra versiones anteriores siguen siendo evidencia de la misma
 // obligación: se consultan por todo el linaje, así nunca quedan huérfanos.
+// Además de la cadena reemplazaA, se incluyen TODAS las filas del mismo cliente+ejercicio+periodo:
+// antes de la corrección de guardado, cada "Guardar Borrador" insertó una fila nueva sin reemplazaA,
+// y los pagos quedaron colgados de una fila "hermana" más vieja. Son la misma determinación lógica
+// (una por obligación+cliente+ejercicio+periodo), así que sus pagos/declaraciones le pertenecen.
 function idsLinajePapel(tipoPapel,papelId){
   let arr=db[PAPEL_ARRAY_DB[tipoPapel]]||[];
-  let ids=[papelId],cur=arr.find(x=>x.id===papelId),guard=0;
-  while(cur&&cur.reemplazaA&&guard++<50){ids.push(cur.reemplazaA);cur=arr.find(x=>x.id===cur.reemplazaA)}
-  return ids;
+  let base=arr.find(x=>x.id===papelId);
+  let ids=new Set([papelId]);
+  if(base){
+    arr.forEach(x=>{if(x.client===base.client&&x.ejercicio===base.ejercicio&&x.periodo===base.periodo)ids.add(x.id)});
+    let cur=base,guard=0;
+    while(cur&&cur.reemplazaA&&guard++<50){ids.add(cur.reemplazaA);cur=arr.find(x=>x.id===cur.reemplazaA)}
+  }
+  return [...ids];
 }
 function getDeclaracionesPapel(tipoPapel,papelId){
   let ids=idsLinajePapel(tipoPapel,papelId);
@@ -853,44 +863,84 @@ function conceptosDeterminadosRetenciones(tipoPapel,salariosRetenido,conceptos){
   return out;
 }
 function claveConceptoDePago(pg){return pg.conceptoRetencionId==null?'':String(pg.conceptoRetencionId)}
+// Cada pago liquida cierta parte del PRINCIPAL del concepto. Si el pago cubre el total determinado
+// (principal pendiente + sus accesorios, dentro del criterio de redondeo ya validado) liquida todo el
+// principal pendiente; si es un abono parcial, se obtiene qué porción de principal cubre buscando la
+// mayor cantidad s tal que s + accesorios(s) <= importe. En ambos casos los accesorios salen del MISMO
+// motor común (calcularAccesorios) — aquí solo se decide SOBRE QUÉ principal se aplica.
+function asignarPagoAPrincipalConcepto(principalPendiente,importe,fechaVenc,fechaPago){
+  const acc=s=>{
+    if(!fechaVenc||!fechaPago||!(s>0))return {actualizacion:0,recargos:0};
+    let a=calcularAccesorios(s,fechaVenc,fechaPago);
+    return {actualizacion:a.actualizacion||0,recargos:a.recargos||0};
+  };
+  let rem=Math.max(0,principalPendiente);
+  let accRem=acc(rem);
+  let totalRem=Math.round((rem+accRem.actualizacion+accRem.recargos)*100)/100;
+  if(importe>=totalRem-0.005||calcularAjusteCumplimiento(totalRem,importe).esRedondeo)
+    return {principal:rem,actualizacion:accRem.actualizacion,recargos:accRem.recargos};
+  let lo=0,hi=Math.min(rem,importe);
+  for(let i=0;i<40;i++){
+    let mid=(lo+hi)/2,a=acc(mid);
+    if(mid+a.actualizacion+a.recargos<=importe+0.005)lo=mid;else hi=mid;
+  }
+  let s=Math.round(lo*100)/100,a=acc(s);
+  return {principal:s,actualizacion:a.actualizacion,recargos:a.recargos};
+}
+// Cumplimiento de Retenciones — CADA CONCEPTO es una determinación de cumplimiento independiente:
+//   Retenido → Actualización → Recargos → Total determinado → Pagado (1:N) → Ajuste → Pendiente
+// Los accesorios de un concepto dependen solo de SUS pagos (y de sus fechas): un concepto pagado
+// oportunamente jamás se ve afectado por otro pagado fuera de plazo. El total del papel es únicamente
+// la SUMA de los conceptos (no es una segunda fuente editable).
 function derivarCumplimientoRetenciones(tipoPapel,papelId,conceptosDet,totalRetenido,fechaVenc){
+  const r2=n=>Math.round(n*100)/100;
   let pagos=papelId!=null?getPagosPapel(tipoPapel,papelId):[];
   let idsValidos=new Set(conceptosDet.map(c=>c.id));
-  // Redondeo evaluado POR CONCEPTO, con el mismo criterio ya validado (calcularAjusteCumplimiento).
+  const porFecha=(a,b)=>(a.fechaPago||'9999-99-99').localeCompare(b.fechaPago||'9999-99-99')||a.id-b.id;
   let porConcepto=conceptosDet.map(c=>{
-    let pg=pagos.filter(p=>claveConceptoDePago(p)===c.id);
-    let pagado=pg.length?Math.round(pg.reduce((s,p)=>s+(Number(p.importe)||0),0)*100)/100:null;
-    let r=calcularAjusteCumplimiento(c.retenido,pagado);
-    return {id:c.id,nombre:c.nombre,retenido:c.retenido,pagado,ajuste:r.esRedondeo?r.ajusteRedondeo:null,esRedondeo:r.esRedondeo,pendiente:r.pendiente,pagos:pg};
+    let pg=pagos.filter(p=>claveConceptoDePago(p)===c.id).sort(porFecha);
+    let pendientePrincipal=c.retenido,act=0,rec=0,principalCubierto=0;
+    pg.forEach(p=>{
+      let a=asignarPagoAPrincipalConcepto(pendientePrincipal,Number(p.importe)||0,fechaVenc,p.fechaPago);
+      pendientePrincipal=r2(pendientePrincipal-a.principal);principalCubierto=r2(principalCubierto+a.principal);
+      act+=a.actualizacion;rec+=a.recargos;
+    });
+    act=r2(act);rec=r2(rec);
+    let totalDeterminado=r2(c.retenido+act+rec);
+    let pagado=pg.length?r2(pg.reduce((s,p)=>s+(Number(p.importe)||0),0)):null;
+    let r=calcularAjusteCumplimiento(totalDeterminado,pagado);
+    return {id:c.id,nombre:c.nombre,retenido:c.retenido,vencimiento:fechaVenc||null,actualizacion:act,recargos:rec,totalDeterminado,
+      pagado,ajuste:r.esRedondeo?r.ajusteRedondeo:null,esRedondeo:r.esRedondeo,pendiente:r.pendiente,principalCubierto,pagos:pg};
   });
   let sinAsignar=pagos.filter(p=>!idsValidos.has(claveConceptoDePago(p)));
-  let totalPagado=pagos.length?Math.round(pagos.reduce((s,p)=>s+(Number(p.importe)||0),0)*100)/100:null;
+  let totalPagado=pagos.length?r2(pagos.reduce((s,p)=>s+(Number(p.importe)||0),0)):null;
+  let actTotal=r2(porConcepto.reduce((s,c)=>s+c.actualizacion,0));
+  let recTotal=r2(porConcepto.reduce((s,c)=>s+c.recargos,0));
+  let totalDeterminado=r2(porConcepto.reduce((s,c)=>s+c.totalDeterminado,0));
   let ajusteTotal=0,pendienteTotal;
-  if(!pagos.length){pendienteTotal=Math.round((totalRetenido||0)*100)/100}
+  if(!pagos.length){pendienteTotal=totalDeterminado}
   else if(sinAsignar.length){
-    // Mientras haya pagos sin concepto no se puede atribuir redondeo por concepto: se evalúa contra el total.
-    let r=calcularAjusteCumplimiento(totalRetenido,totalPagado);
+    // Con pagos sin concepto no se puede atribuir redondeo por concepto: se evalúa contra el total.
+    let r=calcularAjusteCumplimiento(totalDeterminado,totalPagado);
     ajusteTotal=r.esRedondeo?r.ajusteRedondeo:0;pendienteTotal=r.pendiente;
   }else{
-    ajusteTotal=Math.round(porConcepto.reduce((s,c)=>s+(c.ajuste||0),0)*100)/100;
-    pendienteTotal=Math.round(porConcepto.reduce((s,c)=>s+c.pendiente,0)*100)/100;
+    ajusteTotal=r2(porConcepto.reduce((s,c)=>s+(c.ajuste||0),0));
+    pendienteTotal=r2(porConcepto.reduce((s,c)=>s+c.pendiente,0));
   }
   if(ajusteTotal===0)ajusteTotal=0; // evita -0
-  // Accesorios: mismo motor común (calcularAccesorios), aplicado con la fecha propia de CADA pago.
-  let act=0,rec=0,fechaPago=null;
-  pagos.forEach(p=>{
-    if(p.fechaPago&&(!fechaPago||p.fechaPago>fechaPago))fechaPago=p.fechaPago;
-    if(fechaVenc&&p.fechaPago&&p.importe){let a=calcularAccesorios(Number(p.importe),fechaVenc,p.fechaPago);act+=a.actualizacion||0;rec+=a.recargos||0}
-  });
-  act=Math.round(act*100)/100;rec=Math.round(rec*100)/100;
-  let principal=totalPagado||0;
+  let fechaPago=null;pagos.forEach(p=>{if(p.fechaPago&&(!fechaPago||p.fechaPago>fechaPago))fechaPago=p.fechaPago});
+  // Principal pagado EN EFECTIVO = lo pagado menos los accesorios que contiene (mantiene la identidad
+  // histórica: pendiente = retenido − principal − ajustes).
+  let principalPagado=Math.max(0,r2((totalPagado||0)-actTotal-recTotal));
+  // Espejo legado del papel (solo lectura): nadie lo captura a mano cuando existen pagos.
   let legado={
-    principalPagado:principal,fechaPago,actualizacion:act,recargos:rec,
-    ajustes:ajusteTotal===0?0:Math.round(-ajusteTotal*100)/100,
-    totalPagado:Math.round((principal+act+rec)*100)/100,
+    principalPagado,fechaPago,actualizacion:actTotal,recargos:recTotal,
+    ajustes:ajusteTotal===0?0:r2(-ajusteTotal),
+    totalPagado:totalPagado||0,
     diferenciaPendiente:pendienteTotal,ajusteRedondeo:ajusteTotal
   };
-  return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,totalRetenido,totalPagado,ajusteTotal,pendienteTotal,legado};
+  return {tienePagos:pagos.length>0,pagos,porConcepto,sinAsignar,totalRetenido:r2(totalRetenido||0),
+    actualizacionTotal:actTotal,recargosTotal:recTotal,totalDeterminado,totalPagado,ajusteTotal,pendienteTotal,legado};
 }
 // Papel con los campos de pago "efectivos": derivados de fiscal_pagos si existen; si no, lo almacenado
 // (así los papeles anteriores a la captura por pagos no pierden su registro histórico).
@@ -1023,11 +1073,18 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
   }
   const fm=n=>n==null?'—':fmtMoneyMX(n);
   const celda=(t,v)=>`<div><div class="role" style="font-size:10px;text-transform:uppercase">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
+  const grid='display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;font-size:12.5px';
   const conceptosHtml=der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).map(c=>`
     <div class="card" style="padding:10px 12px;margin:8px 0;background:var(--bg)">
-      <div style="display:grid;grid-template-columns:1.8fr repeat(4,1fr);gap:8px;font-size:12.5px;align-items:center">
-        <b>${esc(c.nombre)}</b>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <b style="font-size:13px">${esc(c.nombre)}</b>
+        <span class="role" style="font-size:11px">Vencimiento ${c.vencimiento?fmtDate(c.vencimiento):'—'}</span>
+      </div>
+      <div style="${grid}">
         ${celda('Retenido',fm(c.retenido))}
+        ${celda('Actualización',fm(c.actualizacion))}
+        ${celda('Recargos',fm(c.recargos))}
+        ${celda('Total determinado','<b>'+fm(c.totalDeterminado)+'</b>')}
         ${celda('Pagado',fm(c.pagado))}
         ${celda('Ajuste',c.pagado==null?'—':(c.esRedondeo?fm(c.ajuste):fm(0)))}
         ${celda('Pendiente','<b>'+fm(c.pendiente)+'</b>')}
@@ -1049,14 +1106,20 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
     </div>`:'';
   const generalHtml=`<div style="margin-top:8px"><button class="btn" style="padding:3px 10px;font-size:11.5px" onclick="alternarFormPagoConcepto('${prefix}','G')">+ Agregar pago (vista general)</button>
       ${formNuevoPagoConceptoHtml(prefix,'G',det,args,declaraciones)}</div>`;
-  const totalHtml=`<div class="card" style="background:var(--nav);color:#fff;margin-top:10px;padding:10px 14px">
-      <div style="display:grid;grid-template-columns:1.8fr repeat(4,1fr);gap:8px;font-size:12.5px;align-items:center">
-        <b>Total del papel</b>
-        <div>Retenido<br>${fmtMoneyMX(der.totalRetenido)}</div>
-        <div>Pagado<br>${fm(der.totalPagado)}</div>
-        <div>Ajuste<br>${der.tienePagos?fm(der.ajusteTotal):'—'}</div>
-        <div>Pendiente<br><b>${fmtMoneyMX(der.pendienteTotal)}</b></div>
+  const etiquetaTotal=tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA';
+  const celdaT=(t,v)=>`<div><div style="font-size:10px;text-transform:uppercase;opacity:.8">${t}</div><div style="font-variant-numeric:tabular-nums">${v}</div></div>`;
+  const totalHtml=`<div class="card" style="background:var(--nav);color:#fff;margin-top:10px;padding:12px 14px">
+      <b style="font-size:12.5px;letter-spacing:.02em">${etiquetaTotal}</b>
+      <div style="${grid};margin-top:8px">
+        ${celdaT('Principal retenido',fmtMoneyMX(der.totalRetenido))}
+        ${celdaT('Actualización',fmtMoneyMX(der.actualizacionTotal))}
+        ${celdaT('Recargos',fmtMoneyMX(der.recargosTotal))}
+        ${celdaT('Total determinado','<b>'+fmtMoneyMX(der.totalDeterminado)+'</b>')}
+        ${celdaT('Pagado',fm(der.totalPagado))}
+        ${celdaT('Ajuste',der.tienePagos?fm(der.ajusteTotal):'—')}
+        ${celdaT('Pendiente','<b>'+fmtMoneyMX(der.pendienteTotal)+'</b>')}
       </div>
+      <div style="margin-top:6px;font-size:10.5px;opacity:.8">Suma de los conceptos — no es un dato editable.</div>
       ${der.sinAsignar.length?`<div style="margin-top:6px;font-size:11px;color:#ffd98a">Hay pagos sin asignar: el redondeo por concepto se aplicará en cuanto los asignes.</div>`:''}
     </div>`;
   return `<div class="card" id="${prefix}CumpBloque" style="margin-top:14px;padding:14px 16px">
@@ -1070,6 +1133,120 @@ function formularioCumplimientoRetencionesHtml(prefix,p,tipoPapel,clientId,ejerc
     ${totalHtml}
   </div>`;
 }
+// ===================== Conceptos de retención PERMANENTES por cliente (Ret. ISR / Ret. IVA) =====================
+// Un concepto (p. ej. "Servicios profesionales / honorarios") ya no es una línea temporal de un papel
+// mensual: es configuración fiscal del cliente, con identidad estable (catalogoId), igual conceptualmente
+// que Salarios. "Desactivar" NO borra nada (ni conceptos, ni determinaciones, ni pagos, ni accesorios):
+// solo deja de ofrecerse en periodos posteriores; sigue visible donde tuvo movimientos.
+function claveMesRetencion(ejercicio,periodo){return `${ejercicio}-${String(periodo).padStart(2,'0')}`}
+function configConceptosRetencion(clientId,ambito){return (db.fiscalRetencionesConceptosCliente||[]).filter(r=>r.client===clientId&&r.ambito===ambito)}
+function configConceptoRetencion(clientId,ambito,catalogoId){return configConceptosRetencion(clientId,ambito).find(r=>r.catalogoId===catalogoId)}
+function conceptoRetencionAplicaEn(cfg,ejercicio,periodo){
+  let k=claveMesRetencion(ejercicio,periodo);
+  return cfg.desde<=k&&(!cfg.desactivadoDesde||k<cfg.desactivadoDesde);
+}
+function tocarConfigConceptoRetencion(cfg){cfg.actualizadoPor=currentStaff?currentStaff.id:null;cfg.actualizadoEn=new Date().toISOString();stamp(cfg)}
+// Alta (o reactivación) del concepto en la configuración del cliente. Nunca lo duplica: una sola fila por cliente+ámbito+concepto.
+function asegurarConceptoRetencionCliente(clientId,ambito,catalogoId,ejercicio,periodo,opciones){
+  opciones=opciones||{};
+  let k=claveMesRetencion(ejercicio,periodo);
+  let cfg=configConceptoRetencion(clientId,ambito,catalogoId);
+  if(!cfg){
+    cfg=stamp({id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ambito,catalogoId,desde:k,desactivadoDesde:null,
+      creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoPor:null,actualizadoEn:null});
+    db.fiscalRetencionesConceptosCliente=db.fiscalRetencionesConceptosCliente||[];
+    db.fiscalRetencionesConceptosCliente.push(cfg);
+  }else if(opciones.reactivar){
+    if(cfg.desde>k)cfg.desde=k;
+    cfg.desactivadoDesde=null;
+    tocarConfigConceptoRetencion(cfg);
+  }
+  return cfg;
+}
+function desactivarConceptoRetencionCliente(clientId,ambito,catalogoId,ejercicio,periodo){
+  let k=claveMesRetencion(ejercicio,periodo);
+  let cfg=configConceptoRetencion(clientId,ambito,catalogoId)||asegurarConceptoRetencionCliente(clientId,ambito,catalogoId,ejercicio,periodo);
+  cfg.desactivadoDesde=k<cfg.desde?cfg.desde:k;
+  tocarConfigConceptoRetencion(cfg);
+  return cfg;
+}
+// Todo concepto que aparezca en un papel guardado queda configurado para el cliente (no se vuelve a crear cada mes).
+function asegurarConfigConceptosDesdePapel(clientId,ambito,conceptos,ejercicio,periodo){
+  (conceptos||[]).forEach(cn=>{if(!configConceptoRetencion(clientId,ambito,cn.catalogoId))asegurarConceptoRetencionCliente(clientId,ambito,cn.catalogoId,ejercicio,periodo)});
+}
+function conceptoRetencionTieneMovimiento(tipoPapel,papel,catalogoId,c){
+  if(c&&((Number(c.retenidoConfirmado)||0)!==0||(Number(c.base)||0)!==0))return true;
+  return !!(papel&&getPagosPapel(tipoPapel,papel.id).some(p=>claveConceptoDePago(p)===String(catalogoId)));
+}
+// Conceptos que debe mostrar el papel de ese periodo: los configurados que aplican + los del propio papel
+// guardado que tuvieron movimiento (así un concepto desactivado sigue visible en su historia).
+function conceptosVisiblesRetencion(tipoPapel,clientId,ambito,ejercicio,periodo,papel){
+  let out=[],vistos=new Set();
+  const delPapel=id=>papel?(papel.conceptos||[]).find(x=>x.catalogoId===id):null;
+  configConceptosRetencion(clientId,ambito).filter(cfg=>conceptoRetencionAplicaEn(cfg,ejercicio,periodo))
+    .sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id).forEach(cfg=>{
+      let g=delPapel(cfg.catalogoId);
+      out.push(g?{catalogoId:g.catalogoId,base:g.base,ivaOperacion:g.ivaOperacion,retenidoConfirmado:g.retenidoConfirmado}:{catalogoId:cfg.catalogoId,base:0,retenidoConfirmado:0});
+      vistos.add(cfg.catalogoId);
+    });
+  if(papel)(papel.conceptos||[]).forEach(g=>{
+    if(vistos.has(g.catalogoId)||!conceptoRetencionTieneMovimiento(tipoPapel,papel,g.catalogoId,g))return;
+    out.push({catalogoId:g.catalogoId,base:g.base,ivaOperacion:g.ivaOperacion,retenidoConfirmado:g.retenidoConfirmado});
+    vistos.add(g.catalogoId);
+  });
+  return out;
+}
+function estadoRetUI(prefix){return prefix==='retIsr'?__retIsrState:__retIvaState}
+function tipoPapelRetPorPrefijo(prefix){return prefix==='retIsr'?'retenciones_isr':'retenciones_iva'}
+function mostrarPanelAgregarConceptoRetUI(prefix,ambito){
+  let st=estadoRetUI(prefix);
+  let enFormulario=new Set(st.conceptosForm.filter(Boolean).map(x=>x.catalogoId));
+  let disponibles=getCatalogoRetenciones(ambito).filter(x=>!enFormulario.has(x.id));
+  if(!disponibles.length){alert('Todos los conceptos del catálogo ya están en este papel. Si necesitas uno nuevo, usa "+ Nuevo tipo de concepto al catálogo".');return}
+  let panel=document.getElementById(`${prefix}AddConceptoPanel`);if(!panel)return;
+  panel.innerHTML=`<select id="${prefix}AddConceptoSel" style="min-width:240px">${disponibles.map(x=>{
+      let cfg=configConceptoRetencion(st.clientId,ambito,x.id);
+      return `<option value="${x.id}">${esc(x.nombre)}${cfg&&!conceptoRetencionAplicaEn(cfg,st.ejercicio,st.periodo)?' — desactivado (se reactivará)':''}</option>`}).join('')}</select>
+    <button class="btn primary" onclick="confirmarAgregarConceptoRetUI('${prefix}','${ambito}')">Agregar al cliente</button>
+    <button class="btn" onclick="document.getElementById('${prefix}AddConceptoPanel').style.display='none'">Cancelar</button>`;
+  panel.style.display='flex';
+}
+function confirmarAgregarConceptoRetUI(prefix,ambito){
+  let st=estadoRetUI(prefix),sel=document.getElementById(`${prefix}AddConceptoSel`);
+  if(!sel||!sel.value)return;
+  let catalogoId=+sel.value;
+  if(st.conceptosForm.some(x=>x&&x.catalogoId===catalogoId))return;
+  asegurarConceptoRetencionCliente(st.clientId,ambito,catalogoId,st.ejercicio,st.periodo,{reactivar:true});
+  st.conceptosForm.push({catalogoId,base:0,retenidoConfirmado:0});
+  let idx=st.conceptosForm.length-1,catalogo=getCatalogoRetenciones(ambito,true);
+  document.getElementById(`${prefix}ConceptosList`).insertAdjacentHTML('beforeend',filaConceptoRetHtml(prefix,idx,st.conceptosForm[idx],catalogo,ambito));
+  inicializarInputsMonetarios(document.getElementById(`${prefix}ConceptosList`));
+  document.getElementById(`${prefix}AddConceptoPanel`).style.display='none';
+  marcarFiscalDirty(); // la fila nueva todavía no está en el papel guardado
+  save();
+  let item=catalogo.find(x=>x.id===catalogoId);
+  mostrarToast('✓ Concepto agregado a la configuración del cliente',`${item?item.nombre:'Concepto'} · quedará disponible en los periodos siguientes`);
+}
+function desactivarConceptoRetUI(prefix,ambito,idx,catalogoId){
+  let st=estadoRetUI(prefix),tipo=tipoPapelRetPorPrefijo(prefix);
+  let item=getCatalogoRetenciones(ambito,true).find(x=>x.id===catalogoId);
+  let nombre=item?item.nombre:'este concepto';
+  if(!confirm(`¿Desactivar "${nombre}" a partir de ${MESES_NOMBRE[st.periodo-1]} ${st.ejercicio}?\n\n• NO se elimina el concepto ni su historia.\n• NO se modifican determinaciones, pagos ni accesorios de ningún periodo.\n• Dejará de ofrecerse en los periodos posteriores; en los periodos donde tuvo movimientos seguirá visible.`))return;
+  desactivarConceptoRetencionCliente(st.clientId,ambito,catalogoId,st.ejercicio,st.periodo);
+  const q=(sel)=>document.querySelector(`.${prefix}-${sel}[data-idx="${idx}"]`);
+  let monto=['base','manual','confirmado','ivaop'].some(s=>q(s)&&valorMonetario(q(s))!==0);
+  let papel=PAPEL_GETTER_VIGENTE[tipo](st.clientId,st.ejercicio,st.periodo);
+  let conPagos=!!(papel&&getPagosPapel(tipo,papel.id).some(p=>claveConceptoDePago(p)===String(catalogoId)));
+  let row=document.querySelector(`[data-row="${prefix}-${idx}"]`);
+  if(!monto&&!conPagos){
+    st.conceptosForm[idx]=null;if(row)row.remove();
+  }else if(row){
+    let tag=row.querySelector('.ret-concepto-estado');
+    if(tag)tag.innerHTML='<span class="pill p-amber" style="font-size:10px">Desactivado desde este periodo — conserva sus movimientos</span>';
+  }
+  save();
+  mostrarToast('✓ Concepto desactivado',`${nombre} · desde ${MESES_NOMBRE[st.periodo-1]} ${st.ejercicio} · la historia no se modificó`);
+}
 // Sección de Cumplimiento del PDF para Retenciones: por concepto, con sus pagos. Mismos datos que la pantalla.
 function seccionCumplimientoRetencionesPdf(p,tipoPapel){
   if(p.tipoCumplimiento==='en_ceros')return seccionCumplimientoPdf(p,tipoPapel);
@@ -1077,27 +1254,28 @@ function seccionCumplimientoRetencionesPdf(p,tipoPapel){
   let det=conceptosDeterminadosRetenciones(tipoPapel,p.salariosRetenido,p.conceptos);
   let der=derivarCumplimientoRetenciones(tipoPapel,p.id,det,p.totalRetenido,p.fechaVencimiento);
   if(!declaraciones.length&&!der.tienePagos)return [];
-  let fm=n=>n==null?'—':fmtMoneyMX(n);
-  let filas=[];
-  declaraciones.forEach((d,i)=>{
-    let partes=[];
-    if(d.fechaPresentacion)partes.push(fmtDate(d.fechaPresentacion));
-    if(d.folioDeclaracion)partes.push('Folio '+d.folioDeclaracion);
-    filas.push([declaraciones.length>1?`Declaración ${i+1} (${d.tipo==='complementaria'?'Complementaria':'Normal'})`:'Declaración',partes.join(' · ')||'—']);
-  });
+  const fm=n=>n==null?'—':fmtMoneyMX(n);
   const detallePago=pg=>[pg.fechaPago?fmtDate(pg.fechaPago):null,pg.bancoPago,pg.lineaCaptura?'Línea '+pg.lineaCaptura:null,pg.folioPago?'Operación '+pg.folioPago:null].filter(Boolean).join(' · ');
-  der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).forEach(c=>{
-    filas.push([`${c.nombre} — retenido ${fm(c.retenido)}`,`Pagado ${fm(c.pagado)} · Ajuste ${c.pagado==null?'—':fm(c.esRedondeo?c.ajuste:0)} · Pendiente ${fm(c.pendiente)}`]);
-    c.pagos.forEach((pg,i)=>filas.push([`    Pago ${i+1}: ${detallePago(pg)}`,fm(pg.importe)]));
-  });
-  der.sinAsignar.forEach(pg=>filas.push([`Pago sin asignar a concepto: ${detallePago(pg)}`,fm(pg.importe)]));
-  filas.push(['Total retenido',fm(der.totalRetenido)]);
-  if(der.tienePagos){
-    filas.push(['Total efectivamente pagado',fm(der.totalPagado)]);
-    filas.push(['Ajuste por redondeo',fm(der.ajusteTotal)]);
+  let secciones=[];
+  if(declaraciones.length){
+    secciones.push({titulo:'Cumplimiento — Declaraciones',filas:declaraciones.map((d,i)=>{
+      let partes=[];if(d.fechaPresentacion)partes.push(fmtDate(d.fechaPresentacion));if(d.folioDeclaracion)partes.push('Folio '+d.folioDeclaracion);
+      return [declaraciones.length>1?`Declaración ${i+1} (${d.tipo==='complementaria'?'Complementaria':'Normal'})`:'Declaración',partes.join(' · ')||'—'];
+    })});
   }
-  filas.push(['Pendiente',fm(der.pendienteTotal)]);
-  return [{titulo:'Cumplimiento — Declaraciones y Pagos',filas,negritaUltima:true}];
+  der.porConcepto.filter(c=>c.retenido!==0||c.pagos.length).forEach(c=>{
+    secciones.push({titulo:`Cumplimiento — ${c.nombre}`,filas:[
+      ['Retenido',fm(c.retenido)],['Actualización',fm(c.actualizacion)],['Recargos',fm(c.recargos)],['Total determinado',fm(c.totalDeterminado)],
+      ['Pagado',fm(c.pagado)],['Ajuste por redondeo',c.pagado==null?'—':fm(c.esRedondeo?c.ajuste:0)],['Pendiente',fm(c.pendiente)],
+      ...c.pagos.map((pg,i)=>[`Pago ${i+1}: ${detallePago(pg)}`,fm(pg.importe)])
+    ],negritaUltima:false});
+  });
+  if(der.sinAsignar.length)secciones.push({titulo:'Cumplimiento — Pagos sin asignar a un concepto',filas:der.sinAsignar.map(pg=>[detallePago(pg),fm(pg.importe)])});
+  secciones.push({titulo:tipoPapel==='retenciones_isr'?'TOTAL RETENCIONES ISR':'TOTAL RETENCIONES IVA',negritas:true,filas:[
+    ['Principal retenido',fm(der.totalRetenido)],['Actualización',fm(der.actualizacionTotal)],['Recargos',fm(der.recargosTotal)],['Total determinado',fm(der.totalDeterminado)],
+    ['Pagado',fm(der.totalPagado)],['Ajuste por redondeo',der.tienePagos?fm(der.ajusteTotal):'—'],['Pendiente',fm(der.pendienteTotal)]
+  ]});
+  return secciones;
 }
 
 // --- Bloque completo de Cumplimiento/Pago — ÚNICA implementación para los 9 papeles. Selector de
@@ -1858,8 +2036,55 @@ function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
     ...(inputs.cumplimiento||{})
   });
   persistirVersionPapel('fiscalPapelRetencionesIsr',anteriorVigente,esNuevaVersion,nuevo);
+  asegurarConfigConceptosDesdePapel(clientId,'isr',calc.conceptos,ejercicio,periodo);
   save();
   return nuevo;
+}
+// Detalle de la Cédula Anual de Retenciones: CADA concepto con sus propios renglones
+// (Retenido, Actualización, Recargos, Total determinado, Pagado, Ajuste, Pendiente) y un TOTAL que es
+// solo la SUMA de los conceptos. Sale de la misma derivarCumplimientoRetenciones que usan pantalla y PDF.
+function detalleCedulaRetenciones(tipoPapel,clientId,ejercicio,meses){
+  const r2=n=>Math.round(n*100)/100;
+  const ambito=tipoPapel==='retenciones_isr'?'isr':'iva';
+  const ders=meses.map(m=>m?derivarCumplimientoRetenciones(tipoPapel,m.id,conceptosDeterminadosRetenciones(tipoPapel,m.salariosRetenido,m.conceptos),m.totalRetenido,m.fechaVencimiento):null);
+  let orden=[],nombres={};
+  const agrega=(id,nombre)=>{if(!orden.includes(id))orden.push(id);if(nombre&&!nombres[id])nombres[id]=nombre};
+  if(tipoPapel==='retenciones_isr')agrega('salarios','Salarios y asimilados');
+  const catalogo=getCatalogoRetenciones(ambito,true);
+  configConceptosRetencion(clientId,ambito).filter(cfg=>cfg.desde<=claveMesRetencion(ejercicio,12)&&(!cfg.desactivadoDesde||cfg.desactivadoDesde>claveMesRetencion(ejercicio,1)))
+    .sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||'')||a.id-b.id)
+    .forEach(cfg=>{let it=catalogo.find(x=>x.id===cfg.catalogoId);agrega(String(cfg.catalogoId),it?it.nombre:'Concepto')});
+  ders.forEach(d=>{if(d)d.porConcepto.forEach(pc=>{if(pc.retenido!==0||pc.pagos.length||orden.includes(pc.id))agrega(pc.id,pc.nombre)})});
+  const serie=(f)=>{let valores=ders.map((d,i)=>d?f(d,i):null);return {tipo:'suma',valores,cierre:r2(valores.reduce((s,v)=>s+(v==null?0:Number(v)),0))}};
+  const filasConcepto=id=>{
+    const pc=d=>d.porConcepto.find(x=>x.id===id);
+    const g=(campo)=>serie(d=>{let x=pc(d);return x?x[campo]:null});
+    return {
+      retenido:g('retenido'),actualizacion:g('actualizacion'),recargos:g('recargos'),totalDeterminado:g('totalDeterminado'),pagado:g('pagado'),
+      ajuste:serie(d=>{let x=pc(d);return x&&x.pagado!=null?(x.esRedondeo?x.ajuste:0):null}),
+      pendiente:g('pendiente')
+    };
+  };
+  return {
+    conceptos:orden.map(id=>({id,nombre:nombres[id],filas:filasConcepto(id)})),
+    total:{
+      principalRetenido:serie(d=>d.totalRetenido),actualizacion:serie(d=>d.actualizacionTotal),recargos:serie(d=>d.recargosTotal),
+      totalDeterminado:serie(d=>d.totalDeterminado),pagado:serie(d=>d.totalPagado),
+      ajuste:serie(d=>d.tienePagos?d.ajusteTotal:null),pendiente:serie(d=>d.pendienteTotal)
+    }
+  };
+}
+function cedulaRetencionesFilasHtml(detalle,fila,tituloTotal){
+  const cab=t=>`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">${t}</td></tr>`;
+  const bloque=(titulo,f)=>cab(titulo)+fila('Retenido',f.retenido)+fila('Actualización',f.actualizacion)+fila('Recargos',f.recargos)+fila('Total determinado',f.totalDeterminado)+fila('Pagado',f.pagado)+fila('Ajuste por redondeo',f.ajuste)+fila('Pendiente',f.pendiente);
+  let t=detalle.total;
+  return detalle.conceptos.map(cn=>bloque(esc(cn.nombre),cn.filas)).join('')+bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente});
+}
+function cedulaRetencionesFilasPdf(detalle,tituloTotal){
+  const vacia=t=>[t.toUpperCase(),...Array(13).fill('')];
+  const bloque=(titulo,f)=>[vacia(titulo),filaCedulaPdf('Retenido',f.retenido),filaCedulaPdf('Actualización',f.actualizacion),filaCedulaPdf('Recargos',f.recargos),filaCedulaPdf('Total determinado',f.totalDeterminado),filaCedulaPdf('Pagado',f.pagado),filaCedulaPdf('Ajuste por redondeo',f.ajuste),filaCedulaPdf('Pendiente',f.pendiente)];
+  let t=detalle.total;
+  return [...detalle.conceptos.flatMap(cn=>bloque(cn.nombre,cn.filas)),...bloque(tituloTotal,{retenido:t.principalRetenido,actualizacion:t.actualizacion,recargos:t.recargos,totalDeterminado:t.totalDeterminado,pagado:t.pagado,ajuste:t.ajuste,pendiente:t.pendiente})];
 }
 function getCedulaAnualRetencionesISR(clientId,ejercicio){
   let meses=[];
@@ -1881,7 +2106,8 @@ function getCedulaAnualRetencionesISR(clientId,ejercicio){
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
     ajusteRedondeo:{tipo:'suma',valores:meses.map(m=>m&&getPagosPapel('retenciones_isr',m.id).length?Number(m.ajusteRedondeo||0):null),cierre:Math.round(meses.reduce((s,m)=>s+(m&&getPagosPapel('retenciones_isr',m.id).length?Number(m.ajusteRedondeo||0):0),0)*100)/100},
     totalPagado:{tipo:'suma',valores:meses.map(m=>m?totalPagadoPapel('retenciones_isr',m.id):null),cierre:Math.round(meses.reduce((s,m)=>s+(m?(totalPagadoPapel('retenciones_isr',m.id)||0):0),0)*100)/100},
-    diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
+    diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')},
+    detalle:detalleCedulaRetenciones('retenciones_isr',clientId,ejercicio,meses)
   };
 }
 
@@ -1922,6 +2148,7 @@ function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
     ...(inputs.cumplimiento||{})
   });
   persistirVersionPapel('fiscalPapelRetencionesIva',anteriorVigente,esNuevaVersion,nuevo);
+  asegurarConfigConceptosDesdePapel(clientId,'iva',calc.conceptos,ejercicio,periodo);
   save();
   return nuevo;
 }
@@ -1943,7 +2170,8 @@ function getCedulaAnualRetencionesIVA(clientId,ejercicio){
     recargos:{tipo:'suma',valores:meses.map(m=>m?Number(m.recargos||0):null),cierre:suma('recargos')},
     ajusteRedondeo:{tipo:'suma',valores:meses.map(m=>m&&getPagosPapel('retenciones_iva',m.id).length?Number(m.ajusteRedondeo||0):null),cierre:Math.round(meses.reduce((s,m)=>s+(m&&getPagosPapel('retenciones_iva',m.id).length?Number(m.ajusteRedondeo||0):0),0)*100)/100},
     totalPagado:{tipo:'suma',valores:meses.map(m=>m?totalPagadoPapel('retenciones_iva',m.id):null),cierre:Math.round(meses.reduce((s,m)=>s+(m?(totalPagadoPapel('retenciones_iva',m.id)||0):0),0)*100)/100},
-    diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')}
+    diferenciaPendiente:{tipo:'suma',valores:meses.map(m=>m?Number(m.diferenciaPendiente||0):null),cierre:suma('diferenciaPendiente')},
+    detalle:detalleCedulaRetenciones('retenciones_iva',clientId,ejercicio,meses)
   };
 }
 
@@ -2814,14 +3042,17 @@ function abrirPapelRetencionesISRDesdeSelector(clientId){
   let ejercicio=+$('#isrPmEjercicioSel').value,periodo=+$('#isrPmPeriodoSel').value;
   openPapelRetencionesISR(clientId,ejercicio,periodo);
 }
-function filaConceptoRetHtml(prefix,idx,c,catalogo){
+function filaConceptoRetHtml(prefix,idx,c,catalogo,ambito){
   let item=catalogo.find(x=>x.id===c.catalogoId)||catalogo[0];
-  let opciones=catalogo.map(ci=>`<option value="${ci.id}" ${ci.id===(c.catalogoId||item.id)?'selected':''}>${esc(ci.nombre)}</option>`).join('');
   let esManual=item&&item.tipoCalculo==='manual';
+  ambito=ambito||(prefix==='retIsr'?'isr':'iva');
   return `<div class="field full" style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px" data-row="${prefix}-${idx}">
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-      <select class="${prefix}-concepto" data-idx="${idx}" style="flex:1" onchange="marcarFiscalDirty();refrescarFilaConcepto('${prefix}',${idx})">${opciones}</select>
-      <button class="btn" onclick="quitarFilaConcepto('${prefix}',${idx})" aria-label="Quitar">✕</button>
+      <input type="hidden" class="${prefix}-concepto" data-idx="${idx}" value="${item?item.id:c.catalogoId}">
+      <div style="flex:1"><b style="font-size:13px">${esc(item?item.nombre:'Concepto')}</b> <span class="ret-concepto-estado"></span></div>
+      <details class="concepto-menu"><summary aria-label="Más opciones para ${esc(item?item.nombre:'concepto')}" title="Más opciones">⋯</summary><div class="concepto-menu-panel">
+        <button onclick="this.closest('details').removeAttribute('open');desactivarConceptoRetUI('${prefix}','${ambito}',${idx},${item?item.id:c.catalogoId})">Desactivar concepto</button>
+      </div></details>
     </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
       <div><label style="font-size:11px;color:var(--muted)">Base</label><input class="${prefix}-base money-input" data-idx="${idx}" type="number" step="0.01" value="${c.base||0}" oninput="marcarFiscalDirty()"></div>
@@ -2832,8 +3063,8 @@ function filaConceptoRetHtml(prefix,idx,c,catalogo){
 function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
   let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_isr',clientId,ejercicio,periodo)||'');
-  let catalogo=getCatalogoRetenciones('isr');
-  __retIsrState={clientId,ejercicio,periodo,calc:null,conceptosForm:existente?(existente.conceptos||[]).map(c=>({catalogoId:c.catalogoId,base:c.base,retenidoConfirmado:c.retenidoConfirmado})):[]};
+  let catalogo=getCatalogoRetenciones('isr',true);
+  __retIsrState={clientId,ejercicio,periodo,calc:null,conceptosForm:conceptosVisiblesRetencion('retenciones_isr',clientId,'isr',ejercicio,periodo,existente)};
   modal(`Retenciones ISR — ${MESES_NOMBRE[periodo-1]} ${ejercicio}`,`
     <div id="retIsrBody">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -2851,11 +3082,12 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
       </div>
 
       <h3 style="font-size:13px;margin:14px 0 6px">Otros conceptos (Servicios profesionales, Arrendamiento, PF RESICO, Otros...)</h3>
-      <div id="retIsrConceptosList">${__retIsrState.conceptosForm.map((c,i)=>filaConceptoRetHtml('retIsr',i,c,catalogo)).join('')}</div>
+      <div id="retIsrConceptosList">${__retIsrState.conceptosForm.map((c,i)=>filaConceptoRetHtml('retIsr',i,c,catalogo,'isr')).join('')}</div>
       <div style="display:flex;gap:8px;margin:6px 0 14px">
-        <button class="btn" onclick="agregarFilaConcepto('retIsr','isr')">+ Agregar concepto</button>
+        <button class="btn" onclick="mostrarPanelAgregarConceptoRetUI('retIsr','isr')">+ Agregar concepto</button>
         <button class="btn" onclick="agregarConceptoNuevoAlCatalogoUI('isr')">+ Nuevo tipo de concepto al catálogo</button>
       </div>
+      <div id="retIsrAddConceptoPanel" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px"></div>
 
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesISRUI()">Calcular</button></div>
       <div id="retIsrResultado"></div>
@@ -2867,23 +3099,6 @@ function openPapelRetencionesISR(clientId,ejercicio,periodo){__fiscalModalOpen=t
     `<button class="btn" onclick="confirmarSalidaFiscal(closeModal)">Cancelar</button><button class="btn" onclick="imprimirPapelRetencionesISR(${clientId},${ejercicio},${periodo})">🖨 Imprimir / Exportar PDF</button>${existente&&isAdmin?`<button class="btn" onclick="avanzarEstatusPapelGenerico('retenciones_isr',${existente.id},'revisado',${ejercicio},${periodo});openPapelRetencionesISR(${clientId},${ejercicio},${periodo})">Marcar como revisado</button>`:''}<button class="btn primary" onclick="guardarPapelRetencionesISRUI()">Guardar como Borrador</button>`);
   inicializarInputsMonetarios($('#modalBody'));
   if(existente)setTimeout(()=>calcularPapelRetencionesISRUI(),0);
-}
-function agregarFilaConcepto(prefix,ambito){
-  let catalogo=getCatalogoRetenciones(ambito);
-  if(!catalogo.length){alert('No hay conceptos en el catálogo todavía.');return}
-  let state=prefix==='retIsr'?__retIsrState:__retIvaState;
-  state.conceptosForm.push({catalogoId:catalogo[0].id,base:0,retenidoConfirmado:0});
-  let idx=state.conceptosForm.length-1;
-  $(`#${prefix}ConceptosList`).insertAdjacentHTML('beforeend',filaConceptoRetHtml(prefix,idx,state.conceptosForm[idx],catalogo));
-  inicializarInputsMonetarios($(`#${prefix}ConceptosList`));
-  marcarFiscalDirty();
-}
-function quitarFilaConcepto(prefix,idx){
-  let state=prefix==='retIsr'?__retIsrState:__retIvaState;
-  state.conceptosForm[idx]=null;
-  let row=$(`[data-row="${prefix}-${idx}"]`);
-  if(row)row.remove();
-  marcarFiscalDirty();
 }
 function refrescarFilaConcepto(prefix,idx){} // el recálculo real ocurre al dar "Calcular"
 function leerConceptosDelFormulario(prefix,ambito){
@@ -2951,6 +3166,7 @@ function renderResultadoRetenciones(calc,prefix){
       <div class="prow" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span style="font-weight:700">Total retenido</span><b>${fmtMoneyMX(calc.totalRetenido)}</b></div>
     </div>
     <div class="card" style="background:var(--nav);color:#fff;margin-top:10px">
+      <div class="prow" style="color:rgba(255,255,255,.85)"><span>Total determinado <span style="font-size:10px;opacity:.8">(retenido + accesorios de cada concepto)</span></span><b style="color:#fff">${d?fm(d.totalDeterminado):fm(calc.totalRetenido)}</b></div>
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Total pagado <span style="font-size:10px;opacity:.8">(suma de los pagos relacionados)</span></span><b style="color:#fff">${textoPagado}</b></div>
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Ajuste por redondeo</span><b style="color:#fff">${d?fm(d.ajusteTotal):'—'}</b></div>
       <div class="prow" style="color:rgba(255,255,255,.85)"><span>Actualización</span><b style="color:#fff">${fmtMoneyMX(calc.actualizacion)}</b></div>
@@ -2977,16 +3193,7 @@ function verCedulaRetencionesISR(clientId,ejercicio){
   let c=getCedulaAnualRetencionesISR(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones ISR ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
-    ${fila('Salarios',c.salarios)}
-    ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
-    ${fila('Total retenido',c.totalRetenido)}
-    <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Control de pago / accesorios</td></tr>
-    ${fila('Principal',c.principal)}
-    ${fila('Actualización',c.actualizacion)}
-    ${fila('Recargos',c.recargos)}
-    ${fila('Ajuste por redondeo',c.ajusteRedondeo)}
-    ${fila('Total pagado',c.totalPagado)}
-    ${fila('Diferencia pendiente',c.diferenciaPendiente)}
+    ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES ISR')}
   </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesISR(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
@@ -2999,8 +3206,8 @@ function abrirPapelRetencionesIVADesdeSelector(clientId){
 function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=true;limpiarFiscalDirty();
   let existente=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
   let fechaVencActual=existente&&existente.fechaVencimiento?existente.fechaVencimiento:(proponerVencimientoFiscal('retenciones_iva',clientId,ejercicio,periodo)||'');
-  let catalogo=getCatalogoRetenciones('iva');
-  __retIvaState={clientId,ejercicio,periodo,calc:null,conceptosForm:existente?(existente.conceptos||[]).map(c=>({catalogoId:c.catalogoId,base:c.base,ivaOperacion:c.ivaOperacion,retenidoConfirmado:c.retenidoConfirmado})):[]};
+  let catalogo=getCatalogoRetenciones('iva',true);
+  __retIvaState={clientId,ejercicio,periodo,calc:null,conceptosForm:conceptosVisiblesRetencion('retenciones_iva',clientId,'iva',ejercicio,periodo,existente)};
   modal(`Retenciones IVA — ${MESES_NOMBRE[periodo-1]} ${ejercicio}`,`
     <div id="retIvaBody">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -3009,11 +3216,12 @@ function openPapelRetencionesIVA(clientId,ejercicio,periodo){__fiscalModalOpen=t
       </div>
       <h3 style="font-size:13px;margin:10px 0 6px">Conceptos (Servicios profesionales, Arrendamiento, Fletes/autotransporte, Otros...)</h3>
       <div class="hint" style="margin-bottom:8px">No todos se calculan igual: algunos son % sobre la base, otros son una proporción sobre el IVA de la operación.</div>
-      <div id="retIvaConceptosList">${__retIvaState.conceptosForm.map((c,i)=>filaConceptoRetHtml('retIva',i,c,catalogo)).join('')}</div>
+      <div id="retIvaConceptosList">${__retIvaState.conceptosForm.map((c,i)=>filaConceptoRetHtml('retIva',i,c,catalogo,'iva')).join('')}</div>
       <div style="display:flex;gap:8px;margin:6px 0 14px">
-        <button class="btn" onclick="agregarFilaConcepto('retIva','iva')">+ Agregar concepto</button>
+        <button class="btn" onclick="mostrarPanelAgregarConceptoRetUI('retIva','iva')">+ Agregar concepto</button>
         <button class="btn" onclick="agregarConceptoNuevoAlCatalogoUI('iva')">+ Nuevo tipo de concepto al catálogo</button>
       </div>
+      <div id="retIvaAddConceptoPanel" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px"></div>
 
       <div style="display:flex;gap:10px;margin:14px 0"><button class="btn primary" onclick="marcarFiscalDirty();calcularPapelRetencionesIVAUI()">Calcular</button></div>
       <div id="retIvaResultado"></div>
@@ -3055,15 +3263,7 @@ function verCedulaRetencionesIVA(clientId,ejercicio){
   let c=getCedulaAnualRetencionesIVA(clientId,ejercicio);
   function fila(label,obj){return `<tr><td class="lbl">${label}<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:6px;background:#fff3cd;color:#8a6500">Σ</span></td>${obj.valores.map(v=>`<td style="text-align:right">${v==null?'—':fmtMoneyMX(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${fmtMoneyMX(obj.cierre)}</td></tr>`}
   mostrarCedulaFullPage(`Cédula Anual — Retenciones IVA ${ejercicio}`,`<div style="overflow-x:auto"><table class="cedula-table"><colgroup><col class="lbl-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="mes-col"><col class="cierre-col"></colgroup><thead><tr><th>Concepto</th>${MESES_NOMBRE.map(m=>`<th style="text-align:right">${m.slice(0,3)}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead><tbody>
-    ${c.porConcepto.map(pc=>fila(esc(pc.nombre),pc)).join('')}
-    ${fila('Total retenido',c.totalRetenido)}
-    <tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">Control de pago / accesorios</td></tr>
-    ${fila('Principal',c.principal)}
-    ${fila('Actualización',c.actualizacion)}
-    ${fila('Recargos',c.recargos)}
-    ${fila('Ajuste por redondeo',c.ajusteRedondeo)}
-    ${fila('Total pagado',c.totalPagado)}
-    ${fila('Diferencia pendiente',c.diferenciaPendiente)}
+    ${cedulaRetencionesFilasHtml(c.detalle,fila,'TOTAL RETENCIONES IVA')}
   </tbody></table></div><div class="hint" style="margin-top:10px">Σ = suma del ejercicio — son movimientos mensuales.</div>`,`<button class="btn primary" onclick="imprimirCedulaRetencionesIVA(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 
@@ -3492,13 +3692,7 @@ function construirConfigCedulaRetencionesISR(clientId,ejercicio){
   return {
     titulo:'Cédula Anual — Retenciones ISR',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
-    filas:[
-      filaCedulaPdf('Salarios',c.salarios),
-      ...c.porConcepto.map(pc=>filaCedulaPdf(pc.nombre,pc)),
-      filaCedulaPdf('Total retenido',c.totalRetenido),filaCedulaPdf('Principal',c.principal),
-      filaCedulaPdf('Actualización',c.actualizacion),filaCedulaPdf('Recargos',c.recargos),
-      filaCedulaPdf('Ajuste por redondeo',c.ajusteRedondeo),filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
-    ],
+    filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES ISR'),
     nombreArchivo:`Cedula_Retenciones_ISR_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
@@ -3512,12 +3706,7 @@ function construirConfigCedulaRetencionesIVA(clientId,ejercicio){
   return {
     titulo:'Cédula Anual — Retenciones IVA',cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Total'],
-    filas:[
-      ...c.porConcepto.map(pc=>filaCedulaPdf(pc.nombre,pc)),
-      filaCedulaPdf('Total retenido',c.totalRetenido),filaCedulaPdf('Principal',c.principal),
-      filaCedulaPdf('Actualización',c.actualizacion),filaCedulaPdf('Recargos',c.recargos),
-      filaCedulaPdf('Ajuste por redondeo',c.ajusteRedondeo),filaCedulaPdf('Total pagado',c.totalPagado),filaCedulaPdf('Diferencia pendiente',c.diferenciaPendiente)
-    ],
+    filas:cedulaRetencionesFilasPdf(c.detalle,'TOTAL RETENCIONES IVA'),
     nombreArchivo:`Cedula_Retenciones_IVA_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
