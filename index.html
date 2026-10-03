@@ -441,6 +441,24 @@ function deleteNote(id){
 }
 let lastSyncedSnapshot=null;
 function stamp(o){o._ts=Date.now();return o}
+// --- Causa raíz del bug de guardado con Declaraciones/Pagos 1:N: antes, CADA "Guardar como Borrador"
+// creaba un id nuevo para el papel, aunque el anterior siguiera en Borrador — eso dejaba huérfanos
+// los registros 1:N ya ligados al id viejo (el papel vigente pasaba a ser uno que ningún pago conocía).
+// Corrección: mientras el papel siga en Borrador, se actualiza EN SITIO (mismo id, mismo registro).
+// Solo se crea una versión nueva (id nuevo + reemplazaA) cuando se corrige un papel que YA estaba
+// Revisado/Publicado — exactamente el mismo criterio que ya usan Coeficiente y Parámetros. ---
+function idPapelAUsar(anteriorVigente,esNuevaVersion){
+  return (anteriorVigente&&!esNuevaVersion)?anteriorVigente.id:(Date.now()+Math.floor(Math.random()*100000));
+}
+function persistirVersionPapel(arrName,anteriorVigente,esNuevaVersion,nuevo){
+  db[arrName]=db[arrName]||[];
+  if(anteriorVigente&&!esNuevaVersion){
+    let idx=db[arrName].findIndex(p=>p.id===anteriorVigente.id);
+    if(idx>=0){db[arrName][idx]=nuevo}else{db[arrName].push(nuevo)}
+  }else{
+    db[arrName].push(nuevo);
+  }
+}
 const TABLE_MAP={
   staff:{table:'staff',key:'id',cols:{id:'id',name:'name',email:'email',role:'role',dept:'dept',status:'status',fechaIngreso:'fecha_ingreso',telefono:'telefono',tipoContrato:'tipo_contrato',aniosLiquidados:'vacaciones_anios_liquidados',esAdmin:'es_admin',esOperativo:'es_operativo',fechaNacimiento:'fecha_nacimiento'}},
   clients:{table:'clients',key:'id',cols:{id:'id',name:'name',nombreComercial:'nombre_comercial',rfc:'rfc',type:'type',regimenes:'regimenes',activity:'activity',state:'state',fiel:'fiel',csd:'csd',bankFrequency:'bank_frequency',supervisor:'supervisor_id',accountant:'accountant_id',assistant:'assistant_ids',payroll:'payroll_ids',payrollAssistant:'payroll_assistant_ids',services:'services',emails:'emails',obligationTypes:'obligation_types',entidadFederativa:'entidad_federativa'}},
@@ -1126,7 +1144,7 @@ function guardarPapelISRPM(clientId,ejercicio,periodo,inputs){
   let calc=calcularPapelISRPM(clientId,ejercicio,periodo,inputs);
   let anteriorVigente=getPapelISRPMVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
-  let id=Date.now()+Math.floor(Math.random()*100000);
+  let id=idPapelAUsar(anteriorVigente,esNuevaVersion);
   let nuevo=stamp({
     id,client:clientId,ejercicio,periodo,
     ingresos:calc.ingresos,totalIngresosMes:calc.totalIngresosMes,ingresosAcumulados:calc.ingresosAcumulados,inventarioAcumulable:calc.inventarioAcumulable,
@@ -1146,11 +1164,12 @@ function guardarPapelISRPM(clientId,ejercicio,periodo,inputs){
     revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,
     reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelIsrPm=db.fiscalPapelIsrPm||[];
-  db.fiscalPapelIsrPm.push(nuevo);
+  persistirVersionPapel('fiscalPapelIsrPm',anteriorVigente,esNuevaVersion,nuevo);
 
   let ptuAcumuladaMesAnterior=periodo>5?Number((getPapelISRPMVigente(clientId,ejercicio,periodo-1)||{}).ptuConfirmada||0):0;
   let deltaPTU=Math.round((calc.ptuConfirmada-ptuAcumuladaMesAnterior)*100)/100;
@@ -1338,7 +1357,7 @@ function guardarPapelIVA(clientId,ejercicio,periodo,inputs){
   if(!isAdmin && !visibleClients().find(c=>c.id===clientId)){alert('No tienes acceso a este cliente.');return null}
   let anteriorVigente=getPapelIVAVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
-  let id=Date.now()+Math.floor(Math.random()*100000);
+  let id=idPapelAUsar(anteriorVigente,esNuevaVersion);
 
   // Revertir, si existía, la aplicación de saldo de una versión anterior de ESTE MISMO periodo
   // ANTES de calcular — si no, la propuesta vería el saldo ya consumido y calcularía mal.
@@ -1367,11 +1386,12 @@ function guardarPapelIVA(clientId,ejercicio,periodo,inputs){
     revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,
     reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelIva=db.fiscalPapelIva||[];
-  db.fiscalPapelIva.push(nuevo);
+  persistirVersionPapel('fiscalPapelIva',anteriorVigente,esNuevaVersion,nuevo);
 
   // Aplicar (consumir) el saldo a favor usado este periodo
   (calc.saldoFavorDetalle||[]).forEach(d=>{
@@ -1511,7 +1531,7 @@ function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
   let anteriorVigente=getPapelRetencionesISRVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,
     salariosBaseGravada:calc.salariosBaseGravada,salariosBaseExenta:calc.salariosBaseExenta,salariosRetenido:calc.salariosRetenido,
     conceptos:calc.conceptos,totalRetenido:calc.totalRetenido,
     principalPagado:calc.principalPagado,
@@ -1519,11 +1539,12 @@ function guardarPapelRetencionesISR(clientId,ejercicio,periodo,inputs){
     actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelRetencionesIsr=db.fiscalPapelRetencionesIsr||[];
-  db.fiscalPapelRetencionesIsr.push(nuevo);
+  persistirVersionPapel('fiscalPapelRetencionesIsr',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1573,18 +1594,19 @@ function guardarPapelRetencionesIVA(clientId,ejercicio,periodo,inputs){
   let anteriorVigente=getPapelRetencionesIVAVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,
     conceptos:calc.conceptos,totalRetenido:calc.totalRetenido,
     principalPagado:calc.principalPagado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,ajustes:calc.ajustes,totalPagado:calc.totalPagado,diferenciaPendiente:calc.diferenciaPendiente,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelRetencionesIva=db.fiscalPapelRetencionesIva||[];
-  db.fiscalPapelRetencionesIva.push(nuevo);
+  persistirVersionPapel('fiscalPapelRetencionesIva',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1664,18 +1686,19 @@ function guardarPapelISN(clientId,ejercicio,periodo,entidadFederativa,inputs){
   let anteriorVigente=getPapelISNVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     totalRemuneraciones:calc.totalRemuneraciones,numeroTrabajadores:calc.numeroTrabajadores,
     tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoCausado:calc.impuestoCausado,impuestoRetenidoTerceros:calc.impuestoRetenidoTerceros,impuestoDeterminado:calc.impuestoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelIsn=db.fiscalPapelIsn||[];
-  db.fiscalPapelIsn.push(nuevo);
+  persistirVersionPapel('fiscalPapelIsn',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1730,17 +1753,18 @@ function guardarPapelExtraccion(clientId,ejercicio,periodo,entidadFederativa,inp
   let anteriorVigente=getPapelExtraccionVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     materiales:calc.materiales,totalImpuesto:calc.totalImpuesto,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelExtraccion=db.fiscalPapelExtraccion||[];
-  db.fiscalPapelExtraccion.push(nuevo);
+  persistirVersionPapel('fiscalPapelExtraccion',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1798,18 +1822,19 @@ function guardarPapelHospedaje(clientId,ejercicio,periodo,entidadFederativa,inpu
   let anteriorVigente=getPapelHospedajeVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     baseGravable:calc.baseGravable,tipoEstablecimiento:calc.tipoEstablecimiento,desgloseBase:calc.desgloseBase,
     tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoDeterminado:calc.impuestoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelHospedaje=db.fiscalPapelHospedaje||[];
-  db.fiscalPapelHospedaje.push(nuevo);
+  persistirVersionPapel('fiscalPapelHospedaje',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1860,18 +1885,19 @@ function guardarPapelHospedajeAnfitrion(clientId,ejercicio,periodo,entidadFedera
   let anteriorVigente=getPapelHospedajeAnfitrionVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,
     impuestoCausado:calc.impuestoCausado,impuestoRetenidoPlataforma:calc.impuestoRetenidoPlataforma,impuestoACargo:calc.impuestoACargo,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelHospedajeAnfitrion=db.fiscalPapelHospedajeAnfitrion||[];
-  db.fiscalPapelHospedajeAnfitrion.push(nuevo);
+  persistirVersionPapel('fiscalPapelHospedajeAnfitrion',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
@@ -1922,17 +1948,18 @@ function guardarPapelBebidas(clientId,ejercicio,periodo,entidadFederativa,inputs
   let anteriorVigente=getPapelBebidasVigente(clientId,ejercicio,periodo);
   let esNuevaVersion=!!(anteriorVigente&&anteriorVigente.estatus!=='borrador');
   let nuevo=stamp({
-    id:Date.now()+Math.floor(Math.random()*100000),client:clientId,ejercicio,periodo,entidadFederativa,
+    id:idPapelAUsar(anteriorVigente,esNuevaVersion),client:clientId,ejercicio,periodo,entidadFederativa,
     baseGravable:calc.baseGravable,tasa:calc.tasa,tasaParamId:calc.tasaParamId,impuestoRetenidoDeterminado:calc.impuestoRetenidoDeterminado,
     fechaVencimiento:calc.fechaVencimiento,obligacionRelacionadaId:inputs.obligacionRelacionadaId||null,fechaPago:calc.fechaPago,
     actualizacion:calc.actualizacion,recargos:calc.recargos,totalAPagar:calc.totalAPagar,
     estatus:'borrador',elaboradoPor:currentStaff?currentStaff.id:null,revisadoPor:null,revisadoEn:null,
     observaciones:inputs.observaciones||null,reemplazaA:esNuevaVersion?anteriorVigente.id:null,
-    creadoPor:currentStaff?currentStaff.id:null,creadoEn:new Date().toISOString(),actualizadoEn:new Date().toISOString(),
+    creadoPor:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoPor:(currentStaff?currentStaff.id:null),
+    creadoEn:(anteriorVigente&&!esNuevaVersion)?anteriorVigente.creadoEn:new Date().toISOString(),
+    actualizadoEn:new Date().toISOString(),
     ...(inputs.cumplimiento||{})
   });
-  db.fiscalPapelBebidas=db.fiscalPapelBebidas||[];
-  db.fiscalPapelBebidas.push(nuevo);
+  persistirVersionPapel('fiscalPapelBebidas',anteriorVigente,esNuevaVersion,nuevo);
   save();
   return nuevo;
 }
