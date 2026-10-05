@@ -116,6 +116,13 @@
 .tarifa-pf-lectura td,.tarifa-pf-lectura th{text-align:right}
 .tarifa-pf-ej label{font-size:12px;color:var(--muted)}.tarifa-pf-ej select{padding:4px 6px}
 @media(max-width:720px){.tarifas-pf-grid{grid-template-columns:1fr}}
+.tarifas-pf-acciones{margin-left:auto;display:inline-flex;gap:4px}
+.imp-tar-tabla{width:100%;margin:6px 0}.imp-tar-tabla th{font-size:10.5px;color:var(--muted);text-align:left;padding:3px 8px}
+.imp-tar-tabla td,.imp-tar-tabla th,.imp-tar-tabla td:last-child{text-align:left}
+.imp-tar-err{color:#b91c1c;font-size:12.5px}td.imp-tar-err{color:#b91c1c}
+.imp-tar-ok{font-size:12.5px;padding:8px 10px;border:1px solid #9bc3a0;background:#f2faf3;color:#1d6b32;border-radius:8px;margin-top:8px}
+.imp-tar-lista{margin:6px 0 0 18px;padding:0;font-size:12px;color:#8f1d27;max-height:180px;overflow:auto}
+.tarifa-pf-ej{display:flex;align-items:center;gap:10px}
 </style>
 <style>
 :root{--nav:#073b76;--nav2:#082f5d;--blue:#0c63ce;--cyan:#26a7e8;--bg:#f4f7fb;--card:#fff;--ink:#15243a;--muted:#70809a;--line:#e4eaf2;--green:#20a66a;--amber:#e9a31b;--red:#df4d55;--purple:#7357d8;--gold:#c9a961;--shadow:0 8px 28px rgba(37,55,88,.08)}
@@ -7503,7 +7510,7 @@ function verCedulaISRPF(clientId,ejercicio){
   const c=getCedulaAnualISRPF(clientId,ejercicio);
   const fila=(label,obj,esMoneda)=>{const f=v=>v==null?'—':(esMoneda?fmtMoneyMX(v):v);return `<tr class="${claseFilaCedula(label)}"><td class="lbl">${esc(label)}</td>${obj.valores.map(v=>`<td style="text-align:right">${f(v)}</td>`).join('')}<td style="text-align:right;font-weight:700;background:#fbf8f0">${f(obj.cierre)}</td></tr>`};
   const sec=t=>`<tr><td colspan="14" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;padding:8px 12px">${t}</td></tr>`;
-  mostrarCedulaFullPage(`Cédula Anual — ${ISR_PF_AE_SP_ETIQUETA} ${ejercicio}`,
+  mostrarCedulaFullPage(`Cédula Anual de Pagos Provisionales — ${ISR_PF_AE_SP_ETIQUETA} ${ejercicio}`,
     `<div style="overflow-x:auto"><table class="cedula-table"><thead><tr><th class="lbl">Concepto</th>${MESES_NOMBRE.map(m=>`<th>${m.slice(0,3)}</th>`).join('')}<th>Cierre</th></tr></thead><tbody>
     ${c.conceptosDesglose.length?sec('Ingresos por concepto')+c.conceptosDesglose.map(cd=>fila(cd.nombre,cd,true)).join(''):''}
     ${fila('Total ingresos del mes',c.ingresosMes,true)}
@@ -7529,7 +7536,7 @@ function verCedulaISRPF(clientId,ejercicio){
 function construirConfigCedulaISRPF(clientId,ejercicio){
   const c=getCedulaAnualISRPF(clientId,ejercicio),cl=client(clientId);
   return {
-    titulo:`Cédula Anual — ${ISR_PF_AE_SP_ETIQUETA}`,cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
+    titulo:`Cédula Anual de Pagos Provisionales — ${ISR_PF_AE_SP_ETIQUETA}`,cliente:identidadFiscalNombre(clientId),rfc:cl.rfc,ejercicio,
     encabezados:['Concepto',...MESES_NOMBRE.map(m=>m.slice(0,3)),'Cierre'],
     filas:[
       ...c.conceptosDesglose.map(cd=>filaCedulaPdf(cd.nombre,cd)),
@@ -7763,7 +7770,7 @@ function panelTarifasIsrPfHtml(){
   return `<div class="card tarifas-pf-panel" id="tarifasPfPanel" style="margin-bottom:22px;padding:14px 16px">
     <h3 style="margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.03em">TARIFAS PAGOS PROVISIONALES · ART. 106 LISR</h3>
     <div class="role" style="margin-bottom:10px">ISR PF · Actividad Empresarial y Profesional — tablas oficiales por ejercicio y mes (Anexo 8 de la RMF). Se administran aquí una sola vez; el papel selecciona solo la tarifa Publicada de su periodo.</div>
-    <div class="tarifa-pf-ej"><label>Ejercicio</label><input id="tarifasPfEjercicio" type="number" min="2000" max="2100" value="${ej}" onchange="seleccionarEjercicioTarifasPfUI(this.value)"></div>
+    <div class="tarifa-pf-ej"><label>Ejercicio</label><input id="tarifasPfEjercicio" type="number" min="2000" max="2100" value="${ej}" onchange="seleccionarEjercicioTarifasPfUI(this.value)">${isAdmin?`<span class="tarifas-pf-acciones"><button class="linkbtn" onclick="abrirImportarTarifasIsrPfUI()">Importar tarifas</button><button class="linkbtn" onclick="descargarPlantillaTarifasIsrPfUI()">Descargar plantilla</button></span>`:''}</div>
     <div class="tarifas-pf-grid"><table class="tarifa-pf-acum">${filas}</table><div id="tarifasPfDetalle">${mes?detalleTarifaPfHtml(ej,mes):'<div class="hint">Selecciona un mes para ver su tabla.</div>'}</div></div>
   </div>`;
 }
@@ -7783,6 +7790,205 @@ function sincronizarVigenciaTarifaPf(){
   if(!d||!h||!(ej>=2000)||!(mes>=1&&mes<=12))return;
   d.value=`${ej}-${String(mes).padStart(2,'0')}-01`;h.value=`${ej}-${String(mes).padStart(2,'0')}-${String(new Date(ej,mes,0).getDate()).padStart(2,'0')}`;
   d.readOnly=true;h.readOnly=true;
+}
+
+// ===== Importación de tarifas ISR PF desde Excel — herramienta OPERATIVA. Solo crea parámetros en BORRADOR con el MISMO modelo
+// (isr_pf_ae_sp_tarifa: un parámetro por ejercicio y mes). No toca el motor, la selección de tarifa ni la determinación. =====
+const TARIFAS_PF_ENCABEZADOS=['Mes','Límite inferior','Límite superior','Cuota fija','Tasa %'];
+const normalizarTextoPf=s=>String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+function periodoDeMesPf(v){
+  if(typeof v==='number'&&Number.isInteger(v)&&v>=1&&v<=12)return v;
+  const t=normalizarTextoPf(v).replace(/\.$/,'');
+  if(!t)return null;
+  if(/^\d{1,2}$/.test(t)){const n=+t;return n>=1&&n<=12?n:null}
+  const i=MESES_NOMBRE.findIndex(m=>{const n=normalizarTextoPf(m);return n===t||(t.length>=3&&n.startsWith(t))});
+  return i>=0?i+1:null;
+}
+function numeroTarifaPf(v){
+  if(v==null||(typeof v==='string'&&v.trim()===''))return {vacio:true};
+  if(typeof v==='number')return isFinite(v)?{ok:true,valor:v}:{ok:false};
+  if(typeof v==='string'){
+    const t=v.trim();
+    if(/^\$?\s*-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t)||/^\$?\s*-?\d+(\.\d+)?$/.test(t)){const n=Number(t.replace(/[$,\s]/g,''));return isFinite(n)?{ok:true,valor:n}:{ok:false}}
+  }
+  return {ok:false};
+}
+// Validación PURA del archivo completo (no toca la base). filas = [{fila,mes,li,ls,cuota,tasa}] tal como vienen del Excel.
+function validarTarifasIsrPfImport(filas,ejercicio,fuente){
+  const errores=[],advertencias=[],porMes=new Map(),r2=n=>Math.round(n*100)/100;
+  const err=(periodo,fila,campo,problema,mesTxt)=>errores.push({periodo:periodo||null,mes:periodo?MESES_NOMBRE[periodo-1]:(mesTxt||'—'),fila:fila==null?null:fila,campo,problema});
+  if(!(Number.isInteger(ejercicio)&&ejercicio>=2000&&ejercicio<=2100))err(null,null,'Ejercicio','Captura un ejercicio válido (año entre 2000 y 2100).');
+  if(!String(fuente||'').trim())err(null,null,'Fuente','Captura la fuente documental (por ejemplo, el Anexo 8 de la RMF y la fecha del DOF).');
+  if(!filas.length)err(null,null,'Archivo','El archivo no contiene renglones de tarifa.');
+  filas.forEach(f=>{
+    const per=periodoDeMesPf(f.mes);
+    if(per==null){err(null,f.fila,'Mes',`Mes no reconocido: «${f.mes==null?'':f.mes}».`,String(f.mes==null?'—':f.mes));return}
+    if(!porMes.has(per))porMes.set(per,[]);
+    porMes.get(per).push(f);
+  });
+  const meses=[];
+  [...porMes.keys()].sort((a,b)=>a-b).forEach(per=>{
+    const mesNombre=MESES_NOMBRE[per-1],antes=errores.length;
+    const r=porMes.get(per).map(f=>({fila:f.fila,li:numeroTarifaPf(f.li),ls:numeroTarifaPf(f.ls),cu:numeroTarifaPf(f.cuota),ta:numeroTarifaPf(f.tasa)}));
+    r.forEach((x,i)=>{
+      const ult=i===r.length-1;
+      if(x.li.vacio)err(per,x.fila,'Límite inferior','Falta el límite inferior.');else if(!x.li.ok)err(per,x.fila,'Límite inferior','El valor no es numérico.');else if(x.li.valor<0)err(per,x.fila,'Límite inferior','No puede ser negativo.');
+      if(x.ls.vacio){if(!ult)err(per,x.fila,'Límite superior','El límite superior vacío («En adelante») solo puede estar en el último renglón del mes: hay renglones después del rango abierto.')}
+      else if(!x.ls.ok)err(per,x.fila,'Límite superior','El valor no es numérico.');
+      else if(x.ls.valor<0)err(per,x.fila,'Límite superior','No puede ser negativo.');
+      else if(x.li.ok&&x.ls.valor<x.li.valor)err(per,x.fila,'Límite superior','El límite superior no puede ser menor que el límite inferior.');
+      if(x.cu.vacio)err(per,x.fila,'Cuota fija','Falta la cuota fija.');else if(!x.cu.ok)err(per,x.fila,'Cuota fija','El valor no es numérico.');else if(x.cu.valor<0)err(per,x.fila,'Cuota fija','No puede ser negativa.');
+      if(x.ta.vacio)err(per,x.fila,'Tasa %','Falta la tasa.');else if(!x.ta.ok)err(per,x.fila,'Tasa %','El valor no es numérico.');else if(x.ta.valor<0||x.ta.valor>100)err(per,x.fila,'Tasa %','La tasa debe estar entre 0 y 100.');
+    });
+    for(let i=1;i<r.length;i++){
+      const p=r[i-1],c=r[i];
+      if(p.li.ok&&c.li.ok&&c.li.valor<=p.li.valor){err(per,c.fila,'Límite inferior','Los límites inferiores deben ir en orden ascendente.');continue}
+      if(p.ls.ok&&c.li.ok){
+        const d=r2(c.li.valor-p.ls.valor);
+        if(d<=0)err(per,p.fila,'Límite superior',`El rango se traslapa con el siguiente renglón (fila ${c.fila}).`);
+        else if(d>0.01)err(per,p.fila,'Límite superior',`Hay un hueco entre este rango y el siguiente renglón (fila ${c.fila}): el siguiente límite inferior debería ser ${fmtMoneyMX(r2(p.ls.valor+0.01))}.`);
+      }
+    }
+    const ultimo=r[r.length-1];
+    if(ultimo&&ultimo.ls.ok)advertencias.push(`${mesNombre}: el último renglón tiene límite superior; no hay un rango abierto («En adelante»), por lo que bases mayores quedarían sin tarifa.`);
+    const nErr=errores.length-antes,existentes=ejercicio?tarifasPfDelPeriodo(ejercicio,per).filter(x=>x.estatus!=='reemplazado'):[];
+    const ex=existentes.find(x=>x.estatus==='publicado')||existentes.find(x=>x.estatus==='revisado')||existentes[0]||null;
+    meses.push({periodo:per,mes:mesNombre,nRenglones:r.length,nErrores:nErr,valido:nErr===0,existente:ex?ex.estatus:null,
+      renglones:nErr===0?r.map(x=>({limiteInferior:x.li.valor,limiteSuperior:x.ls.vacio?null:x.ls.valor,cuotaFija:x.cu.valor,porcentaje:x.ta.valor})):[]});
+  });
+  errores.sort((a,b)=>(a.periodo||0)-(b.periodo||0)||(a.fila||0)-(b.fila||0));
+  return {ejercicio,fuente:String(fuente||'').trim(),meses,errores,advertencias,ok:errores.length===0&&meses.length>0,
+    nuevos:meses.filter(m=>m.valido&&!m.existente),existentes:meses.filter(m=>m.existente)};
+}
+async function cargarXlsxPf(){await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',typeof XLSX!=='undefined');return XLSX}
+// Lectura CONTROLADA: solo la hoja «Tarifas» con los encabezados exactos; convierte a una estructura interna antes de validar
+function leerFilasExcelTarifasPf(XL,buffer){
+  let wb;try{wb=XL.read(buffer,{type:'array'})}catch(e){return {error:'El archivo no es un Excel (.xlsx) válido.'}}
+  const ws=wb.Sheets['Tarifas'];
+  if(!ws)return {error:'El archivo no contiene la hoja «Tarifas». Usa la plantilla que se descarga desde esta pantalla.'};
+  if(!ws['!ref'])return {error:'La hoja «Tarifas» está vacía.'};
+  const rango=XL.utils.decode_range(ws['!ref']);
+  const m=XL.utils.sheet_to_json(ws,{header:1,defval:null,raw:true,blankrows:true});
+  const esperado=['mes','limite inferior','limite superior','cuota fija','tasa %'];
+  const enc=(m[0]||[]).slice(0,5).map(normalizarTextoPf).map((t,i)=>i===4&&(t==='tasa'||t==='% tasa')?'tasa %':t);
+  if(enc.length<5||enc.some((t,i)=>t!==esperado[i]))return {error:'Encabezados inesperados. La fila 1 debe ser: Mes | Límite inferior | Límite superior | Cuota fija | Tasa %.'};
+  const vacio=v=>v==null||String(v).trim()==='';
+  if((m[0]||[]).slice(5).some(v=>!vacio(v)))return {error:'La hoja «Tarifas» tiene columnas adicionales: solo se aceptan las 5 columnas de la plantilla.'};
+  const filas=[],extras=[];
+  for(let i=1;i<m.length;i++){
+    const row=m[i]||[],n=rango.s.r+i+1;
+    if(row.slice(0,5).every(vacio)){if(row.slice(5).some(v=>!vacio(v)))extras.push(n);continue}
+    if(row.slice(5).some(v=>!vacio(v)))extras.push(n);
+    filas.push({fila:n,mes:row[0],li:row[1],ls:row[2],cuota:row[3],tasa:row[4]});
+  }
+  return {filas,extras};
+}
+async function generarPlantillaTarifasIsrPf(){
+  const XL=await cargarXlsxPf(),wb=XL.utils.book_new();
+  const ws=XL.utils.aoa_to_sheet([TARIFAS_PF_ENCABEZADOS]);
+  ws['!cols']=[{wch:16},{wch:18},{wch:18},{wch:14},{wch:10}];
+  XL.utils.book_append_sheet(wb,ws,'Tarifas');
+  const ins=XL.utils.aoa_to_sheet([
+    ['Plantilla de importación — Tarifas de pagos provisionales ISR PF (Art. 106 LISR)'],[''],
+    ['Hoja «Tarifas»: una fila por cada renglón de la tarifa de cada mes. Cada mes puede tener el número de renglones que publique la autoridad.'],
+    ['Mes: nombre del mes (Enero … Diciembre).'],
+    ['Límite inferior, Límite superior y Cuota fija: importes en pesos, como números.'],
+    ['Límite superior VACÍO = «En adelante»: solo en el ÚLTIMO renglón de cada mes. No uses un límite artificial.'],
+    ['Tasa %: porcentaje sobre el excedente del límite inferior, como número (por ejemplo, 7.5 significa 7.5%).'],
+    ['Los rangos de un mes deben ir en orden, sin traslapes ni huecos (el límite inferior siguiente es el límite superior anterior + 0.01).'],
+    ['El ejercicio y la fuente (por ejemplo, el Anexo 8 de la RMF y la fecha del DOF) se capturan en CYARoma al importar, no en este archivo.'],
+    ['Esta plantilla NO incluye cifras fiscales: captura los valores tomados del documento oficial. La importación solo crea tarifas en Borrador.']
+  ]);
+  ins['!cols']=[{wch:130}];XL.utils.book_append_sheet(wb,ins,'Instrucciones');
+  return {XL,wb,buffer:XL.write(wb,{type:'array',bookType:'xlsx'})};
+}
+async function descargarPlantillaTarifasIsrPfUI(){
+  if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return}
+  const {buffer}=await generarPlantillaTarifasIsrPf();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Plantilla_Tarifas_ISR_PF.xlsx';a.click();
+}
+let __importTarifasPf={ejercicio:null,nombre:null,buffer:null,preview:null};
+function abrirImportarTarifasIsrPfUI(){
+  if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return}
+  __importTarifasPf={ejercicio:__tarifasPfUI.ejercicio,nombre:null,buffer:null,preview:null};
+  modal('Importar tarifas ISR PF',`<div class="form-grid">
+      <div class="field"><label>Ejercicio</label><input id="impTarEjercicio" type="number" min="2000" max="2100" value="${__tarifasPfUI.ejercicio}"></div>
+      <div class="field full"><label>Fuente</label><input id="impTarFuente" placeholder="Ej. Anexo 8 RMF del ejercicio · DOF dd/mm/aaaa"></div>
+      <div class="field full"><label>Archivo Excel (.xlsx)</label><input id="impTarArchivo" type="file" accept=".xlsx" onchange="seleccionarArchivoTarifasIsrPfUI(this)"></div></div>
+    <div class="hint">Solo se acepta la plantilla de CYARoma (hoja «Tarifas»). El documento oficial (PDF/DOF) es la fuente; el Excel es solo el medio de captura. Se valida el archivo completo y no se guarda nada hasta que confirmes.</div>
+    <div id="impTarPreview"></div>`,
+    `<button class="btn" onclick="descargarPlantillaTarifasIsrPfUI()">Descargar plantilla</button><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" onclick="validarArchivoTarifasIsrPfUI()">Validar archivo</button>`);
+}
+function seleccionarArchivoTarifasIsrPfUI(input){
+  const f=input.files&&input.files[0];
+  __importTarifasPf.preview=null;const pv=document.getElementById('impTarPreview');if(pv)pv.innerHTML='';
+  if(!f){__importTarifasPf.buffer=null;__importTarifasPf.nombre=null;return}
+  f.arrayBuffer().then(b=>{__importTarifasPf.buffer=b;__importTarifasPf.nombre=f.name});
+}
+async function validarArchivoTarifasIsrPfUI(){
+  if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return null}
+  if(!__importTarifasPf.buffer){const pv=document.getElementById('impTarPreview');if(pv)pv.innerHTML='<div class="imp-tar-err">Selecciona primero el archivo Excel (.xlsx).</div>';return null}
+  return procesarArchivoTarifasIsrPf(__importTarifasPf.buffer,__importTarifasPf.nombre,parseInt((document.getElementById('impTarEjercicio')||{}).value,10),((document.getElementById('impTarFuente')||{}).value||'').trim());
+}
+async function procesarArchivoTarifasIsrPf(buffer,nombre,ejercicio,fuente){
+  if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return null}
+  const XL=await cargarXlsxPf(),lec=leerFilasExcelTarifasPf(XL,buffer);
+  let pv;
+  if(lec.error)pv={ejercicio,fuente:String(fuente||'').trim(),meses:[],errores:[{periodo:null,mes:'—',fila:null,campo:'Archivo',problema:lec.error}],advertencias:[],ok:false,nuevos:[],existentes:[]};
+  else{
+    pv=validarTarifasIsrPfImport(lec.filas,ejercicio,fuente);
+    (lec.extras||[]).forEach(n=>pv.errores.push({periodo:null,mes:'—',fila:n,campo:'Columnas',problema:'Hay datos fuera de las 5 columnas de la plantilla.'}));
+    pv.ok=pv.errores.length===0&&pv.meses.length>0;
+  }
+  pv.nombre=nombre||null;__importTarifasPf.preview=pv;__importTarifasPf.ejercicio=ejercicio;
+  pintarPreviewTarifasIsrPf(pv);
+  return pv;
+}
+function pintarPreviewTarifasIsrPf(pv){
+  const el=document.getElementById('impTarPreview');if(!el)return;
+  const est=s=>s==='publicado'?'Publicado':(s==='revisado'?'Revisado':'Borrador');
+  const filas=pv.meses.map(m=>`<tr><td>${m.mes}</td> <td>${m.nRenglones} ${m.nRenglones===1?'renglón':'renglones'}</td> <td class="${m.valido?'ok':'imp-tar-err'}">${m.valido?'✓ Válido':'✗ '+m.nErrores+' error'+(m.nErrores===1?'':'es')}</td> <td>${m.existente?`<span class="pend">Ya existe · ${est(m.existente)} — no se modifica</span>`:(m.valido?'<span class="ok">Nuevo — se creará en Borrador</span>':'—')}</td></tr>`).join('\n');
+  const faltan=MESES_NOMBRE.filter((_,i)=>!pv.meses.some(m=>m.periodo===i+1));
+  const total=pv.meses.reduce((s,m)=>s+m.nRenglones,0);
+  let cierre;
+  if(pv.errores.length)cierre=`<div class="imp-tar-err"><b>No se importará nada.</b> Corrige el archivo y vuelve a validarlo:</div><ul class="imp-tar-lista">${pv.errores.map(e=>`<li>${esc(e.mes)} · ${e.fila!=null?'fila '+e.fila:'archivo'} · ${esc(e.campo)} · ${esc(e.problema)}</li>`).join('')}</ul>`;
+  else if(pv.nuevos.length)cierre=`<div class="imp-tar-ok">Se crearán <b>${pv.nuevos.length}</b> tarifa(s) NUEVA(S) en <b>Borrador</b>: ${pv.nuevos.map(m=>m.mes).join(', ')}.${pv.existentes.length?` No se modificarán los meses que ya existen: ${pv.existentes.map(m=>`${m.mes} (${est(m.existente)})`).join(', ')}.`:''} Nada se publica automáticamente.</div><button class="btn primary" style="margin-top:8px" onclick="crearTarifasImportadasIsrPfUI()">Crear tarifas en Borrador</button>`;
+  else cierre='<div class="hint">Todos los meses del archivo ya existen: no hay nada nuevo por crear. Para cambiar una tarifa existente usa Editar / Corregir en el panel.</div>';
+  el.innerHTML=`<div class="tarifa-pf-tit">Vista previa · Ejercicio ${pv.ejercicio||'—'}${pv.nombre?' · '+esc(pv.nombre):''}</div>
+    <div class="role">Fuente: ${esc(pv.fuente)||'—'} · ${pv.meses.length} mes(es) encontrado(s) · ${total} renglones</div>
+    ${pv.meses.length?`<table class="tarifa-pf-acum imp-tar-tabla"><thead><tr><th>Mes</th> <th>Renglones</th> <th>Validación</th> <th>Situación</th></tr></thead><tbody>${filas}</tbody></table>`:''}
+    ${faltan.length&&pv.meses.length?`<div class="hint">Meses no incluidos en el archivo: ${faltan.join(', ')}.</div>`:''}
+    ${(pv.advertencias||[]).map(a=>`<div class="hint">⚠ ${esc(a)}</div>`).join('')}${cierre}`;
+}
+function crearTarifasImportadasIsrPfUI(){
+  if(!isAdmin){alert('Solo un administrador puede editar Parámetros Fiscales.');return null}
+  const pv=__importTarifasPf.preview;
+  if(!pv||!pv.ok){alert('Valida el archivo completo (sin errores) antes de crear las tarifas.');return null}
+  // Se vuelve a comprobar AHORA qué meses existen: nunca se sobrescribe ni se duplica una tarifa
+  const nuevos=pv.meses.filter(m=>m.valido&&!tarifaPfExistente(pv.ejercicio,m.periodo));
+  if(!nuevos.length){alert('No hay meses nuevos por crear: todos los meses del archivo ya existen.');return null}
+  const creados=[];
+  try{
+    nuevos.forEach(m=>{
+      const mm=String(m.periodo).padStart(2,'0');
+      const p=crearParametroFiscal({ambito:'federal',entidad:'',clave:CLAVE_TARIFA_ISR_PF_AE_SP,
+        valor:{ejercicio:pv.ejercicio,periodo:m.periodo,renglones:m.renglones.map(r=>({...r}))},
+        desde:`${pv.ejercicio}-${mm}-01`,hasta:`${pv.ejercicio}-${mm}-${String(new Date(pv.ejercicio,m.periodo,0).getDate()).padStart(2,'0')}`,
+        descripcion:`ISR PF · Tarifa ${m.mes} ${pv.ejercicio}`,fuente:pv.fuente,observaciones:`Importada desde Excel${pv.nombre?' ('+pv.nombre+')':''}`});
+      creados.push(p.id);
+    });
+  }catch(e){
+    db.parametrosFiscales=(db.parametrosFiscales||[]).filter(p=>!creados.includes(p.id));
+    alert('No se pudieron crear las tarifas ('+e.message+'). No se creó ninguna.');return null;
+  }
+  save();
+  __tarifasPfUI.ejercicio=pv.ejercicio;
+  const el=document.getElementById('impTarPreview');
+  if(el)el.innerHTML=`<div class="imp-tar-ok"><b>Listo:</b> se crearon ${creados.length} tarifa(s) en <b>Borrador</b> (${nuevos.map(m=>m.mes).join(', ')}). Revísalas y publícalas desde el panel, mes por mes.</div>`;
+  mostrarToast('✓ Tarifas importadas en Borrador',`${creados.length} mes(es) · ejercicio ${pv.ejercicio}`);
+  if(typeof renderFiscalParams==='function')renderFiscalParams();
+  return creados;
 }
 
 // --- 8) Editor de la tarifa en Fiscal → Parámetros: tabla editable, SIN JSON y sin valores precargados.
