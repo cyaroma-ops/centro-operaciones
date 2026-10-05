@@ -101,14 +101,15 @@
 .cedula-pf tr.sub2 td{font-weight:600;border-top:1px solid var(--line)}
 .cedula-pf tr.aplic td{border-top:2px solid var(--nav);background:rgba(12,99,206,.06)}
 .rad-op{display:inline-block;margin-right:18px;font-weight:400;cursor:pointer}
-.memo-wrap{padding:0 14px}
+.memo-wrap{padding:0}
 .memo-param{margin:4px 0 8px;font-size:12px;color:var(--ink)}
-.memo-param summary{cursor:pointer;padding:5px 0;list-style:revert}
-.memo-param.memo-pend{padding:5px 0;color:#8a5a00}
+.memo-param summary{cursor:pointer;padding:5px 14px;list-style:revert}
+.memo-param.memo-pend{padding:5px 14px;color:#8a5a00}
 .memo-param-tabla{width:100%;max-width:520px;border-collapse:collapse;margin:6px 0 4px;font-variant-numeric:tabular-nums}
 .memo-param-tabla td{padding:2px 8px;border-bottom:1px solid var(--line)}
 .memo-param-tabla td.sg{width:34px;color:var(--muted);text-align:center}.memo-param-tabla td.num{text-align:right;white-space:nowrap}
-.memo-param-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11px;color:var(--muted);margin:4px 0}
+.memo-param-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11px;color:var(--muted);margin:4px 0;padding:0 14px}
+.memo-param-grid td{font-size:12px;padding-top:2px;padding-bottom:2px}.memo-param-grid tr.det td{color:var(--ink)}
 .memo-param-meta b{font-weight:600;margin-right:4px}
 .tarifas-pf-grid{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start}
 .tarifas-pf-panel tr.sel td{background:rgba(12,99,206,.08)}
@@ -7127,17 +7128,46 @@ function acumuladoPrevioPF(clientId,ejercicio,periodo,valor){
   for(let p=1;p<periodo;p++){const pap=getPapelISRPFVigente(clientId,ejercicio,p);s+=pap?(Number(valor(pap))||0):0}
   return s;
 }
+// Deducciones de un papel ya guardado, SIEMPRE con la semántica vigente (se leen de sus renglones y su "aplica", no de totales históricos)
+function deduccionesDePapelPF(p){
+  const l=p&&Array.isArray(p.deducciones)?p.deducciones:null;
+  if(!l||!l.length)return {total:Number(p&&p.totalDeduccionesMes)||0,exclusiones:Number(p&&p.exclusionesMes)||0};
+  const s=x=>x.reduce((a,d)=>a+(Number(d.importe)||0),0);
+  return {total:s(l.filter(d=>d.aplicaProvisional!==false)),exclusiones:s(l.filter(d=>d.aplicaProvisional===false))};
+}
+function acumuladoDeduccionesPrevioPF(clientId,ejercicio,periodo){
+  let t=0,e=0;
+  for(let p=1;p<periodo;p++){const pap=getPapelISRPFVigente(clientId,ejercicio,p);if(!pap)continue;const d=deduccionesDePapelPF(pap);t+=d.total;e+=d.exclusiones}
+  return {total:redondeo2PF(t),exclusiones:redondeo2PF(e)};
+}
+// ¿Un papel guardado ANTES de esta corrección (su total incluía los conceptos excluidos)? Se detecta por aritmética; sus cifras históricas no se tocan.
+function semanticaAnteriorDeduccionesPF(p){
+  const l=(p&&p.deducciones)||[];
+  const no=l.filter(d=>d.aplicaProvisional===false).reduce((a,d)=>a+(Number(d.importe)||0),0);
+  if(!l.length||Math.abs(no)<0.005)return false;
+  const todo=l.reduce((a,d)=>a+(Number(d.importe)||0),0);
+  return Math.abs((Number(p.totalDeduccionesMes)||0)-todo)<0.005;
+}
+// Vista de un papel REVISADO/PUBLICADO con lo que quedó persistido (no se recalcula con reglas posteriores)
+function calcDesdePapelPersistidoPF(ex){
+  return {...ex,ingresos:ex.ingresos||[],deducciones:ex.deducciones||[],perdidaDetalle:ex.perdidaDetalle||[],ptuDetalle:ex.ptuDetalle||[],reglasPendientes:ex.reglasPendientes||[],
+    exclusionesMes:ex.exclusionesMes||0,exclusionesAcumuladas:ex.exclusionesAcumuladas||0,deduccionesAplicablesMes:ex.deduccionesAplicablesMes||0,ptuAplicada:ex.ptuAplicada||0,accesoriosIncompletos:false};
+}
 function calcularPapelISRPF(clientId,ejercicio,periodo,inputs){
   inputs=inputs||{};
   const ingresos=inputs.ingresos||[];
   const deducciones=(inputs.deducciones||[]).map(d=>({...d,aplicaProvisional:d.aplicaProvisional!==false}));
   const totalIngresosMes=calcularTotalIngresosMes(ingresos);
   const ingresosAcumulados=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.totalIngresosMes)+totalIngresosMes);
-  const totalDeduccionesMes=redondeo2PF(deducciones.reduce((s,d)=>s+(Number(d.importe)||0),0));
-  const exclusionesMes=redondeo2PF(deducciones.filter(d=>d.aplicaProvisional===false).reduce((s,d)=>s+(Number(d.importe)||0),0));
+  // Semántica del papel: TOTAL DEDUCCIONES = conceptos que SÍ aplican al provisional. Los que NO aplican se muestran aparte como EXCLUSIONES y
+  // DISMINUYEN ese subtotal; nunca se suman primero. DEDUCCIONES FISCALES APLICABLES = total − exclusiones (mes y acumulado enero → periodo).
+  const sumaDed=l=>redondeo2PF(l.reduce((s,d)=>s+(Number(d.importe)||0),0));
+  const totalDeduccionesMes=sumaDed(deducciones.filter(d=>d.aplicaProvisional!==false));
+  const exclusionesMes=sumaDed(deducciones.filter(d=>d.aplicaProvisional===false));
   const deduccionesAplicablesMes=redondeo2PF(totalDeduccionesMes-exclusionesMes);
-  const totalDeduccionesAcumuladas=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.totalDeduccionesMes)+totalDeduccionesMes);
-  const exclusionesAcumuladas=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.exclusionesMes)+exclusionesMes);
+  const prevDed=acumuladoDeduccionesPrevioPF(clientId,ejercicio,periodo);
+  const totalDeduccionesAcumuladas=redondeo2PF(prevDed.total+totalDeduccionesMes);
+  const exclusionesAcumuladas=redondeo2PF(prevDed.exclusiones+exclusionesMes);
   const deduccionesAplicablesAcumuladas=redondeo2PF(totalDeduccionesAcumuladas-exclusionesAcumuladas);
   const reglasPendientes=[];
   const saldos=getPerdidasVigentesConSaldo(clientId);
@@ -7281,7 +7311,7 @@ function abrirPapelISRPFRediseñado(clientId,ejercicio,periodo){
   const conceptosIng=getConceptosIngreso(clientId);
   const ingPrev=existente?mergeIngresosConCatalogoActual(existente.ingresos,conceptosIng):conceptosIng.map(c=>({conceptoId:c.id,nombre:c.nombre,importe:0}));
   const dedPrev=deduccionesParaPantallaPF(existente,clientId);
-  const excl=dedPrev.filter(d=>d.aplicaProvisional===false);
+  const excl=dedPrev.filter(d=>d.aplicaProvisional===false),dedSi=dedPrev.filter(d=>d.aplicaProvisional!==false);
   __isrPfState={clientId,ejercicio,periodo,calc:null};
   __fiscalWorkspaceState.clientId=clientId;__fiscalWorkspaceState.ejercicio=ejercicio;__fiscalWorkspaceState.periodo=periodo;__fiscalWorkspaceState.modo='papel_isr_pf';
   limpiarFiscalDirty();
@@ -7292,8 +7322,9 @@ function abrirPapelISRPFRediseñado(clientId,ejercicio,periodo){
   const menuIng=id=>menu(`<button class="linkbtn" onclick="editarConceptoIngresoPfUI(${id},${clientId},${ejercicio},${periodo})">Editar concepto</button><button class="linkbtn" onclick="desactivarConceptoIngresoPfUI(${id},${clientId},${ejercicio},${periodo})">Desactivar concepto</button>${!conceptoIngresoTieneHistorial(id)?`<button class="linkbtn peligro" onclick="eliminarConceptoIngresoPfUI(${id},${clientId},${ejercicio},${periodo})">Eliminar concepto</button>`:''}`);
   const menuDed=id=>menu(`<button class="linkbtn" onclick="editarConceptoDeduccionPfUI(${id},${clientId},${ejercicio},${periodo})">Editar concepto</button><button class="linkbtn" onclick="desactivarConceptoDeduccionPfUI(${id},${clientId},${ejercicio},${periodo})">Desactivar concepto</button>${!conceptoDeduccionPfTieneHistorial(id)?`<button class="linkbtn peligro" onclick="eliminarConceptoDeduccionPfUI(${id},${clientId},${ejercicio},${periodo})">Eliminar concepto</button>`:''}`);
   const filaIng=i=>`<tr class="det"><td class="lbl">${esc(i.nombre)}${menuIng(i.conceptoId)}</td><td class="num"><input class="isrPfIngresoInput money-input" data-concepto="${i.conceptoId}" data-nombre="${esc(i.nombre)}" type="number" step="0.01" value="${Number(i.importe)||0}" oninput="marcarFiscalDirty();calcularPapelISRPFUI()"></td><td class="num" id="isrPfAcumIng_${i.conceptoId}">${fmtMoneyMX(acumuladoConceptoPF(clientId,ejercicio,periodo,'ingresos',i.conceptoId)+(Number(i.importe)||0))}</td></tr>`;
-  const filaDed=d=>{const no=d.aplicaProvisional===false;return `<tr class="det${no?' noap':''}"><td class="lbl">${esc(d.nombre)}${no?'<span class="tag-clase">No aplica al provisional</span>':''}${menuDed(d.conceptoId)}</td><td class="num"><input class="isrPfDedInput money-input" data-concepto="${d.conceptoId}" data-nombre="${esc(d.nombre)}" data-aplica="${no?'no':'si'}" type="number" step="0.01" value="${Number(d.importe)||0}" oninput="marcarFiscalDirty();calcularPapelISRPFUI()"></td><td class="num" id="isrPfAcumDed_${d.conceptoId}">${fmtMoneyMX(acumuladoConceptoPF(clientId,ejercicio,periodo,'deducciones',d.conceptoId)+(Number(d.importe)||0))}</td></tr>`};
-  const filaExcl=d=>`<tr class="det excl"><td class="lbl">${esc(d.nombre)}</td><td class="num" id="isrPfExMes_${d.conceptoId}">—</td><td class="num" id="isrPfExAcum_${d.conceptoId}">—</td></tr>`;
+  const inputDed=(d,aplica)=>`<input class="isrPfDedInput money-input" data-concepto="${d.conceptoId}" data-nombre="${esc(d.nombre)}" data-aplica="${aplica}" type="number" step="0.01" value="${Number(d.importe)||0}" oninput="marcarFiscalDirty();calcularPapelISRPFUI()">`;
+  const filaDed=d=>`<tr class="det"><td class="lbl">${esc(d.nombre)}${menuDed(d.conceptoId)}</td><td class="num">${inputDed(d,'si')}</td><td class="num" id="isrPfAcumDed_${d.conceptoId}">${fmtMoneyMX(acumuladoConceptoPF(clientId,ejercicio,periodo,'deducciones',d.conceptoId)+(Number(d.importe)||0))}</td></tr>`;
+  const filaExcl=d=>`<tr class="det excl"><td class="lbl">${esc(d.nombre)}${menuDed(d.conceptoId)}</td><td class="num">${inputDed(d,'no')}</td><td class="num" id="isrPfExAcum_${d.conceptoId}">${fmtMoneyMX(acumuladoConceptoPF(clientId,ejercicio,periodo,'deducciones',d.conceptoId)+(Number(d.importe)||0))}</td></tr>`;
   const abrev=MESES_NOMBRE[periodo-1].slice(0,3).toLowerCase();
   $('#fiscalWorkspace').innerHTML=`
     <div class="client-header">
@@ -7314,9 +7345,9 @@ function abrirPapelISRPFRediseñado(clientId,ejercicio,periodo){
           <tr class="add"><td colspan="3"><button class="linkbtn" onclick="agregarConceptoIngresoPfUI(${clientId},${ejercicio},${periodo})">+ Agregar concepto de ingreso</button></td></tr>
           <tr class="sub"><td class="lbl">TOTAL INGRESOS</td><td class="num" id="isrPfTotalIngresosDisplay">${fmtMoneyMX(ingPrev.reduce((s,i)=>s+(Number(i.importe)||0),0))}</td><td class="num" id="isrPfTotalIngresosAcum">—</td></tr>
           <tr class="sec"><td colspan="3">DEDUCCIONES</td></tr>
-          ${dedPrev.map(filaDed).join('')||'<tr class="det"><td colspan="3" class="vacio">Sin conceptos de deducción — agrega el primero.</td></tr>'}
+          ${dedSi.map(filaDed).join('')||`<tr class="det"><td colspan="3" class="vacio">${dedPrev.length?'Ningún concepto de deducción aplica al pago provisional.':'Sin conceptos de deducción — agrega el primero.'}</td></tr>`}
           <tr class="add"><td colspan="3"><button class="linkbtn" onclick="agregarConceptoDeduccionPfUI(${clientId},${ejercicio},${periodo})">+ Agregar concepto de deducción</button></td></tr>
-          <tr class="sub"><td class="lbl">TOTAL DEDUCCIONES CAPTURADAS</td><td class="num" id="isrPfTotalDedMes">—</td><td class="num" id="isrPfTotalDedAcum">—</td></tr>
+          <tr class="sub"><td class="lbl">TOTAL DEDUCCIONES</td><td class="num" id="isrPfTotalDedMes">—</td><td class="num" id="isrPfTotalDedAcum">—</td></tr>
           <tr class="sec2"><td colspan="3">(-) EXCLUSIONES DEL PAGO PROVISIONAL</td></tr>
           ${excl.map(filaExcl).join('')||'<tr class="det excl"><td class="lbl vacio">Ningún concepto marcado como "No aplica al provisional"</td><td class="num">$0.00</td><td class="num">$0.00</td></tr>'}
           <tr class="sub2"><td class="lbl">TOTAL EXCLUSIONES</td><td class="num" id="isrPfExclMes">—</td><td class="num" id="isrPfExclAcum">—</td></tr>
@@ -7353,7 +7384,9 @@ function calcularPapelISRPFUI(){
     const ex=getPapelISRPFVigente(clientId,ejercicio,periodo);
     if(ex){inputs.perdidaAplicada=ex.perdidaAplicada;inputs.isrRetenidoMes=ex.isrRetenidoMes;if(ex.pagosProvAjustado)inputs.pagosProvisionalesConfirmados=ex.pagosProvisionalesConfirmados}
   }
-  const calc=conContextoRevisionUI(ISR_PF_AE_SP,clientId,ejercicio,periodo,()=>calcularPapelISRPF(clientId,ejercicio,periodo,inputs));
+  const ex0=getPapelISRPFVigente(clientId,ejercicio,periodo);
+  // Un papel REVISADO/PUBLICADO se abre con lo que quedó PERSISTIDO (nada cambia por reglas posteriores); al editar un campo se recalcula
+  const calc=(!__isrPfState.calc&&ex0&&ex0.estatus!=='borrador')?calcDesdePapelPersistidoPF(ex0):conContextoRevisionUI(ISR_PF_AE_SP,clientId,ejercicio,periodo,()=>calcularPapelISRPF(clientId,ejercicio,periodo,inputs));
   __isrPfState.calc=calc;
   const fm=v=>v==null?'—':fmtMoneyMX(v),pend=v=>v==null?'<span class="pendiente">Pendiente</span>':fmtMoneyMX(v);
   const set=(id,html)=>{const e=document.getElementById(id);if(e)e.innerHTML=html};
@@ -7364,8 +7397,7 @@ function calcularPapelISRPFUI(){
   $$('.isrPfIngresoInput').forEach(inp=>set('isrPfAcumIng_'+inp.dataset.concepto,fm(acumuladoConceptoPF(clientId,ejercicio,periodo,'ingresos',+inp.dataset.concepto)+valorMonetario(inp))));
   $$('.isrPfDedInput').forEach(inp=>{
     const acum=acumuladoConceptoPF(clientId,ejercicio,periodo,'deducciones',+inp.dataset.concepto)+valorMonetario(inp);
-    set('isrPfAcumDed_'+inp.dataset.concepto,fm(acum));
-    if(inp.dataset.aplica==='no'){set('isrPfExMes_'+inp.dataset.concepto,fm(valorMonetario(inp)));set('isrPfExAcum_'+inp.dataset.concepto,fm(acum))}
+    set((inp.dataset.aplica==='no'?'isrPfExAcum_':'isrPfAcumDed_')+inp.dataset.concepto,fm(acum));
   });
   const m=calc.accesoriosMemoria,traza=m&&m.aplica;
   const ex=getPapelISRPFVigente(clientId,ejercicio,periodo);
@@ -7378,6 +7410,7 @@ function calcularPapelISRPFUI(){
   $('#isrPfResultado').innerHTML=`
     <table class="cedula-pf">${cols}<tbody>
       <tr class="sec"><td colspan="3">DETERMINACIÓN DEL ISR</td></tr>
+      ${(ex0&&ex0.estatus!=='borrador'&&semanticaAnteriorDeduccionesPF(ex0))?'<tr class="pend"><td colspan="3">ℹ Papel guardado antes de la corrección de exclusiones: sus cifras históricas se conservan sin cambio. Al editarlo se crea una nueva versión con el cálculo corregido.</td></tr>':''}
       ${calc.reglasPendientes.map(r=>`<tr class="pend"><td colspan="3">⚠ ${esc(r.mensaje)}${r.bloquea?' <b>(bloquea el paso a Revisado)</b>':''}</td></tr>`).join('')}
       ${fila('det','Ingresos acumulados',null,fm(calc.ingresosAcumulados))}
       ${fila('det','(-) Deducciones fiscales aplicables al provisional',null,fm(calc.deduccionesAplicablesAcumuladas))}
@@ -7516,10 +7549,10 @@ function verCedulaISRPF(clientId,ejercicio){
     ${fila('Total ingresos del mes',c.ingresosMes,true)}
     ${fila('Ingresos acumulados',c.ingresosAcumulados,true)}
     ${c.deduccionesDesglose.length?sec('Deducciones por concepto')+c.deduccionesDesglose.map(cd=>fila(cd.nombre,cd,true)).join(''):''}
-    ${fila('Total deducciones capturadas del mes',c.totalDeduccionesMes,true)}
+    ${fila('Total deducciones del mes',c.totalDeduccionesMes,true)}
     ${fila('(-) Exclusiones del pago provisional (mes)',c.exclusionesMes,true)}
     ${fila('Deducciones fiscales aplicables (mes)',c.deduccionesAplicablesMes,true)}
-    ${fila('Total deducciones capturadas (acum.)',c.totalDeduccionesAcumuladas,true)}
+    ${fila('Total deducciones (acum.)',c.totalDeduccionesAcumuladas,true)}
     ${fila('(-) Exclusiones del pago provisional (acum.)',c.exclusionesAcumuladas,true)}
     ${fila('Deducciones fiscales aplicables (acum.)',c.deduccionesAplicablesAcumuladas,true)}
     ${fila('PTU aplicable (acum.)',c.ptuAplicada,true)}
@@ -7542,8 +7575,8 @@ function construirConfigCedulaISRPF(clientId,ejercicio){
       ...c.conceptosDesglose.map(cd=>filaCedulaPdf(cd.nombre,cd)),
       filaCedulaPdf('Total ingresos del mes',c.ingresosMes),filaCedulaPdf('Ingresos acumulados',c.ingresosAcumulados),
       ...c.deduccionesDesglose.map(cd=>filaCedulaPdf(cd.nombre,cd)),
-      filaCedulaPdf('Total deducciones capturadas del mes',c.totalDeduccionesMes),filaCedulaPdf('(-) Exclusiones del provisional (mes)',c.exclusionesMes),filaCedulaPdf('Deducciones aplicables (mes)',c.deduccionesAplicablesMes),
-      filaCedulaPdf('Total deducciones capturadas (acum.)',c.totalDeduccionesAcumuladas),filaCedulaPdf('(-) Exclusiones del provisional (acum.)',c.exclusionesAcumuladas),filaCedulaPdf('Deducciones aplicables (acum.)',c.deduccionesAplicablesAcumuladas),
+      filaCedulaPdf('Total deducciones del mes',c.totalDeduccionesMes),filaCedulaPdf('(-) Exclusiones del provisional (mes)',c.exclusionesMes),filaCedulaPdf('Deducciones aplicables (mes)',c.deduccionesAplicablesMes),
+      filaCedulaPdf('Total deducciones (acum.)',c.totalDeduccionesAcumuladas),filaCedulaPdf('(-) Exclusiones del provisional (acum.)',c.exclusionesAcumuladas),filaCedulaPdf('Deducciones aplicables (acum.)',c.deduccionesAplicablesAcumuladas),
       filaCedulaPdf('PTU aplicable (acum.)',c.ptuAplicada),filaCedulaPdf('Pérdidas aplicadas (acum.)',c.perdidasAplicadas),
       filaCedulaPdf('Base para pago provisional',c.baseAcumulada),filaCedulaPdf('ISR determinado (acum.)',c.isrDeterminadoAcumulado),
       filaCedulaPdf('Pagos provisionales anteriores',c.pagosProvisionalesAnteriores),filaCedulaPdf('ISR retenido al contribuyente (acum.)',c.isrRetenidoAcumulado),
@@ -7566,13 +7599,13 @@ function construirConfigPapelISRPF(clientId,ejercicio,periodo){
       {titulo:'Detalle de Ingresos',filas:[...(p.ingresos||[]).map(i=>[i.nombre,fmtMoneyMX(i.importe)]),['TOTAL INGRESOS DEL MES',fmtMoneyMX(p.totalIngresosMes)]],negritaUltima:true},
       {titulo:'Detalle de Deducciones',filas:[
         ...(p.deducciones||[]).map(d=>[d.nombre+(d.aplicaProvisional===false?' (no aplica al provisional)':''),fmtMoneyMX(d.importe)]),
-        ['TOTAL DEDUCCIONES CAPTURADAS DEL MES',fmtMoneyMX(p.totalDeduccionesMes)],
+        ['TOTAL DEDUCCIONES DEL MES',fmtMoneyMX(p.totalDeduccionesMes)],
         ['(-) Exclusiones del pago provisional (mes)',fmtMoneyMX(p.exclusionesMes)],
         ['DEDUCCIONES FISCALES APLICABLES (MES)',fmtMoneyMX(p.deduccionesAplicablesMes)]
       ],negritaUltima:true},
       {titulo:'Base / origen (acumulado enero → periodo)',filas:[
         ['Ingresos acumulados',fmtMoneyMX(p.ingresosAcumulados)],
-        ['Total deducciones capturadas (acumuladas)',fmtMoneyMX(p.totalDeduccionesAcumuladas)],
+        ['Total deducciones (acumuladas)',fmtMoneyMX(p.totalDeduccionesAcumuladas)],
         ['(-) Exclusiones del pago provisional (acumuladas)',fmtMoneyMX(p.exclusionesAcumuladas)],
         ['Deducciones fiscales aplicables (acumuladas)',fmtMoneyMX(p.deduccionesAplicablesAcumuladas)],
         ['PTU pagada aplicable (fuente: Controles)'+((p.ptuDetalle||[]).length?' · pagada '+p.ptuDetalle.map(d=>fmtDate(d.fechaPago)).join(', '):''),fmtMoneyMX(p.ptuAplicada)],
@@ -7706,7 +7739,7 @@ function memoriaParametroHtml(m){
   if(!m)return '';
   if(m.pendiente)return `<div class="memo-param memo-pend"><b>${esc(m.titulo)}</b> · <span>${esc(m.pendiente)}</span></div>`;
   return `<details class="memo-param"><summary><b>${esc(m.titulo)}</b> · ${esc(m.resumen)}</summary>
-    <table class="memo-param-tabla"><tbody>${(m.pasos||[]).map(x=>`<tr><td class="sg">${esc(x.signo||'')}</td> <td>${esc(x.etiqueta)}</td> <td class="num">${esc(x.valor)}</td></tr>`).join('')}</tbody></table>
+    <table class="cedula-pf memo-param-grid"><colgroup><col class="c-lbl"><col class="c-num"><col class="c-num"></colgroup><tbody>${(m.pasos||[]).map((x,i,arr)=>`<tr class="${i===arr.length-1?'sub2':'det'}"><td class="lbl">${esc((x.signo?x.signo+' ':'')+x.etiqueta)}</td> <td class="num"></td> <td class="num">${esc(x.valor)}</td></tr>`).join('\n')}</tbody></table>
     <div class="memo-param-meta">${(m.meta||[]).filter(x=>x[1]!=null&&x[1]!=='').map(x=>`<span><b>${esc(x[0])}</b> ${esc(x[1])}</span>`).join('')}</div></details>`;
 }
 function memoriaTarifaIsrPf(d,pendiente){
@@ -7718,7 +7751,7 @@ function memoriaTarifaIsrPf(d,pendiente){
   return {titulo:'Memoria de determinación',resumen,
     pasos:d.sinBasePositiva?[{signo:'',etiqueta:'Base acumulada',valor:fm(d.base)},{signo:'=',etiqueta:'ISR determinado acumulado',valor:fm(d.isrDeterminado)}]:[
       {signo:'',etiqueta:'Base acumulada',valor:fm(d.base)},{signo:'(-)',etiqueta:'Límite inferior',valor:fm(d.limiteInferior)},
-      {signo:'(=)',etiqueta:'Excedente del límite inferior',valor:fm(d.excedente)},{signo:'(x)',etiqueta:'Porcentaje aplicable',valor:d.porcentaje+'%'},
+      {signo:'(=)',etiqueta:'Excedente del límite inferior',valor:fm(d.excedente)},{signo:'(×)',etiqueta:'Porcentaje aplicable',valor:d.porcentaje+'%'},
       {signo:'(=)',etiqueta:'Impuesto marginal',valor:fm(d.impuestoMarginal)},{signo:'(+)',etiqueta:'Cuota fija',valor:fm(d.cuotaFija)},
       {signo:'(=)',etiqueta:'ISR determinado acumulado',valor:fm(d.isrDeterminado)}],
     meta:[['Ejercicio',String(d.ejercicio)],['Periodo de tarifa',`${mes} ${d.ejercicio}`],['Parámetro',p.id!=null?`#${p.id} · versión ${p.version||1}`:null],['Fuente',p.fuente||null],['Vigencia',vig],['Publicada',p.publicadoEn?fmtDate(String(p.publicadoEn).slice(0,10)):null]]};
