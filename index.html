@@ -101,6 +101,21 @@
 .cedula-pf tr.sub2 td{font-weight:600;border-top:1px solid var(--line)}
 .cedula-pf tr.aplic td{border-top:2px solid var(--nav);background:rgba(12,99,206,.06)}
 .rad-op{display:inline-block;margin-right:18px;font-weight:400;cursor:pointer}
+.memo-wrap{padding:0 14px}
+.memo-param{margin:4px 0 8px;font-size:12px;color:var(--ink)}
+.memo-param summary{cursor:pointer;padding:5px 0;list-style:revert}
+.memo-param.memo-pend{padding:5px 0;color:#8a5a00}
+.memo-param-tabla{width:100%;max-width:520px;border-collapse:collapse;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.memo-param-tabla td{padding:2px 8px;border-bottom:1px solid var(--line)}
+.memo-param-tabla td.sg{width:34px;color:var(--muted);text-align:center}.memo-param-tabla td.num{text-align:right;white-space:nowrap}
+.memo-param-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11px;color:var(--muted);margin:4px 0}
+.memo-param-meta b{font-weight:600;margin-right:4px}
+.tarifas-pf-grid{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start}
+.tarifas-pf-panel tr.sel td{background:rgba(12,99,206,.08)}
+.tarifas-pf-panel .tarifa-pf-acum tr{cursor:pointer}
+.tarifa-pf-lectura td,.tarifa-pf-lectura th{text-align:right}
+.tarifa-pf-ej label{font-size:12px;color:var(--muted)}.tarifa-pf-ej select{padding:4px 6px}
+@media(max-width:720px){.tarifas-pf-grid{grid-template-columns:1fr}}
 </style>
 <style>
 :root{--nav:#073b76;--nav2:#082f5d;--blue:#0c63ce;--cyan:#26a7e8;--bg:#f4f7fb;--card:#fff;--ink:#15243a;--muted:#70809a;--line:#e4eaf2;--green:#20a66a;--amber:#e9a31b;--red:#df4d55;--purple:#7357d8;--gold:#c9a961;--shadow:0 8px 28px rgba(37,55,88,.08)}
@@ -546,7 +561,7 @@ const TABLE_MAP={
   fiscalPapelExtraccion:{table:'fiscal_papel_extraccion',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',materiales:'materiales',totalImpuesto:'total_impuesto',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelHospedaje:{table:'fiscal_papel_hospedaje',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tipoEstablecimiento:'tipo_establecimiento',desgloseBase:'desglose_base',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoDeterminado:'impuesto_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalPapelHospedajeAnfitrion:{table:'fiscal_papel_hospedaje_anfitrion',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoCausado:'impuesto_causado',impuestoRetenidoPlataforma:'impuesto_retenido_plataforma',impuestoACargo:'impuesto_a_cargo',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
-  fiscalPapelIsrPfAeSp:{table:'fiscal_papel_isr_pf_ae_sp',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',ingresos:'ingresos',totalIngresosMes:'total_ingresos_mes',ingresosAcumulados:'ingresos_acumulados',deducciones:'deducciones',totalDeduccionesMes:'total_deducciones_mes',exclusionesMes:'exclusiones_mes',deduccionesAplicablesMes:'deducciones_aplicables_mes',exclusionesAcumuladas:'exclusiones_acumuladas',ptuAplicada:'ptu_aplicada',totalDeduccionesAcumuladas:'total_deducciones_acumuladas',deduccionesAplicablesAcumuladas:'deducciones_aplicables_acumuladas',perdidaAplicada:'perdida_aplicada',perdidaDetalle:'perdida_detalle',baseAcumulada:'base_acumulada',tarifaParamId:'tarifa_param_id',tarifaDetalle:'tarifa_detalle',isrDeterminadoAcumulado:'isr_determinado_acumulado',isrRetenidoMes:'isr_retenido_mes',isrRetenidoAcumulado:'isr_retenido_acumulado',pagosProvisionalesPropuestos:'pagos_provisionales_propuestos',pagosProvisionalesConfirmados:'pagos_provisionales_confirmados',pagosProvAjustado:'pagos_prov_ajustado',resultadoIsrCargo:'resultado_isr_cargo',saldoAFavorPendiente:'saldo_a_favor_pendiente',reglasPendientes:'reglas_pendientes',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
+  fiscalPapelIsrPfAeSp:{table:'fiscal_papel_isr_pf_ae_sp',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',ingresos:'ingresos',totalIngresosMes:'total_ingresos_mes',ingresosAcumulados:'ingresos_acumulados',deducciones:'deducciones',totalDeduccionesMes:'total_deducciones_mes',exclusionesMes:'exclusiones_mes',deduccionesAplicablesMes:'deducciones_aplicables_mes',exclusionesAcumuladas:'exclusiones_acumuladas',ptuAplicada:'ptu_aplicada',ptuDetalle:'ptu_detalle',totalDeduccionesAcumuladas:'total_deducciones_acumuladas',deduccionesAplicablesAcumuladas:'deducciones_aplicables_acumuladas',perdidaAplicada:'perdida_aplicada',perdidaDetalle:'perdida_detalle',baseAcumulada:'base_acumulada',tarifaParamId:'tarifa_param_id',tarifaDetalle:'tarifa_detalle',isrDeterminadoAcumulado:'isr_determinado_acumulado',isrRetenidoMes:'isr_retenido_mes',isrRetenidoAcumulado:'isr_retenido_acumulado',pagosProvisionalesPropuestos:'pagos_provisionales_propuestos',pagosProvisionalesConfirmados:'pagos_provisionales_confirmados',pagosProvAjustado:'pagos_prov_ajustado',resultadoIsrCargo:'resultado_isr_cargo',saldoAFavorPendiente:'saldo_a_favor_pendiente',reglasPendientes:'reglas_pendientes',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalConceptosDeduccionPf:{table:'fiscal_conceptos_deduccion_pf',key:'id',cols:{id:'id',client:'client_id',nombre:'nombre',aplicaProvisional:'aplica_provisional',estatus:'estatus',creadoPor:'creado_por',creadoEn:'creado_en'}},
   fiscalPapelBebidas:{table:'fiscal_papel_bebidas',key:'id',cols:{accesoriosMemoria:'accesorios_memoria',id:'id',client:'client_id',ejercicio:'ejercicio',periodo:'periodo',entidadFederativa:'entidad_federativa',baseGravable:'base_gravable',tasa:'tasa',tasaParamId:'tasa_param_id',impuestoRetenidoDeterminado:'impuesto_retenido_determinado',fechaVencimiento:'fecha_vencimiento',obligacionRelacionadaId:'obligacion_relacionada_id',fechaPago:'fecha_pago',actualizacion:'actualizacion',recargos:'recargos',totalAPagar:'total_a_pagar',estatus:'estatus',elaboradoPor:'elaborado_por',revisadoPor:'revisado_por',revisadoEn:'revisado_en',observaciones:'observaciones',reemplazaA:'reemplaza_a',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoEn:'actualizado_en',fechaPresentacionDeclaracion:'fecha_presentacion_declaracion',folioDeclaracion:'folio_declaracion',lineaCaptura:'linea_captura',vigenciaLineaCaptura:'vigencia_linea_captura',importePagado:'importe_pagado',bancoPago:'banco_pago',folioPago:'folio_pago',ajusteRedondeo:'ajuste_redondeo',cumplimientoActualizadoPor:'cumplimiento_actualizado_por',cumplimientoActualizadoEn:'cumplimiento_actualizado_en',tipoCumplimiento:'tipo_cumplimiento'}},
   fiscalDeclaraciones:{table:'fiscal_declaraciones',key:'id',cols:{id:'id',client:'client_id',papelTipo:'papel_tipo',papelId:'papel_id',tipo:'tipo',fechaPresentacion:'fecha_presentacion',folioDeclaracion:'folio_declaracion',conceptosCubiertos:'conceptos_cubiertos',ejercicio:'ejercicio',periodo:'periodo',declaracionAnteriorId:'declaracion_anterior_id',observaciones:'observaciones',creadoPor:'creado_por',creadoEn:'creado_en',actualizadoPor:'actualizado_por',actualizadoEn:'actualizado_en'}},
@@ -6135,7 +6150,7 @@ const CLAVES_PARAMETRO_COMUNES=[
   {clave:'inpc_mensual',ambito:'federal',label:'INPC mensual',tipoSimple:'periodo_valor',plantilla:{periodo:'2026-09',valor:0}},
   {clave:'recargos_mensual',ambito:'federal',label:'Recargos mensual',tipoSimple:'periodo_tasa',plantilla:{periodo:'2026-09',tasa:1.47}},
   {clave:'isr_pm_tasa',ambito:'federal',label:'ISR Personas Morales',tipoSimple:'tasa',plantilla:{tasa:30}},
-  {clave:'isr_pf_ae_sp_tarifa',ambito:'federal',label:'ISR PF · Actividad Empresarial y Profesional — Tarifa',tipoSimple:'tarifa_pf',plantilla:{ejercicio:null,modoAcumulada:null,renglones:[],tablasPorPeriodo:{}}},
+  {clave:'isr_pf_ae_sp_tarifa',ambito:'federal',label:'ISR PF · Actividad Empresarial y Profesional — Tarifas pagos provisionales (Art. 106 LISR)',tipoSimple:'tarifa_pf',plantilla:{ejercicio:null,periodo:null,renglones:[]}},
   {clave:'iva_tasa_general',ambito:'federal',label:'IVA general',tipoSimple:'tasa',plantilla:{tasa:16}},
   {clave:'isr_retencion_honorarios',ambito:'federal',label:'Retención ISR — Honorarios',tipoSimple:'tasa',plantilla:{tasa:10}},
   {clave:'isr_retencion_arrendamiento',ambito:'federal',label:'Retención ISR — Arrendamiento',tipoSimple:'tasa',plantilla:{tasa:10}},
@@ -6150,7 +6165,7 @@ function plantillaValorPorClave(clave){let f=CLAVES_PARAMETRO_COMUNES.find(x=>x.
 function labelAmigableParametro(clave){let f=CLAVES_PARAMETRO_COMUNES.find(x=>x.clave===clave);return f?f.label:clave}
 function formatearValorParametro(clave,valor){
   if(valor==null)return '—';
-  if(valor.renglones)return `Tarifa ejercicio ${valor.ejercicio||'—'} · ${valor.renglones.length} renglón(es) base · tarifas acumuladas disponibles: ${(valor.renglones.length?1:0)+Object.keys(valor.tablasPorPeriodo||{}).filter(k=>k!=='1').length} de 12`;
+  if(valor.renglones)return `Tarifa ${MESES_NOMBRE[(valor.periodo||1)-1]} ${valor.ejercicio||'—'} · ${valor.renglones.length} renglón(es)`;
   if(valor.tasa!=null)return valor.tasa+'%';
   if(valor.valor!=null&&valor.periodo)return fmtMoneyMX(valor.valor)+' ('+valor.periodo+')';
   if(valor.valor!=null)return (typeof valor.valor==='number'&&valor.valor<1000?valor.valor:fmtMoneyMX(valor.valor))+'';
@@ -6169,7 +6184,7 @@ function familiaParametro(clave){
 function renderFiscalParams(){
   let el=$('#fiscalParamsList');if(!el)return;
   let items=db.parametrosFiscales||[];
-  if(!items.length){el.innerHTML='<div class="empty">Sin parámetros capturados todavía.</div>';return}
+  if(!items.length){el.innerHTML=panelTarifasIsrPfHtml()+'<div class="empty">Sin parámetros capturados todavía.</div>';return}
   // Agrupar por clave (y por entidad cuando es estatal) — un "concepto" por grupo, sin importar cuántas vigencias/meses tenga.
   let grupos=new Map(); // key: ambito|entidad|clave -> {ambito,entidad,clave,familia,registros:[]}
   items.forEach(p=>{
@@ -6214,8 +6229,9 @@ function renderFiscalParams(){
   let fedIndices=federal.filter(g=>g.familia==='serie_anual'||g.clave==='uma_diaria');
   let fedAccesorios=federal.filter(g=>g.clave==='recargos_mensual');
   let fedIndicesSeries=federal.filter(g=>g.familia==='serie_mensual'&&g.clave!=='recargos_mensual');
-  let fedTasas=federal.filter(g=>g.familia==='tasas');
+  let fedTasas=federal.filter(g=>g.familia==='tasas'&&g.clave!==CLAVE_TARIFA_ISR_PF_AE_SP);
   el.innerHTML=`
+    ${panelTarifasIsrPfHtml()}
     <div style="margin-bottom:22px">
       <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px">Federal — Índices y Unidades</h3>
       <div class="grid cols2">${[...fedIndices,...fedIndicesSeries].map(tarjetaConcepto).join('')||'<div class="role">Sin registros</div>'}</div>
@@ -6303,7 +6319,7 @@ function saveParam(){
   else if(campoSimple&&cat&&cat.tipoSimple==='valor'){valor={valor:valorMonetario(campoSimple)}}
   else if(campoSimple&&cat&&cat.tipoSimple==='periodo_valor'){valor={periodo:$('#pfSimplePeriodo').value,valor:parseFloat(campoSimple.value)||0}}
   else if(campoSimple&&cat&&cat.tipoSimple==='periodo_tasa'){valor={periodo:$('#pfSimplePeriodo').value,tasa:parseFloat(campoSimple.value)||0}}
-  else if($('#pfTarifaRows')){valor=leerTarifaPfDelFormulario();if(!valor)return}
+  else if($('#pfTarifaRows')){valor=leerTarifaPfDelFormulario();if(!valor)return;const ya=tarifaPfExistente(valor.ejercicio,valor.periodo);if(ya){alert(`Ya existe la tarifa de ${MESES_NOMBRE[valor.periodo-1]} ${valor.ejercicio} (${ya.estatus}). Edítala o, si ya está publicada, usa «Corregir (nueva versión)».`);return}}
   else if($('#pfValor')){
     // Respaldo: editor avanzado, o datos capturados directamente (pruebas automatizadas) sin pasar por los campos simples
     let valorTexto=$('#pfValor').value;
@@ -7087,18 +7103,7 @@ function mergeDeduccionesConCatalogoActual(guardadas,activos){
 // un BORRADOR (papel de trabajo abierto) toma el "aplica" vigente del catálogo del cliente.
 
 // --- 3) Tarifa (parámetro versionado): NINGÚN valor fiscal está en el código ---
-// valor = {ejercicio, modoAcumulada, renglones:[{limiteInferior,limiteSuperior,cuotaFija,porcentaje}], tablasPorPeriodo:{'1':[...],...}}   // la participación de cada deducción en el provisional la define el propio concepto (aplicaProvisional)
-function tablaTarifaPfParaPeriodo(param,periodo){
-  if(!param||!param.valor)return {ok:false,falta:'tarifa',pendiente:'No hay tarifa ISR PF publicada en Parámetros Fiscales para este periodo.'};
-  const v=param.valor;
-  const norm=r=>({li:Number(r.limiteInferior),ls:(r.limiteSuperior===null||r.limiteSuperior===undefined||r.limiteSuperior==='')?null:Number(r.limiteSuperior),cuota:Number(r.cuotaFija)||0,pct:Number(r.porcentaje)});
-  const delPeriodo=v.tablasPorPeriodo&&v.tablasPorPeriodo[String(periodo)];
-  if(Array.isArray(delPeriodo)&&delPeriodo.length)return {ok:true,filas:delPeriodo.map(norm),origen:'tabla_del_periodo'};
-  // Enero acumulado es, por definición, la tarifa base (un solo mes). Los demás periodos requieren su tabla.
-  if(periodo===1&&Array.isArray(v.renglones)&&v.renglones.length)return {ok:true,filas:v.renglones.map(norm),origen:'base_enero'};
-  if(v.modoAcumulada==='generar')return {ok:false,falta:'regla_generacion',pendiente:`Tarifa acumulada del periodo ${periodo}: Pendiente (la regla para generarla desde la tarifa base está pendiente de definición fiscal).`};
-  return {ok:false,falta:'tabla_periodo',pendiente:`Tarifa acumulada del periodo ${periodo}: Pendiente (aún no se genera; la regla de generación está pendiente de definición fiscal).`};
-}
+// Tarifa OFICIAL de UN mes (Anexo 8 RMF): parámetro isr_pf_ae_sp_tarifa con valor {ejercicio, periodo, renglones:[{limiteInferior,limiteSuperior,cuotaFija,porcentaje}]}, vigencia = ese mes, fuente = metadata del parámetro
 function aplicarTarifaPf(base,filas){
   if(!(base>0))return {limiteInferior:null,limiteSuperior:null,excedente:0,porcentaje:null,impuestoMarginal:0,cuotaFija:0,isr:0,sinBasePositiva:true};
   const ord=filas.slice().sort((a,b)=>a.li-b.li);
@@ -7121,30 +7126,33 @@ function calcularPapelISRPF(clientId,ejercicio,periodo,inputs){
   const deducciones=(inputs.deducciones||[]).map(d=>({...d,aplicaProvisional:d.aplicaProvisional!==false}));
   const totalIngresosMes=calcularTotalIngresosMes(ingresos);
   const ingresosAcumulados=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.totalIngresosMes)+totalIngresosMes);
-  // Deducciones: TOTAL CAPTURADO − EXCLUSIONES (conceptos que NO aplican al pago provisional) = APLICABLES AL PROVISIONAL (mes y acumulado)
   const totalDeduccionesMes=redondeo2PF(deducciones.reduce((s,d)=>s+(Number(d.importe)||0),0));
   const exclusionesMes=redondeo2PF(deducciones.filter(d=>d.aplicaProvisional===false).reduce((s,d)=>s+(Number(d.importe)||0),0));
   const deduccionesAplicablesMes=redondeo2PF(totalDeduccionesMes-exclusionesMes);
   const totalDeduccionesAcumuladas=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.totalDeduccionesMes)+totalDeduccionesMes);
   const exclusionesAcumuladas=redondeo2PF(acumuladoPrevioPF(clientId,ejercicio,periodo,p=>p.exclusionesMes)+exclusionesMes);
   const deduccionesAplicablesAcumuladas=redondeo2PF(totalDeduccionesAcumuladas-exclusionesAcumuladas);
-  const fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
-  const tarifaParam=getParametroVigente('federal',null,CLAVE_TARIFA_ISR_PF_AE_SP,fechaRef);
   const reglasPendientes=[];
-  // Pérdidas fiscales: se CONSULTA el control central (informativo); la regla de aplicación está pendiente, no se aplica nada automáticamente
   const saldos=getPerdidasVigentesConSaldo(clientId);
   const perdidaDetalle=saldos.map(s=>({controlId:s.control.id,ejercicio:s.control.ejercicio,saldoDisponible:s.saldoDisponible}));
   const perdidaAplicada=redondeo2PF(inputs.perdidaAplicada);
-  // PTU: renglón propio del papel (captura del contador, acumulada). Su automatización/fuente está pendiente de definición.
-  const ptuAplicada=redondeo2PF(inputs.ptuAplicada);
+  // PTU: se PROPONE desde el control central (única fuente). No hay captura paralela en el papel.
+  const ptu=ptuPagadaAplicablePF(clientId,ejercicio,periodo);
+  ptu.avisos.forEach(a=>reglasPendientes.push({codigo:'ptu_sin_fecha',bloquea:false,mensaje:a}));
+  const ptuAplicada=ptu.total;
   const baseAcumulada=redondeo2PF(ingresosAcumulados-deduccionesAplicablesAcumuladas-ptuAplicada-perdidaAplicada);
-  let tarifaDetalle=null,isrDeterminadoAcumulado=null;
-  const tabla=tablaTarifaPfParaPeriodo(tarifaParam,periodo);
-  if(!tabla.ok)reglasPendientes.push({codigo:tabla.falta,bloquea:true,mensaje:tabla.pendiente});
-  if(tabla.ok){
-    const ap=aplicarTarifaPf(baseAcumulada,tabla.filas);
-    if(ap){tarifaDetalle={origen:tabla.origen,periodo,limiteInferior:ap.limiteInferior,limiteSuperior:ap.limiteSuperior,excedente:ap.excedente,porcentaje:ap.porcentaje,impuestoMarginal:ap.impuestoMarginal,cuotaFija:ap.cuotaFija};isrDeterminadoAcumulado=ap.isr}
-    else reglasPendientes.push({codigo:'tarifa_no_cubre',bloquea:true,mensaje:'La tarifa del periodo no cubre la base calculada: revisa los renglones del parámetro.'});
+  let tarifaDetalle=null,isrDeterminadoAcumulado=null,tarifaParamId=null;
+  const tarifa=getTarifaIsrPfPeriodo(ejercicio,periodo);
+  if(!tarifa.ok)reglasPendientes.push({codigo:tarifa.falta,bloquea:true,mensaje:tarifa.pendiente});
+  else{
+    const ap=aplicarTarifaPf(baseAcumulada,tarifa.filas),p=tarifa.param;
+    if(ap){
+      tarifaParamId=p.id;isrDeterminadoAcumulado=ap.isr;
+      tarifaDetalle={origen:'parametro_publicado',ejercicio,periodo,periodoTarifa:`${ejercicio}-${String(periodo).padStart(2,'0')}`,
+        parametro:{id:p.id,clave:p.clave,version:versionParametroPf(p),fuente:p.fuente||null,vigenciaDesde:p.vigenciaDesde||null,vigenciaHasta:p.vigenciaHasta||null,publicadoEn:p.publicadoEn||null},
+        renglon:ap.limiteInferior!=null?{limiteInferior:ap.limiteInferior,limiteSuperior:ap.limiteSuperior,cuotaFija:ap.cuotaFija,porcentaje:ap.porcentaje}:null,
+        base:baseAcumulada,limiteInferior:ap.limiteInferior,limiteSuperior:ap.limiteSuperior,excedente:ap.excedente,porcentaje:ap.porcentaje,impuestoMarginal:ap.impuestoMarginal,cuotaFija:ap.cuotaFija,isrDeterminado:ap.isr,sinBasePositiva:!!ap.sinBasePositiva};
+    }else reglasPendientes.push({codigo:'tarifa_no_cubre',bloquea:true,mensaje:'La tarifa del periodo no cubre la base calculada: revisa los renglones del parámetro.'});
   }
   if(baseAcumulada<0)reglasPendientes.push({codigo:'base_negativa',bloquea:false,mensaje:'Base acumulada negativa: el tratamiento de la pérdida del periodo está PENDIENTE de definir; no genera ISR.'});
   const isrRetenidoMes=redondeo2PF(inputs.isrRetenidoMes);
@@ -7158,14 +7166,13 @@ function calcularPapelISRPF(clientId,ejercicio,periodo,inputs){
     resultadoIsrCargo=Math.max(0,bruto);
     if(bruto<0){saldoAFavorPendiente=redondeo2PF(-bruto);reglasPendientes.push({codigo:'saldo_a_favor',bloquea:false,mensaje:'Resultado negativo (ISR determinado menor que pagos provisionales y retenciones): el tratamiento del saldo a favor está PENDIENTE de definir; el ISR a cargo se muestra en $0.00 y el saldo no se aplica a ningún periodo.'})}
   }
-  // Accesorios: EXACTAMENTE el motor común. ISR PF solo entrega el principal (ISR a cargo del periodo).
   let accesorios={actualizacion:0,recargos:0,totalAccesorios:0,memoria:{}};
   if(resultadoIsrCargo!=null&&inputs.fechaVencimiento&&inputs.fechaPago)accesorios=calcularAccesorios(resultadoIsrCargo,inputs.fechaVencimiento,inputs.fechaPago);
   const totalAPagar=resultadoIsrCargo!=null?redondeo2PF(resultadoIsrCargo+accesorios.totalAccesorios):null;
   return {
     ingresos,totalIngresosMes,ingresosAcumulados,deducciones,
     totalDeduccionesMes,exclusionesMes,deduccionesAplicablesMes,totalDeduccionesAcumuladas,exclusionesAcumuladas,deduccionesAplicablesAcumuladas,
-    ptuAplicada,perdidaAplicada,perdidaDetalle,baseAcumulada,tarifaParamId:tarifaParam?tarifaParam.id:null,tarifaDetalle,isrDeterminadoAcumulado,
+    ptuAplicada,ptuDetalle:ptu.detalle,perdidaAplicada,perdidaDetalle,baseAcumulada,tarifaParamId,tarifaDetalle,isrDeterminadoAcumulado,
     isrRetenidoMes,isrRetenidoAcumulado,pagosProvisionalesPropuestos,pagosProvisionalesConfirmados,pagosProvAjustado,
     resultadoIsrCargo,saldoAFavorPendiente,reglasPendientes,
     fechaVencimiento:inputs.fechaVencimiento||null,fechaPago:inputs.fechaPago||null,
@@ -7174,10 +7181,9 @@ function calcularPapelISRPF(clientId,ejercicio,periodo,inputs){
   };
 }
 function inputsDesdePapelPF(p){
-  // El recálculo en cascada solo toca BORRADORES: el "aplica al provisional" se refresca desde el catálogo vigente del cliente
   const cat=new Map((db.fiscalConceptosDeduccionPf||[]).filter(c=>c.client===p.client).map(c=>[c.id,c]));
   const deducciones=(p.deducciones||[]).map(d=>{const c=cat.get(d.conceptoId);return (c&&p.estatus==='borrador')?{...d,aplicaProvisional:c.aplicaProvisional!==false}:d});
-  return {ingresos:p.ingresos,deducciones,perdidaAplicada:p.perdidaAplicada,ptuAplicada:p.ptuAplicada,isrRetenidoMes:p.isrRetenidoMes,
+  return {ingresos:p.ingresos,deducciones,perdidaAplicada:p.perdidaAplicada,isrRetenidoMes:p.isrRetenidoMes,
     pagosProvisionalesConfirmados:p.pagosProvAjustado?p.pagosProvisionalesConfirmados:undefined,
     fechaVencimiento:p.fechaVencimiento,fechaPago:p.fechaPago,observaciones:p.observaciones,obligacionRelacionadaId:p.obligacionRelacionadaId};
 }
@@ -7193,7 +7199,7 @@ function guardarPapelISRPF(clientId,ejercicio,periodo,inputs){
     ingresos:calc.ingresos,totalIngresosMes:calc.totalIngresosMes,ingresosAcumulados:calc.ingresosAcumulados,
     deducciones:calc.deducciones,totalDeduccionesMes:calc.totalDeduccionesMes,exclusionesMes:calc.exclusionesMes,deduccionesAplicablesMes:calc.deduccionesAplicablesMes,
     totalDeduccionesAcumuladas:calc.totalDeduccionesAcumuladas,exclusionesAcumuladas:calc.exclusionesAcumuladas,deduccionesAplicablesAcumuladas:calc.deduccionesAplicablesAcumuladas,
-    ptuAplicada:calc.ptuAplicada,perdidaAplicada:calc.perdidaAplicada,perdidaDetalle:calc.perdidaDetalle,baseAcumulada:calc.baseAcumulada,
+    ptuAplicada:calc.ptuAplicada,ptuDetalle:calc.ptuDetalle,perdidaAplicada:calc.perdidaAplicada,perdidaDetalle:calc.perdidaDetalle,baseAcumulada:calc.baseAcumulada,
     tarifaParamId:calc.tarifaParamId,tarifaDetalle:calc.tarifaDetalle,isrDeterminadoAcumulado:calc.isrDeterminadoAcumulado,
     isrRetenidoMes:calc.isrRetenidoMes,isrRetenidoAcumulado:calc.isrRetenidoAcumulado,
     pagosProvisionalesPropuestos:calc.pagosProvisionalesPropuestos,pagosProvisionalesConfirmados:calc.pagosProvisionalesConfirmados,pagosProvAjustado:calc.pagosProvAjustado,
@@ -7211,6 +7217,9 @@ function guardarPapelISRPF(clientId,ejercicio,periodo,inputs){
   if(!inputs._sinCascada)recalcularPosterioresBorradorPF(clientId,ejercicio,periodo+1);
   return nuevo;
 }
+// ---- Componente REUTILIZABLE: RESULTADO + MEMORIA DEL PARÁMETRO UTILIZADO ----
+// m = {titulo, resumen, pasos:[{signo,etiqueta,valor}], meta:[[etiqueta,valor]]} | {titulo, pendiente}
+// Hoy lo usa ISR PF (tarifa); queda listo para ISR PM (tasa), ISN, Hospedaje y otras obligaciones con tasa/tarifa.
 // --- 5) Recálculo en cascada PROPIO de ISR PF. Solo recalcula papeles en BORRADOR; un Revisado/Publicado (y su snapshot) NUNCA se modifica en silencio. ---
 let __cascadaPF={recalculados:[],omitidos:[]};
 function recalcularPosterioresBorradorPF(clientId,ejercicio,desdePeriodo){
@@ -7330,19 +7339,17 @@ function calcularPapelISRPFUI(){
   if(!$('#isrPfVencimiento'))return;
   const inputs={ingresos:leerIngresosPFDelFormulario(),deducciones:leerDeduccionesPFDelFormulario(),fechaVencimiento:$('#isrPfVencimiento').value||null,fechaPago:$('#isrPfFechaPago').value||null};
   if(__isrPfState.calc){
-    if($('#isrPfPtuAplicada'))inputs.ptuAplicada=valorMonetario($('#isrPfPtuAplicada'));
     if($('#isrPfPerdidaAplicada'))inputs.perdidaAplicada=valorMonetario($('#isrPfPerdidaAplicada'));
     if($('#isrPfPagosProvConfirmados'))inputs.pagosProvisionalesConfirmados=valorMonetario($('#isrPfPagosProvConfirmados'));
     if($('#isrPfRetenidoMes'))inputs.isrRetenidoMes=valorMonetario($('#isrPfRetenidoMes'));
   }else{
     const ex=getPapelISRPFVigente(clientId,ejercicio,periodo);
-    if(ex){inputs.ptuAplicada=ex.ptuAplicada;inputs.perdidaAplicada=ex.perdidaAplicada;inputs.isrRetenidoMes=ex.isrRetenidoMes;if(ex.pagosProvAjustado)inputs.pagosProvisionalesConfirmados=ex.pagosProvisionalesConfirmados}
+    if(ex){inputs.perdidaAplicada=ex.perdidaAplicada;inputs.isrRetenidoMes=ex.isrRetenidoMes;if(ex.pagosProvAjustado)inputs.pagosProvisionalesConfirmados=ex.pagosProvisionalesConfirmados}
   }
   const calc=conContextoRevisionUI(ISR_PF_AE_SP,clientId,ejercicio,periodo,()=>calcularPapelISRPF(clientId,ejercicio,periodo,inputs));
   __isrPfState.calc=calc;
   const fm=v=>v==null?'—':fmtMoneyMX(v),pend=v=>v==null?'<span class="pendiente">Pendiente</span>':fmtMoneyMX(v);
   const set=(id,html)=>{const e=document.getElementById(id);if(e)e.innerHTML=html};
-  // Parte capturable de la cédula: solo se actualizan totales y acumulados (sin reconstruir los campos, para no perder el foco)
   set('isrPfTotalIngresosDisplay',fm(calc.totalIngresosMes));set('isrPfTotalIngresosAcum',fm(calc.ingresosAcumulados));
   set('isrPfTotalDedMes',fm(calc.totalDeduccionesMes));set('isrPfTotalDedAcum',fm(calc.totalDeduccionesAcumuladas));
   set('isrPfExclMes',fm(calc.exclusionesMes));set('isrPfExclAcum',fm(calc.exclusionesAcumuladas));
@@ -7353,22 +7360,27 @@ function calcularPapelISRPFUI(){
     set('isrPfAcumDed_'+inp.dataset.concepto,fm(acum));
     if(inp.dataset.aplica==='no'){set('isrPfExMes_'+inp.dataset.concepto,fm(valorMonetario(inp)));set('isrPfExAcum_'+inp.dataset.concepto,fm(acum))}
   });
-  const t=calc.tarifaDetalle,m=calc.accesoriosMemoria;
+  const m=calc.accesoriosMemoria,traza=m&&m.aplica;
+  const ex=getPapelISRPFVigente(clientId,ejercicio,periodo);
+  // Un papel REVISADO/PUBLICADO muestra su memoria CONGELADA (la persistida), nunca una recalculada con parámetros posteriores
+  const detMemoria=(ex&&ex.estatus!=='borrador'&&ex.tarifaDetalle&&ex.tarifaParamId===calc.tarifaParamId)?ex.tarifaDetalle:calc.tarifaDetalle;
   const saldoCtl=calc.perdidaDetalle.length?`saldo en el control central: ${calc.perdidaDetalle.map(d=>`${fmtMoneyMX(d.saldoDisponible)} (ej. ${d.ejercicio})`).join(', ')} · su aplicación está pendiente de validar, no se aplica sola`:'sin pérdidas en el control central';
+  const ptuNota=calc.ptuDetalle.length?`fuente: Controles → PTU · ${calc.ptuDetalle.map(d=>`ej. ${d.ejercicioOrigen} pagada el ${fmtDate(d.fechaPago)} (${fmtMoneyMX(d.importePagado)})`).join(' · ')}`:'sin PTU pagada en el ejercicio hasta este periodo (fuente: Controles → PTU)';
   const fila=(cls,lbl,mes,acum)=>`<tr class="${cls}"><td class="lbl">${lbl}</td><td class="num">${mes==null?'':mes}</td><td class="num">${acum==null?'':acum}</td></tr>`;
-  const traza=m&&m.aplica;
+  const cols='<colgroup><col class="c-lbl"><col class="c-num"><col class="c-num"></colgroup>';
   $('#isrPfResultado').innerHTML=`
-    <table class="cedula-pf"><colgroup><col class="c-lbl"><col class="c-num"><col class="c-num"></colgroup><tbody>
+    <table class="cedula-pf">${cols}<tbody>
       <tr class="sec"><td colspan="3">DETERMINACIÓN DEL ISR</td></tr>
       ${calc.reglasPendientes.map(r=>`<tr class="pend"><td colspan="3">⚠ ${esc(r.mensaje)}${r.bloquea?' <b>(bloquea el paso a Revisado)</b>':''}</td></tr>`).join('')}
       ${fila('det','Ingresos acumulados',null,fm(calc.ingresosAcumulados))}
       ${fila('det','(-) Deducciones fiscales aplicables al provisional',null,fm(calc.deduccionesAplicablesAcumuladas))}
-      ${fila('det','(-) PTU aplicable<small>captura del contador (acumulada) · su automatización está pendiente de definir</small>',null,`<input id="isrPfPtuAplicada" class="money-input" type="number" step="0.01" value="${calc.ptuAplicada}" onchange="marcarFiscalDirty();calcularPapelISRPFUI()">`)}
+      ${fila('det',`(-) PTU pagada aplicable<small>${esc(ptuNota)}</small>`,null,fm(calc.ptuAplicada))}
       ${fila('det',`(-) Pérdidas fiscales aplicadas<small>${esc(saldoCtl)}</small>`,null,`<input id="isrPfPerdidaAplicada" class="money-input" type="number" step="0.01" value="${calc.perdidaAplicada}" onchange="marcarFiscalDirty();calcularPapelISRPFUI()">`)}
       ${fila('sub','(=) Base para pago provisional',null,fm(calc.baseAcumulada))}
-      ${t?`${fila('tarifa','Límite inferior',null,fm(t.limiteInferior))}${fila('tarifa','Excedente',null,fm(t.excedente))}${fila('tarifa','% sobre excedente',null,t.porcentaje!=null?t.porcentaje+'%':'—')}${fila('tarifa','Impuesto marginal',null,fm(t.impuestoMarginal))}${fila('tarifa','Cuota fija',null,fm(t.cuotaFija))}`
-         :fila('tarifa','Renglón de tarifa aplicado',null,'<span class="pendiente">Pendiente</span>')}
       ${fila('sub','ISR determinado acumulado',null,pend(calc.isrDeterminadoAcumulado))}
+    </tbody></table>
+    <div id="isrPfMemoriaDeterminacion" class="memo-wrap">${memoriaParametroHtml(memoriaTarifaIsrPf(detMemoria))}</div>
+    <table class="cedula-pf">${cols}<tbody>
       <tr class="sec"><td colspan="3">ACREDITAMIENTOS Y PAGOS ANTERIORES</td></tr>
       ${fila('det','ISR determinado acumulado',null,pend(calc.isrDeterminadoAcumulado))}
       ${fila('det',`(-) Pagos provisionales anteriores<small>propuesta: ${fm(calc.pagosProvisionalesPropuestos)}${calc.pagosProvAjustado?' · ajustado por el contador':''}</small>`,null,`<input id="isrPfPagosProvConfirmados" class="money-input" type="number" step="0.01" value="${calc.pagosProvisionalesConfirmados}" onchange="marcarFiscalDirty();calcularPapelISRPFUI()">`)}
@@ -7537,7 +7549,7 @@ function construirConfigCedulaISRPF(clientId,ejercicio){
 function imprimirCedulaISRPF(clientId,ejercicio){const cfg=construirConfigCedulaISRPF(clientId,ejercicio);if(cfg)generarPdfCedulaFiscal(cfg)}
 function construirConfigPapelISRPF(clientId,ejercicio,periodo){
   const p=getPapelISRPFVigente(clientId,ejercicio,periodo);if(!p)return null;
-  const c=client(clientId),t=p.tarifaDetalle;
+  const c=client(clientId),t=p.tarifaDetalle,pr=(t&&t.parametro)||{};
   return {
     titulo:`${ISR_PF_AE_SP_ETIQUETA} — Pago Provisional`,subtitulo:`${MESES_NOMBRE[periodo-1]} ${ejercicio}`,
     cliente:c.name,rfc:c.rfc,regimen:(c.regimenes||[]).join(', '),
@@ -7556,21 +7568,26 @@ function construirConfigPapelISRPF(clientId,ejercicio,periodo){
         ['Total deducciones capturadas (acumuladas)',fmtMoneyMX(p.totalDeduccionesAcumuladas)],
         ['(-) Exclusiones del pago provisional (acumuladas)',fmtMoneyMX(p.exclusionesAcumuladas)],
         ['Deducciones fiscales aplicables (acumuladas)',fmtMoneyMX(p.deduccionesAplicablesAcumuladas)],
-        ['PTU aplicable',fmtMoneyMX(p.ptuAplicada)],
-        ['Pérdidas fiscales aplicadas',fmtMoneyMX(p.perdidaAplicada)]
+        ['PTU pagada aplicable (fuente: Controles)'+((p.ptuDetalle||[]).length?' · pagada '+p.ptuDetalle.map(d=>fmtDate(d.fechaPago)).join(', '):''),fmtMoneyMX(p.ptuAplicada)],
+        ['Pérdidas fiscales aplicadas',fmtMoneyMX(p.perdidaAplicada)],
+        ['Base para pago provisional',p.baseAcumulada!=null?fmtMoneyMX(p.baseAcumulada):'—']
       ]},
-      {titulo:'Determinación',filas:[
-        ['Base para pago provisional',p.baseAcumulada!=null?fmtMoneyMX(p.baseAcumulada):'—'],
-        ['Límite inferior',t&&t.limiteInferior!=null?fmtMoneyMX(t.limiteInferior):'—'],
-        ['Excedente',t?fmtMoneyMX(t.excedente):'—'],
-        ['% sobre excedente',t&&t.porcentaje!=null?t.porcentaje+'%':'—'],
-        ['Impuesto marginal',t?fmtMoneyMX(t.impuestoMarginal):'—'],
-        ['Cuota fija',t?fmtMoneyMX(t.cuotaFija):'—'],
+      {titulo:'Memoria de determinación (tarifa aplicada)',filas:t?[
+        ['Tarifa del periodo',`${MESES_NOMBRE[(t.periodo||periodo)-1]} ${t.ejercicio}`],
+        ['Renglón aplicado — límite inferior',t.limiteInferior!=null?fmtMoneyMX(t.limiteInferior):'—'],
+        ['Excedente del límite inferior',fmtMoneyMX(t.excedente)],
+        ['Porcentaje sobre excedente',t.porcentaje!=null?t.porcentaje+'%':'—'],
+        ['Impuesto marginal',fmtMoneyMX(t.impuestoMarginal)],
+        ['Cuota fija',fmtMoneyMX(t.cuotaFija)],
+        ['ISR determinado acumulado',fmtMoneyMX(t.isrDeterminado)],
+        ['Parámetro / fuente',[pr.id!=null?`#${pr.id} v${pr.version||1}`:null,pr.fuente||null].filter(Boolean).join(' · ')||'—']
+      ]:[['Tarifa del periodo','Pendiente de publicación/configuración']]},
+      {titulo:'Acreditamientos y resultado',filas:[
         ['ISR determinado acumulado',p.isrDeterminadoAcumulado!=null?fmtMoneyMX(p.isrDeterminadoAcumulado):'—'],
-        ['Pagos provisionales anteriores',fmtMoneyMX(p.pagosProvisionalesConfirmados)+(p.pagosProvAjustado?' (ajustado por el contador)':'')],
-        ['ISR retenido al contribuyente (acumulado)',fmtMoneyMX(p.isrRetenidoAcumulado)]
-      ]},
-      {titulo:'Resultado',negritas:true,filas:[['ISR a cargo del periodo',p.resultadoIsrCargo!=null?fmtMoneyMX(p.resultadoIsrCargo):'—']]},
+        ['(-) Pagos provisionales anteriores',fmtMoneyMX(p.pagosProvisionalesConfirmados)+(p.pagosProvAjustado?' (ajustado por el contador)':'')],
+        ['(-) ISR retenido al contribuyente (acumulado)',fmtMoneyMX(p.isrRetenidoAcumulado)],
+        ['ISR A CARGO DEL PERIODO',p.resultadoIsrCargo!=null?fmtMoneyMX(p.resultadoIsrCargo):'—']
+      ],negritaUltima:true},
       ...((p.reglasPendientes||[]).length?[{titulo:'Reglas fiscales pendientes de definir / validar',filas:(p.reglasPendientes||[]).map(r=>[r.mensaje,r.bloquea?'Bloquea Revisado':'Informativo'])}]:[]),
       {titulo:'Pago y accesorios',filas:[
         ['Fecha de vencimiento',vencimientoPdfPapel(ISR_PF_AE_SP,p,clientId,ejercicio,periodo)],
@@ -7583,6 +7600,7 @@ function construirConfigPapelISRPF(clientId,ejercicio,periodo){
     nombreArchivo:`ISR_PF_${(c.name||'cliente').replace(/\s+/g,'_')}_${ejercicio}-${String(periodo).padStart(2,'0')}.pdf`
   };
 }
+// ---- Visibilidad de Controles según aplicabilidad (misma regla que Papeles) ----
 function imprimirPapelISRPF(clientId,ejercicio,periodo){
   const cfg=construirConfigPapelISRPF(clientId,ejercicio,periodo);
   if(!cfg){alert('Primero guarda el papel antes de exportarlo a PDF.');return}
@@ -7640,38 +7658,154 @@ function radiosAplicaProvisionalPfHtml(aplica){
   return `<div class="field" style="margin-top:14px"><label>¿Aplica al pago provisional?</label><div><label class="rad-op"><input type="radio" name="dedPfAplica" value="si" ${aplica?'checked':''}> Sí</label><label class="rad-op"><input type="radio" name="dedPfAplica" value="no" ${aplica?'':'checked'}> No</label></div></div>`;
 }
 
+function versionParametroPf(p){
+  let n=1,cur=p,g=0;
+  while(cur&&cur.reemplazaA&&g++<50){cur=(db.parametrosFiscales||[]).find(x=>x.id===cur.reemplazaA);if(cur)n++}
+  return n;
+}
+// Tarifa OFICIAL del ejercicio y periodo: parámetro PUBLICADO cuya vigencia es ese mes (getParametroVigente ya excluye Borrador/Revisado
+// y respeta el contexto de snapshot). El valor debe corresponder EXACTAMENTE al ejercicio y periodo: nunca se usa otro mes/ejercicio ni se genera.
+function getTarifaIsrPfPeriodo(ejercicio,periodo){
+  const pend=motivo=>({ok:false,falta:'tarifa_periodo',motivo,pendiente:'Tarifa fiscal del periodo pendiente de publicación/configuración.'});
+  const fechaRef=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
+  const param=getParametroVigente('federal',null,CLAVE_TARIFA_ISR_PF_AE_SP,fechaRef);
+  if(!param||!param.valor)return pend('sin_tarifa_publicada');
+  const v=param.valor;
+  if(Number(v.ejercicio)!==ejercicio||Number(v.periodo)!==periodo)return pend('ejercicio_o_periodo_distinto');
+  if(!Array.isArray(v.renglones)||!v.renglones.length)return pend('sin_renglones');
+  const filas=v.renglones.map(r=>({li:Number(r.limiteInferior),ls:(r.limiteSuperior==null||r.limiteSuperior==='')?null:Number(r.limiteSuperior),cuota:Number(r.cuotaFija)||0,pct:Number(r.porcentaje)}));
+  return {ok:true,filas,param};
+}
+// Controles de PTU del cliente: vivos, o —en un papel Revisado— únicamente los congelados en su snapshot
+function controlesPtuPF(clientId){
+  const ctx=__ctxParam;
+  if(ctx&&ctx.modo==='exclusivo')return (ctx.base.controles||[]).filter(c=>c.client===clientId&&c.tipo==='isr_ptu'&&c.estatus!=='vencido');
+  const ejs=[...new Set((db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo==='isr_ptu').map(c=>c.ejercicio))];
+  return ejs.map(ej=>getControlVigente(clientId,'isr_ptu',ej)).filter(Boolean);
+}
+// PTU PAGADA en el ejercicio del papel, con fecha de pago <= fin del periodo (acumulado). Sin distribución mensual ni reglas de PM.
+// Fuente única: Fiscal → Controles → PTU. Un control sin fecha de pago no puede ubicarse en el acumulado: se avisa, no se asume.
+function ptuPagadaAplicablePF(clientId,ejercicio,periodo){
+  const fin=`${ejercicio}-${String(periodo).padStart(2,'0')}-${String(new Date(ejercicio,periodo,0).getDate()).padStart(2,'0')}`;
+  const detalle=[],avisos=[];let total=0;
+  controlesPtuPF(clientId).forEach(ctl=>{
+    const datos=ctl.datos||{},fecha=datos.fechaPago||null,imp=Number(datos.importePagado!=null?datos.importePagado:ctl.saldoOriginal)||0;
+    if(!fecha){avisos.push(`La PTU del ejercicio ${ctl.ejercicio} está registrada en Controles sin fecha de pago: no se pudo ubicar en el acumulado y NO se consideró. Captura la fecha en Controles → PTU.`);return}
+    if(String(fecha).slice(0,4)===String(ejercicio)&&fecha<=fin){detalle.push({controlId:ctl.id,ejercicioOrigen:ctl.ejercicio,fechaPago:fecha,importePagado:redondeo2PF(imp)});total+=imp}
+  });
+  return {total:redondeo2PF(total),detalle,avisos};
+}
+function memoriaParametroHtml(m){
+  if(!m)return '';
+  if(m.pendiente)return `<div class="memo-param memo-pend"><b>${esc(m.titulo)}</b> · <span>${esc(m.pendiente)}</span></div>`;
+  return `<details class="memo-param"><summary><b>${esc(m.titulo)}</b> · ${esc(m.resumen)}</summary>
+    <table class="memo-param-tabla"><tbody>${(m.pasos||[]).map(x=>`<tr><td class="sg">${esc(x.signo||'')}</td> <td>${esc(x.etiqueta)}</td> <td class="num">${esc(x.valor)}</td></tr>`).join('')}</tbody></table>
+    <div class="memo-param-meta">${(m.meta||[]).filter(x=>x[1]!=null&&x[1]!=='').map(x=>`<span><b>${esc(x[0])}</b> ${esc(x[1])}</span>`).join('')}</div></details>`;
+}
+function memoriaTarifaIsrPf(d,pendiente){
+  if(!d)return {titulo:'Memoria de determinación',pendiente:pendiente||'Tarifa fiscal del periodo pendiente de publicación/configuración.'};
+  const fm=fmtMoneyMX,mes=MESES_NOMBRE[(d.periodo||1)-1],p=d.parametro||{};
+  const resumen=d.sinBasePositiva?`Tarifa aplicada · ${mes} ${d.ejercicio} · base no positiva: sin ISR`
+    :`Tarifa aplicada · ${mes} ${d.ejercicio} · Tasa ${d.porcentaje}% · Límite inferior ${fm(d.limiteInferior)} · Cuota fija ${fm(d.cuotaFija)}`;
+  const vig=p.vigenciaDesde?`${fmtDate(p.vigenciaDesde)}${p.vigenciaHasta?' – '+fmtDate(p.vigenciaHasta):''}`:null;
+  return {titulo:'Memoria de determinación',resumen,
+    pasos:d.sinBasePositiva?[{signo:'',etiqueta:'Base acumulada',valor:fm(d.base)},{signo:'=',etiqueta:'ISR determinado acumulado',valor:fm(d.isrDeterminado)}]:[
+      {signo:'',etiqueta:'Base acumulada',valor:fm(d.base)},{signo:'(-)',etiqueta:'Límite inferior',valor:fm(d.limiteInferior)},
+      {signo:'(=)',etiqueta:'Excedente del límite inferior',valor:fm(d.excedente)},{signo:'(x)',etiqueta:'Porcentaje aplicable',valor:d.porcentaje+'%'},
+      {signo:'(=)',etiqueta:'Impuesto marginal',valor:fm(d.impuestoMarginal)},{signo:'(+)',etiqueta:'Cuota fija',valor:fm(d.cuotaFija)},
+      {signo:'(=)',etiqueta:'ISR determinado acumulado',valor:fm(d.isrDeterminado)}],
+    meta:[['Ejercicio',String(d.ejercicio)],['Periodo de tarifa',`${mes} ${d.ejercicio}`],['Parámetro',p.id!=null?`#${p.id} · versión ${p.version||1}`:null],['Fuente',p.fuente||null],['Vigencia',vig],['Publicada',p.publicadoEn?fmtDate(String(p.publicadoEn).slice(0,10)):null]]};
+}
+function controlTiposVisibles(clientId){
+  const ap=getIsrAplicable(clientId).tipo;
+  return CONTROL_TIPOS.filter(ct=>{
+    if(ct.ambito!=='ISR')return true;                       // IVA y demás: sin cambios
+    if(ap==='isr_pm')return true;                           // PM: exactamente como hoy
+    if(ap===ISR_PF_AE_SP)return ct.tipo!=='isr_coeficiente_utilidad';   // PF AE/SP: PTU y pérdidas; nunca Coeficiente de utilidad
+    return false;                                           // PF sin la obligación: no hay ISR aplicable
+  });
+}
+// ---- Parámetros: tarifas oficiales por ejercicio y mes (Anexo 8 RMF) ----
+let __tarifasPfUI={ejercicio:new Date().getFullYear(),mes:null};
+let __tarifaPfPref=null;
+function tarifasPfDelPeriodo(ejercicio,periodo){
+  return (db.parametrosFiscales||[]).filter(p=>p.clave===CLAVE_TARIFA_ISR_PF_AE_SP&&p.valor&&Number(p.valor.ejercicio)===ejercicio&&Number(p.valor.periodo)===periodo)
+    .sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||'')||b.id-a.id);
+}
+function estadoTarifaPfPeriodo(ejercicio,periodo){
+  const regs=tarifasPfDelPeriodo(ejercicio,periodo);
+  // Mismo criterio que el motor: Publicada Y con vigencia que cubre el mes (una tarifa mal fechada NO se muestra como Disponible)
+  const f1=`${ejercicio}-${String(periodo).padStart(2,'0')}-01`;
+  const pub=regs.find(r=>r.estatus==='publicado'&&r.vigenciaDesde<=f1&&(!r.vigenciaHasta||r.vigenciaHasta>=f1))||null,enProceso=regs.find(r=>r.estatus==='borrador'||r.estatus==='revisado')||null;
+  return {estado:pub?'Disponible':'Pendiente',pub,enProceso,nota:(!pub&&enProceso)?`en ${enProceso.estatus==='revisado'?'Revisado':'Borrador'}`:(pub&&enProceso?`corrección en ${enProceso.estatus==='revisado'?'Revisado':'Borrador'}`:null)};
+}
+function accionesTarifaPfHtml(r){
+  if(!isAdmin)return '';
+  const b=(t,js)=>`<button class="btn" style="padding:2px 10px;font-size:11.5px" onclick="${js}">${t}</button>`;
+  if(r.estatus==='borrador')return b('Marcar Revisado',`avanzarEstatusParam(${r.id},'revisado');renderFiscalParams()`)+' '+b('Editar',`editarParametroUI(${r.id})`);
+  if(r.estatus==='revisado')return b('Publicar',`avanzarEstatusParam(${r.id},'publicado');renderFiscalParams()`)+' '+b('Editar',`editarParametroUI(${r.id})`);
+  return b('Corregir (nueva versión)',`corregirParametroUI(${r.id})`);
+}
+function detalleTarifaPfHtml(ej,mes){
+  const e=estadoTarifaPfPeriodo(ej,mes),reg=e.pub||e.enProceso,titulo=`${MESES_NOMBRE[mes-1]} ${ej}`;
+  if(!reg)return `<div class="tarifa-pf-tit">${titulo}</div><div class="hint">Sin tarifa cargada para este periodo. Los papeles de ${titulo} quedarán con la tarifa Pendiente y no podrán pasar a Revisado.</div>${isAdmin?`<button class="btn primary" onclick="abrirAltaTarifaPfUI(${ej},${mes})">+ Cargar tarifa de ${titulo}</button>`:''}`;
+  const v=reg.valor,pr=reg;
+  const meta=[['Estado',reg.estatus==='publicado'?'Publicada':(reg.estatus==='revisado'?'Revisada (no publicada: no se usa en papeles)':'Borrador (no se usa en papeles)')],['Versión',String(versionParametroPf(reg))],['Fuente',reg.fuente||'—'],['Vigencia',`${fmtDate(reg.vigenciaDesde)}${reg.vigenciaHasta?' – '+fmtDate(reg.vigenciaHasta):''}`]];
+  return `<div class="tarifa-pf-tit">${titulo}</div>
+    <table class="tarifa-pf-tabla tarifa-pf-lectura"><thead><tr><th>Límite inferior</th><th>Límite superior</th><th>Cuota fija</th><th>% excedente</th></tr></thead><tbody>${(v.renglones||[]).map(r=>`<tr><td>${fmtMoneyMX(r.limiteInferior)}</td><td>${r.limiteSuperior==null?'En adelante':fmtMoneyMX(r.limiteSuperior)}</td><td>${fmtMoneyMX(r.cuotaFija)}</td><td>${r.porcentaje}%</td></tr>`).join('')}</tbody></table>
+    <div class="memo-param-meta">${meta.map(x=>`<span><b>${esc(x[0])}</b> ${esc(x[1])}</span>`).join('')}</div>
+    <div style="margin-top:8px">${accionesTarifaPfHtml(reg)}</div>
+    ${e.pub&&e.enProceso?`<div class="hint" style="margin-top:8px">Hay una corrección ${e.enProceso.estatus==='revisado'?'Revisada':'en Borrador'} (versión ${versionParametroPf(e.enProceso)}); mientras no se publique, los papeles siguen usando la versión publicada.</div><div>${accionesTarifaPfHtml(e.enProceso)}</div>`:''}`;
+}
+function panelTarifasIsrPfHtml(){
+  const ej=__tarifasPfUI.ejercicio,mes=__tarifasPfUI.mes;
+  const filas=MESES_NOMBRE.map((m,i)=>{const e=estadoTarifaPfPeriodo(ej,i+1);return `<tr class="${mes===i+1?'sel':''}" onclick="seleccionarMesTarifaPfUI(${i+1})"><td>${m}</td><td class="${e.estado==='Disponible'?'ok':'pend'}">${e.estado}${e.nota?` <small>· ${e.nota}</small>`:''}</td></tr>`}).join('');
+  return `<div class="card tarifas-pf-panel" id="tarifasPfPanel" style="margin-bottom:22px;padding:14px 16px">
+    <h3 style="margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.03em">TARIFAS PAGOS PROVISIONALES · ART. 106 LISR</h3>
+    <div class="role" style="margin-bottom:10px">ISR PF · Actividad Empresarial y Profesional — tablas oficiales por ejercicio y mes (Anexo 8 de la RMF). Se administran aquí una sola vez; el papel selecciona solo la tarifa Publicada de su periodo.</div>
+    <div class="tarifa-pf-ej"><label>Ejercicio</label><input id="tarifasPfEjercicio" type="number" min="2000" max="2100" value="${ej}" onchange="seleccionarEjercicioTarifasPfUI(this.value)"></div>
+    <div class="tarifas-pf-grid"><table class="tarifa-pf-acum">${filas}</table><div id="tarifasPfDetalle">${mes?detalleTarifaPfHtml(ej,mes):'<div class="hint">Selecciona un mes para ver su tabla.</div>'}</div></div>
+  </div>`;
+}
+function seleccionarEjercicioTarifasPfUI(v){const n=parseInt(v,10);if(n>=2000&&n<=2100){__tarifasPfUI.ejercicio=n;__tarifasPfUI.mes=null;renderFiscalParams()}}
+function seleccionarMesTarifaPfUI(m){__tarifasPfUI.mes=m;renderFiscalParams()}
+function abrirAltaTarifaPfUI(ejercicio,mes){
+  __tarifaPfPref={ejercicio,mes};
+  openParamModal(CLAVE_TARIFA_ISR_PF_AE_SP);
+  const sel=document.getElementById('pfConceptoSel');if(sel){sel.value=CLAVE_TARIFA_ISR_PF_AE_SP;cambiarConceptoParamUI()}
+  __tarifaPfPref=null;
+}
+function tarifaPfExistente(ejercicio,periodo){return tarifasPfDelPeriodo(ejercicio,periodo).find(r=>r.estatus!=='reemplazado')||null}
+// ---- Editor tabular de UNA tabla mensual (sin JSON) ----
+function sincronizarVigenciaTarifaPf(){
+  const ej=parseInt((document.getElementById('pfTarifaEjercicio')||{}).value,10),mes=parseInt((document.getElementById('pfTarifaMes')||{}).value,10);
+  const d=document.getElementById('pfDesde'),h=document.getElementById('pfHasta');
+  if(!d||!h||!(ej>=2000)||!(mes>=1&&mes<=12))return;
+  d.value=`${ej}-${String(mes).padStart(2,'0')}-01`;h.value=`${ej}-${String(mes).padStart(2,'0')}-${String(new Date(ej,mes,0).getDate()).padStart(2,'0')}`;
+  d.readOnly=true;h.readOnly=true;
+}
+
 // --- 8) Editor de la tarifa en Fiscal → Parámetros: tabla editable, SIN JSON y sin valores precargados.
 // Lo almacenado que no se edita en pantalla (tablas por periodo, regla de deducciones, modo) se conserva de forma invisible. ---
-let __tarifaPfOculta=null;
 function filaTarifaPfHtml(v){
   v=v||{};
-  const inp=(cls,val,ph)=>`<td><input class="${cls}" type="number" step="0.01" value="${val==null?'':val}" placeholder="${ph}" oninput="actualizarEstadoTarifasAcumuladasPf()"></td>`;
-  return `<tr>${inp('pfTarifaLi',v.limiteInferior,'0.00')}${inp('pfTarifaLs',v.limiteSuperior,'En adelante')}${inp('pfTarifaCuota',v.cuotaFija,'0.00')}${inp('pfTarifaPct',v.porcentaje,'0.00')}<td class="acc"><button type="button" class="linkbtn peligro" title="Eliminar renglón" onclick="this.closest('tr').remove();actualizarEstadoTarifasAcumuladasPf()">✕</button></td></tr>`;
+  const inp=(cls,val,ph)=>`<td><input class="${cls}" type="number" step="0.01" value="${val==null?'':val}" placeholder="${ph}"></td>`;
+  return `<tr>${inp('pfTarifaLi',v.limiteInferior,'0.00')}${inp('pfTarifaLs',v.limiteSuperior,'En adelante')}${inp('pfTarifaCuota',v.cuotaFija,'0.00')}${inp('pfTarifaPct',v.porcentaje,'0.00')}<td class="acc"><button type="button" class="linkbtn peligro" title="Eliminar renglón" onclick="this.closest('tr').remove()">✕</button></td></tr>`;
 }
-function agregarRenglonTarifaPf(v){const tb=document.getElementById('pfTarifaRows');if(!tb)return;tb.insertAdjacentHTML('beforeend',filaTarifaPfHtml(v));actualizarEstadoTarifasAcumuladasPf()}
-function inicializarEditorTarifaPf(){const tb=document.getElementById('pfTarifaRows');if(tb&&!tb.children.length)agregarRenglonTarifaPf()}
-function renglonesTarifaCompletosPf(){return [...document.querySelectorAll('#pfTarifaRows tr')].some(tr=>['.pfTarifaLi','.pfTarifaCuota','.pfTarifaPct'].every(s=>tr.querySelector(s).value!==''))}
-function estadoTarifasAcumuladasPfHtml(baseCompleta){
-  const t=(__tarifaPfOculta&&__tarifaPfOculta.tablasPorPeriodo)||{};
-  return MESES_NOMBRE.map((m,i)=>{
-    const n=i+1,e=n===1?(baseCompleta?'Base / disponible':'Pendiente'):((Array.isArray(t[String(n)])&&t[String(n)].length)?'Disponible':'Pendiente');
-    return `<tr><td>${m}</td><td class="${e==='Pendiente'?'pend':'ok'}">${e}</td></tr>`;
-  }).join('');
-}
-function actualizarEstadoTarifasAcumuladasPf(){const tb=document.getElementById('pfTarifasAcumBody');if(tb)tb.innerHTML=estadoTarifasAcumuladasPfHtml(renglonesTarifaCompletosPf())}
+function agregarRenglonTarifaPf(v){const tb=document.getElementById('pfTarifaRows');if(!tb)return;tb.insertAdjacentHTML('beforeend',filaTarifaPfHtml(v))}
+function inicializarEditorTarifaPf(){const tb=document.getElementById('pfTarifaRows');if(tb&&!tb.children.length)agregarRenglonTarifaPf();sincronizarVigenciaTarifaPf()}
 function editorTarifaPfHtml(valor){
-  __tarifaPfOculta=valor?{tablasPorPeriodo:valor.tablasPorPeriodo||{},modoAcumulada:valor.modoAcumulada||null}:null;
+  const pref=valor?{ejercicio:valor.ejercicio,mes:valor.periodo}:(__tarifaPfPref||{});
   const ren=valor&&Array.isArray(valor.renglones)&&valor.renglones.length?valor.renglones:[{}];
-  const baseCompleta=ren.some(r=>r.limiteInferior!=null&&r.cuotaFija!=null&&r.porcentaje!=null);
+  const bloquear=valor?'disabled':'';
   return `<div class="tarifa-pf-editor">
-    <div class="hint">Captura los valores oficiales del ejercicio. No hay valores precargados. Cada versión sigue el ciclo Borrador → Revisado → Publicado.</div>
-    <div class="tarifa-pf-ej"><label>Ejercicio de la tarifa</label><input id="pfTarifaEjercicio" type="number" min="2000" max="2100" step="1" value="${valor&&valor.ejercicio||''}"></div>
-    <div class="tarifa-pf-tit">Tarifa base</div>
+    <div class="hint">Tabla OFICIAL de un mes (Anexo 8 de la RMF). Captura los valores publicados por la autoridad; no hay valores precargados. Indica en <b>Fuente</b> el documento (p. ej. Anexo 8 RMF del ejercicio y fecha del DOF). Cada versión sigue el ciclo Borrador → Revisado → Publicado.</div>
+    <div class="tarifa-pf-ej"><label>Ejercicio</label><input id="pfTarifaEjercicio" type="number" min="2000" max="2100" step="1" value="${pref.ejercicio||new Date().getFullYear()}" ${bloquear} onchange="sincronizarVigenciaTarifaPf()">
+      <label>Mes</label><select id="pfTarifaMes" ${bloquear} onchange="sincronizarVigenciaTarifaPf()">${MESES_NOMBRE.map((m,i)=>`<option value="${i+1}" ${pref.mes===i+1?'selected':''}>${m}</option>`).join('')}</select></div>
+    <div class="tarifa-pf-tit">Tabla del mes</div>
     <table class="tarifa-pf-tabla"><thead><tr><th>Límite inferior</th><th>Límite superior</th><th>Cuota fija</th><th>% sobre excedente</th><th></th></tr></thead><tbody id="pfTarifaRows">${ren.map(filaTarifaPfHtml).join('')}</tbody></table>
     <button type="button" class="btn" style="margin-top:6px" onclick="agregarRenglonTarifaPf()">+ Agregar renglón</button>
-    <div class="tarifa-pf-tit">Tarifas acumuladas</div>
-    <table class="tarifa-pf-acum"><tbody id="pfTarifasAcumBody">${estadoTarifasAcumuladasPfHtml(baseCompleta)}</tbody></table>
-    <div class="hint">Las tarifas acumuladas de febrero a diciembre se generarán automáticamente desde la tarifa base cuando se defina la regla fiscal correspondiente. Mientras tanto aparecen como Pendiente.</div>
+    <div class="hint" style="margin-top:8px">La vigencia queda fijada al mes de la tabla. Las 12 tablas del ejercicio se cargan una sola vez, aquí; los papeles seleccionan automáticamente la que corresponde.</div>
   </div>`;
 }
 const CAMPOS_TARIFA_PF_HTML=()=>editorTarifaPfHtml(null);
@@ -7693,13 +7827,13 @@ function validarRenglonesTarifaPf(ren,etiqueta){
 }
 function leerTarifaPfDelFormulario(){
   const num=v=>(v===''||v==null)?null:Number(v);
-  const ej=num(document.getElementById('pfTarifaEjercicio').value);
+  const ej=num(document.getElementById('pfTarifaEjercicio').value),mes=num(document.getElementById('pfTarifaMes').value);
   if(!(ej>=2000&&ej<=2100)){alert('Captura el ejercicio de la tarifa (año).');return null}
+  if(!(mes>=1&&mes<=12)){alert('Elige el mes de la tarifa.');return null}
   const filas=[...document.querySelectorAll('#pfTarifaRows tr')].map(tr=>({limiteInferior:num(tr.querySelector('.pfTarifaLi').value),limiteSuperior:num(tr.querySelector('.pfTarifaLs').value),cuotaFija:num(tr.querySelector('.pfTarifaCuota').value),porcentaje:num(tr.querySelector('.pfTarifaPct').value)}));
   const ren=filas.filter(f=>!(f.limiteInferior==null&&f.limiteSuperior==null&&f.cuotaFija==null&&f.porcentaje==null));
-  const err=validarRenglonesTarifaPf(ren,'Tarifa base');if(err){alert(err);return null}
-  const o=__tarifaPfOculta||{};
-  return {ejercicio:ej,modoAcumulada:o.modoAcumulada||null,renglones:ren,tablasPorPeriodo:o.tablasPorPeriodo||{}};
+  const err=validarRenglonesTarifaPf(ren,`Tarifa ${MESES_NOMBRE[mes-1]} ${ej}`);if(err){alert(err);return null}
+  return {ejercicio:ej,periodo:mes,renglones:ren};
 }
 
 // ===================== RESUMEN FISCAL (solo lectura — nunca calcula, solo lee) =====================
@@ -7823,7 +7957,7 @@ function fiscalControlesCard(clientId,ejercicio,periodo){
   // "hoy" ignoraría el ejercicio/periodo que el contador está revisando y mostraría el registro
   // equivocado para periodos pasados o futuros.
   let fechaRefPeriodo=(ejercicio&&periodo)?`${ejercicio}-${String(periodo).padStart(2,'0')}-01`:toISODate(new Date());
-  return `<div class="card" style="margin-top:15px"><h3>Fiscal — Controles</h3><div class="hint" style="margin-bottom:10px">Saldos y datos fiscales persistentes de este cliente — se conservan entre ejercicios, no se recapturan cada mes.${ejercicio&&periodo?` El Coeficiente de utilidad se muestra para el periodo seleccionado arriba (${MESES_NOMBRE[periodo-1]} ${ejercicio}).`:''}</div><div class="grid cols2">${CONTROL_TIPOS.map(ct=>{
+  return `<div class="card" style="margin-top:15px"><h3>Fiscal — Controles</h3><div class="hint" style="margin-bottom:10px">Saldos y datos fiscales persistentes de este cliente — se conservan entre ejercicios, no se recapturan cada mes.${ejercicio&&periodo&&controlTiposVisibles(clientId).some(t=>t.tipo==='isr_coeficiente_utilidad')?` El Coeficiente de utilidad se muestra para el periodo seleccionado arriba (${MESES_NOMBRE[periodo-1]} ${ejercicio}).`:''}</div><div class="grid cols2">${controlTiposVisibles(clientId).map(ct=>{
     let controles=(db.controlesFiscales||[]).filter(c=>c.client===clientId&&c.tipo===ct.tipo).slice().sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
     let vigente=controles.find(c=>!controles.some(o=>o.reemplazaA===c.id))||controles[0];
     let cuerpo='<b style="color:var(--muted);font-size:14px">Sin registrar</b>';
