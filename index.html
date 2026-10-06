@@ -7219,7 +7219,7 @@ function calcularPapelISRPF(clientId,ejercicio,periodo,inputs){
 }
 function inputsDesdePapelPF(p){
   const cat=new Map((db.fiscalConceptosDeduccionPf||[]).filter(c=>c.client===p.client).map(c=>[c.id,c]));
-  const deducciones=(p.deducciones||[]).map(d=>{const c=cat.get(d.conceptoId);return (c&&p.estatus==='borrador')?{...d,aplicaProvisional:c.aplicaProvisional!==false}:d});
+  const deducciones=(p.deducciones||[]).map(d=>{const c=cat.get(d.conceptoId);return (c&&p.estatus==='borrador')?{...d,nombre:c.nombre,aplicaProvisional:c.aplicaProvisional!==false}:d});
   return {ingresos:p.ingresos,deducciones,perdidaAplicada:p.perdidaAplicada,isrRetenidoMes:p.isrRetenidoMes,
     pagosProvisionalesConfirmados:p.pagosProvAjustado?p.pagosProvisionalesConfirmados:undefined,
     fechaVencimiento:p.fechaVencimiento,fechaPago:p.fechaPago,observaciones:p.observaciones,obligacionRelacionadaId:p.obligacionRelacionadaId};
@@ -7679,7 +7679,8 @@ function deduccionesParaPantallaPF(existente,clientId){
   const refrescar=!existente||existente.estatus==='borrador';
   return mergeDeduccionesConCatalogoActual((existente&&existente.deducciones)||[],getConceptosDeduccionPf(clientId)).map(d=>{
     const c=todos.find(x=>x.id===d.conceptoId);
-    return {...d,aplicaProvisional:(refrescar&&c)?c.aplicaProvisional!==false:d.aplicaProvisional!==false};
+    // Un Borrador toma del catálogo el NOMBRE y el "aplica al provisional" vigentes; Revisados/Publicados conservan los suyos (historia)
+    return {...d,nombre:(refrescar&&c)?c.nombre:d.nombre,aplicaProvisional:(refrescar&&c)?c.aplicaProvisional!==false:d.aplicaProvisional!==false};
   });
 }
 function confirmarConceptoIngresoPfUI(clientId,ejercicio,periodo){
