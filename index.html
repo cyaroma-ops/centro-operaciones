@@ -4720,6 +4720,7 @@ const ESTILO_FILA_CEDULA={
   'ISR determinado (acum.)':'ced-det',
   'Resultado determinado (a pagar el mes)':'ced-res',
   'Resultado determinado':'ced-res', // etiqueta con que aparece en el PDF de ISR PM
+  'ISR a cargo del periodo':'ced-res', // ISR PF (pantalla y PDF)
   'Base gravada 16%':'ced-base','IVA a cargo del periodo':'ced-det','IVA final a pagar':'ced-res',
   'Total remuneraciones':'ced-base','Base gravable':'ced-base',
   'Impuesto determinado':'ced-det','Total impuesto':'ced-det','Impuesto retenido determinado':'ced-det','Impuesto a cargo':'ced-res'
@@ -7541,7 +7542,7 @@ function getCedulaAnualISRPF(clientId,ejercicio){
     deduccionesAplicablesMes:serie('suma',m=>Number(m.deduccionesAplicablesMes||0),suma('deduccionesAplicablesMes')),
     deduccionesAplicablesAcumuladas:serie('ultimo',m=>Number(m.deduccionesAplicablesAcumuladas||0),ultimo('deduccionesAplicablesAcumuladas')),
     ptuAplicada:serie('ultimo',m=>Number(m.ptuAplicada||0),ultimo('ptuAplicada')),
-    perdidasAplicadas:serie('ultimo',m=>Number(m.perdidaAplicada||0),ultimo('perdidaAplicada')),
+    perdidasAplicadas:serie('ultimo',m=>Number(m.perdidaAplicada||0),null),   // cifras ACUMULADAS de cada periodo: no se totalizan en el cierre anual (CIERRE sin importe)
     baseAcumulada:serie('ultimo',m=>m.baseAcumulada!=null?Number(m.baseAcumulada):null,ultimo('baseAcumulada')),
     isrDeterminadoAcumulado:serie('ultimo',m=>m.isrDeterminadoAcumulado!=null?Number(m.isrDeterminadoAcumulado):null,ultimo('isrDeterminadoAcumulado')),
     pagosProvisionalesAnteriores:serie('ultimo',m=>Number(m.pagosProvisionalesConfirmados||0),ultimo('pagosProvisionalesConfirmados')),
@@ -7575,10 +7576,11 @@ function verCedulaISRPF(clientId,ejercicio){
     ${fila('ISR determinado (acum.)',c.isrDeterminadoAcumulado,true)}
     ${fila('Pagos provisionales anteriores',c.pagosProvisionalesAnteriores,true)}
     ${fila('ISR retenido al contribuyente (acum.)',c.isrRetenidoAcumulado,true)}
-    ${fila('Resultado determinado (a pagar el mes)',c.resultadoDeterminado,true)}
+    ${fila('ISR a cargo del periodo',c.resultadoDeterminado,true)}
     ${sec('Control de pago / accesorios')}
     ${fila('Principal',c.principal,true)}${fila('Actualización',c.actualizacion,true)}${fila('Recargos',c.recargos,true)}${fila('Total pagado',c.totalPagado,true)}
-    </tbody></table></div>`,`<button class="btn primary" onclick="imprimirCedulaISRPF(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
+    </tbody></table></div>
+    <div class="hint" style="margin-top:8px;font-size:11.5px">CIERRE: los movimientos mensuales se totalizan; las cifras acumuladas muestran el último periodo disponible.<br>Las pérdidas fiscales aplicadas corresponden a cifras acumuladas de cada periodo; no se totalizan en el cierre anual.</div>`,`<button class="btn primary" onclick="imprimirCedulaISRPF(${clientId},${ejercicio})">🖨 Imprimir / Exportar PDF</button>`);
 }
 function construirConfigCedulaISRPF(clientId,ejercicio){
   const c=getCedulaAnualISRPF(clientId,ejercicio),cl=client(clientId);
@@ -7594,9 +7596,10 @@ function construirConfigCedulaISRPF(clientId,ejercicio){
       filaCedulaPdf('PTU aplicable (acum.)',c.ptuAplicada),filaCedulaPdf('Pérdidas aplicadas (acum.)',c.perdidasAplicadas),
       filaCedulaPdf('Base para pago provisional',c.baseAcumulada),filaCedulaPdf('ISR determinado (acum.)',c.isrDeterminadoAcumulado),
       filaCedulaPdf('Pagos provisionales anteriores',c.pagosProvisionalesAnteriores),filaCedulaPdf('ISR retenido al contribuyente (acum.)',c.isrRetenidoAcumulado),
-      filaCedulaPdf('Resultado determinado',c.resultadoDeterminado),
+      filaCedulaPdf('ISR a cargo del periodo',c.resultadoDeterminado),
       filaCedulaPdf('Principal',c.principal),filaCedulaPdf('Actualización',c.actualizacion),filaCedulaPdf('Recargos',c.recargos),filaCedulaPdf('Total pagado',c.totalPagado)
     ],
+    notaPie:["CIERRE: los movimientos mensuales se totalizan; las cifras acumuladas muestran el último periodo disponible.","Las pérdidas fiscales aplicadas corresponden a cifras acumuladas de cada periodo; no se totalizan en el cierre anual."],
     nombreArchivo:`Cedula_ISR_PF_${clientDisplay(clientId).replace(/\s+/g,'_')}_${ejercicio}.pdf`
   };
 }
