@@ -7416,10 +7416,10 @@ function calcularPapelISRPFUI(){
   const fila=(cls,lbl,mes,acum)=>`<tr class="${cls}"><td class="lbl">${lbl}</td><td class="num">${mes==null?'':mes}</td><td class="num">${acum==null?'':acum}</td></tr>`;
   const cols='<colgroup><col class="c-lbl"><col class="c-num"><col class="c-num"></colgroup>';
   const detP=(calc.perdidaDetalle||[]).filter(d=>d.origen!=null||d.sinOrigen);
-  const notaPerd=d=>[`saldo fiscal de referencia ${fm(d.saldoReferencia)}${d.referencia==='corte'?' (corte '+d.ejercicioCorte+')':''}`,`propuesto ${fm(d.propuestoAcum)}`,d.heredado?'igual a lo confirmado en el periodo anterior':null,d.limitadoPor?`limitado por ${d.limitadoPor==='saldo'?'el saldo disponible':'la utilidad susceptible'} (solicitado ${fm(d.solicitadoAcum)})`:null].filter(Boolean).join(' · ');
+  const notaPerd=d=>[`saldo fiscal de referencia ${fm(d.saldoReferencia)}${d.referencia==='corte'?' (corte '+d.ejercicioCorte+')':''}`,`propuesto ${fm(d.propuestoAcum)}`,`confirmado efectivo ${fm(d.confirmadoAcum)}`,d.heredado?'solicitado igual a lo confirmado en el periodo anterior':null,d.limitadoPor?`limitado por ${d.limitadoPor==='saldo'?'el saldo disponible':'la utilidad susceptible'}`:null].filter(Boolean).join(' · ');
   const filasPerd=detP.length?[
-    fila('det','(-) Pérdidas fiscales aplicadas (confirmadas)<small>CYARoma propone; tú confirmas. Cifras acumuladas del ejercicio: no se suman entre periodos.</small>',null,fm(calc.perdidaAplicada)),
-    ...detP.map(d=>d.sinOrigen?fila('det perd','&nbsp;&nbsp;Aplicación capturada antes del control por origen<small>revísala y confírmala por origen</small>',null,fm(d.confirmadoAcum)):fila('det perd',`&nbsp;&nbsp;Pérdida de origen ${d.origen}<small>${esc(notaPerd(d))} · <a href="#" onclick="usarPerdidaPropuestaPF(${d.origen});return false">Usar propuesto</a></small>`,null,`<input class="isrPfPerdidaInput money-input" data-origen="${d.origen}" type="number" step="0.01" value="${d.confirmadoAcum}" onchange="marcarFiscalDirty();calcularPapelISRPFUI()">`))
+    fila('det','(-) Pérdidas fiscales aplicadas (confirmadas)<small>CYARoma propone; tú solicitas. El confirmado efectivo nunca excede lo solicitado, el saldo ni la utilidad susceptible. Cifras acumuladas del ejercicio: no se suman entre periodos.</small>',null,fm(calc.perdidaAplicada)),
+    ...detP.map(d=>d.sinOrigen?fila('det perd','&nbsp;&nbsp;Aplicación capturada antes del control por origen<small>revísala y confírmala por origen</small>',null,fm(d.confirmadoAcum)):fila('det perd',`&nbsp;&nbsp;Pérdida de origen ${d.origen} · solicitado<small>${esc(notaPerd(d))} · <a href="#" onclick="usarPerdidaPropuestaPF(${d.origen});return false">Usar propuesto</a></small>`,null,`<input class="isrPfPerdidaInput money-input" data-origen="${d.origen}" type="number" step="0.01" value="${d.solicitadoAcum!=null?d.solicitadoAcum:d.confirmadoAcum}" onchange="marcarFiscalDirty();calcularPapelISRPFUI()">`))
   ].join(''):fila('det',`(-) Pérdidas fiscales aplicadas<small>${(calc.perdidaDetalle||[]).length?'registro anterior al control por origen':'sin pérdidas de ejercicios anteriores en Controles → ISR → Pérdidas fiscales'}</small>`,null,fm(calc.perdidaAplicada));
   $('#isrPfResultado').innerHTML=`
     <table class="cedula-pf">${cols}<tbody>
@@ -7776,7 +7776,8 @@ function calcularPerdidasPF(clientId,ejercicio,periodo,susceptible,confirmadas){
   });
   return {detalle,total:redondeo2PF(detalle.reduce((s,d)=>s+d.confirmadoAcum,0)),propuestoTotal:redondeo2PF(detalle.reduce((s,d)=>s+d.propuestoAcum,0))};
 }
-function confirmacionesDePapelPF(p){const m={};(p.perdidaDetalle||[]).forEach(d=>{if(d.origen!=null&&d.confirmadoAcum!=null)m[String(d.origen)]=Number(d.confirmadoAcum)||0});return m}
+// Lo que viaja al motor como "perdidasConfirmadas" es lo SOLICITADO por el contador (su decisión): el confirmado efectivo se recalcula en cada cálculo con los límites vigentes
+function confirmacionesDePapelPF(p){const m={};(p.perdidaDetalle||[]).forEach(d=>{if(d.origen!=null&&(d.solicitadoAcum!=null||d.confirmadoAcum!=null))m[String(d.origen)]=Number(d.solicitadoAcum!=null?d.solicitadoAcum:d.confirmadoAcum)||0});return m}
 // Decisiones guardadas de un papel → inputs del motor (un papel anterior al control por origen conserva su cifra como "sin origen")
 function perdidasInputsDePapelPF(p){
   const det=p.perdidaDetalle||[],nuevo=det.some(d=>d.confirmadoAcum!=null),out={perdidasConfirmadas:confirmacionesDePapelPF(p)};
@@ -7786,7 +7787,7 @@ function perdidasInputsDePapelPF(p){
 }
 function perdidasInputsDeCalcPF(calc){
   const out={perdidasConfirmadas:{}};
-  (calc.perdidaDetalle||[]).forEach(d=>{if(d.sinOrigen)out.perdidaLegacy=(out.perdidaLegacy||0)+(Number(d.confirmadoAcum)||0);else if(d.origen!=null)out.perdidasConfirmadas[String(d.origen)]=Number(d.confirmadoAcum)||0});
+  (calc.perdidaDetalle||[]).forEach(d=>{if(d.sinOrigen)out.perdidaLegacy=(out.perdidaLegacy||0)+(Number(d.confirmadoAcum)||0);else if(d.origen!=null)out.perdidasConfirmadas[String(d.origen)]=Number(d.solicitadoAcum!=null?d.solicitadoAcum:d.confirmadoAcum)||0});
   return out;
 }
 function perdidasInputsDeDomPF(calcPrev){
