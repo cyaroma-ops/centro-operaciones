@@ -7252,6 +7252,7 @@ function guardarPapelISRPF(clientId,ejercicio,periodo,inputs){
   });
   persistirVersionPapel('fiscalPapelIsrPfAeSp',anteriorVigente,esNuevaVersion,nuevo);
   if(!inputs._sinCascada)recalcularPosterioresBorradorPF(clientId,ejercicio,periodo+1);
+  if(!inputs._sinCascada)save();   // programa el guardado en la base (como los demás papeles); las llamadas internas de la cascada no lo repiten
   return nuevo;
 }
 // ---- Componente REUTILIZABLE: RESULTADO + MEMORIA DEL PARÁMETRO UTILIZADO ----
