@@ -287,6 +287,23 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{f
 .side .brand small{display:none}
 .nav{flex:none;overflow:visible}
 }
+
+/* ===== Cédulas anuales en móvil (M2): la tabla se desplaza horizontalmente dentro de su contenedor, con columnas legibles
+   y la columna de conceptos fija. Solo ≤760px: escritorio y tablet no cambian. ===== */
+@media(max-width:760px){
+.cedula-table{table-layout:auto;width:max-content;min-width:100%}
+.cedula-table col.lbl-col,.cedula-table col.mes-col,.cedula-table col.cierre-col{width:auto}
+.cedula-table th,.cedula-table td{min-width:92px;padding:7px 9px;font-size:12px;overflow:visible;text-overflow:clip}
+.cedula-table th{font-size:10px}
+.cedula-table th:last-child,.cedula-table td:last-child{min-width:112px}
+.cedula-table td.lbl,.cedula-table th:first-child{width:150px;min-width:150px;max-width:150px;position:sticky;left:0;z-index:3;background:var(--card);box-shadow:1px 0 0 var(--line);overflow-wrap:anywhere}
+.cedula-table th:first-child{background:var(--bg);z-index:4}
+.cedula-table td[colspan]{text-align:left}   /* títulos de sección: a la izquierda para verse al iniciar el desplazamiento */
+div:has(> .cedula-table){overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+/* barra de acciones del papel (Volver, Guardar, Revisar, Recalcular, PDF): una sola fila compacta que se desplaza por dentro, en lugar de ensanchar la página */
+.card[style*="position:sticky;bottom:0"]{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important}
+.card[style*="position:sticky;bottom:0"]>*{flex:none;white-space:nowrap}
+}
 </style></head><body><div class="login-bg" id="loginOverlay">
   <div class="login-left">
     <svg class="login-decor" viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
