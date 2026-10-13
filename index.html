@@ -504,7 +504,7 @@ div:has(> .cedula-table){overflow-x:auto;-webkit-overflow-scrolling:touch;oversc
     <details class="help-item"><summary>No encuentro la respuesta a mi duda</summary><div class="help-body">Pregúntale directamente a Rodolfo (administrador) o al equipo — y si es algo que le puede servir a todos, se puede agregar aquí.</div></details>
   </div>
 </section>
-<section class="page" id="vacations"><div id="vacationsViewToggle" style="margin-bottom:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><div class="seg"><button class="active" onclick="setVacationView('lista',this)">Lista</button><button onclick="setVacationView('calendario',this)">Calendario</button></div><button class="btn admin-only" onclick="exportVacationsPDF()">📄 Exportar a PDF</button></div><div id="vacationsContent"></div></section>
+<section class="page" id="vacations"><div id="vacationsViewToggle" style="margin-bottom:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><div class="seg"><button class="active" onclick="setVacationView('lista',this)">Lista</button><button onclick="setVacationView('calendario',this)">Calendario</button></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn admin-only" onclick="openVacationRangeReport()">📅 Reporte por fechas</button><button class="btn admin-only" onclick="exportVacationsPDF()">📄 Exportar a PDF</button></div></div><div id="vacationsContent"></div></section>
 <section class="page" id="clientDetail"></section>
 <section class="page" id="fiscalWorkspace"></section>
 <section class="page" id="fiscalResumen"></section>
@@ -9179,6 +9179,91 @@ function vacationSummary(staffMember,refDateStr,periodsOverride){
 let vacationView='lista';let vacationCalDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
 function setVacationView(v,b){vacationView=v;b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderVacations()}
 function changeVacationCalMonth(delta){vacationCalDate=new Date(vacationCalDate.getFullYear(),vacationCalDate.getMonth()+delta,1);renderVacations()}
+// ===== Reporte de vacaciones por rango de fechas (V1). Solo lectura sobre vacationPeriods; no modifica datos. =====
+function vrHoyLocal(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+function vrPlural(n,s,p){return n===1?s:p}
+function vrDatosRango(desde,hasta){
+  const hoy=vrHoyLocal(),periodos=db.vacationPeriods||[],staffById=new Map((db.staff||[]).map(s=>[s.id,s]));
+  const solapa=p=>p.fechaInicio&&p.fechaFin&&!(p.fechaFin<desde||p.fechaInicio>hasta);
+  const filas=[];
+  periodos.forEach(p=>{
+    if((p.status||'Autorizado')!=='Autorizado'||!solapa(p))return;
+    const ini=p.fechaInicio>desde?p.fechaInicio:desde,fin=p.fechaFin<hasta?p.fechaFin:hasta;
+    const diasEnRango=countVacationDays(ini,fin);
+    if(diasEnRango<=0)return;   // el traslape son solo domingos: no cuenta como día de vacaciones
+    const s=staffById.get(p.staff);
+    filas.push({staffId:p.staff,nombre:s?s.name:'Persona no encontrada',activo:!s||s.status==='Activo',inicio:p.fechaInicio,fin:p.fechaFin,diasEnRango,diasPeriodo:p.dias,estado:p.fechaFin<hoy?'Tomadas':(p.fechaInicio>hoy?'Programadas':'En curso'),notas:p.notas||''});
+  });
+  filas.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')||a.inicio.localeCompare(b.inicio));
+  const porPersona=new Map();
+  filas.forEach(f=>{if(!porPersona.has(f.staffId))porPersona.set(f.staffId,{staffId:f.staffId,nombre:f.nombre,activo:f.activo,periodos:0,dias:0});const x=porPersona.get(f.staffId);x.periodos++;x.dias+=f.diasEnRango});
+  const pendientes=periodos.filter(p=>(p.status||'Autorizado')==='Pendiente'&&solapa(p)).length;
+  return {desde,hasta,filas,personas:[...porPersona.values()],totalDias:filas.reduce((s,f)=>s+f.diasEnRango,0),pendientes};
+}
+function vrLeerRango(){return {d:(($('#vrDesde')||{}).value)||'',h:(($('#vrHasta')||{}).value)||''}}
+function openVacationRangeReport(){
+  if(!isAdmin){alert('Solo un administrador puede generar este reporte.');return}
+  const hoy=vrHoyLocal(),y=+hoy.slice(0,4),m=+hoy.slice(5,7),ini=hoy.slice(0,8)+'01',fin=hoy.slice(0,8)+String(new Date(y,m,0).getDate()).padStart(2,'0');
+  modal('Reporte de vacaciones por periodo',`<div class="form-grid"><div class="field"><label>Desde</label><input id="vrDesde" type="date" value="${ini}" oninput="renderVacationRangeReport()"></div><div class="field"><label>Hasta</label><input id="vrHasta" type="date" value="${fin}" oninput="renderVacationRangeReport()"></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" onclick="exportVacationRangeExcel()">📊 Excel</button><button class="btn primary" onclick="exportVacationRangePDF()">📄 PDF</button></div><div id="vrBody" style="margin-top:12px"></div>`,
+    `<button class="btn" onclick="closeModal()">Cerrar</button>`);
+  renderVacationRangeReport();
+}
+function renderVacationRangeReport(){
+  const box=$('#vrBody');if(!box)return;const {d,h}=vrLeerRango();
+  if(!d||!h){box.innerHTML='<div class="hint">Captura ambas fechas.</div>';return}
+  if(h<d){box.innerHTML='<div class="hint" style="color:var(--red,#b42318)">La fecha final no puede ser anterior a la inicial.</div>';return}
+  const r=vrDatosRango(d,h);
+  const resumen=`<div class="hint" style="margin-bottom:8px"><b>${r.personas.length}</b> ${vrPlural(r.personas.length,'persona','personas')} · <b>${r.filas.length}</b> ${vrPlural(r.filas.length,'periodo','periodos')} · <b>${r.totalDias}</b> ${vrPlural(r.totalDias,'día','días')} de vacaciones entre ${fmtDate(d)} y ${fmtDate(h)}. Solo periodos autorizados; los días cuentan de lunes a sábado (domingo no cuenta) y solo dentro del rango.</div>`;
+  const pend=r.pendientes?`<div class="hint" style="margin-bottom:8px;color:var(--amber)">Hay ${r.pendientes} ${vrPlural(r.pendientes,'solicitud pendiente','solicitudes pendientes')} de autorización en este rango; no se incluye${r.pendientes===1?'':'n'}.</div>`:'';
+  if(!r.filas.length){box.innerHTML=resumen+pend+'<div class="hint">Nadie tomó vacaciones autorizadas en este periodo.</div>';return}
+  const tPer=`<div class="table-wrap" style="margin-bottom:12px"><table class="table" style="min-width:0"><thead><tr><th>Persona</th><th>Periodos</th><th>Días en el rango</th></tr></thead><tbody>${r.personas.map(p=>`<tr><td style="overflow-wrap:anywhere"><b>${esc(p.nombre)}</b>${p.activo?'':' <span class="hint">(inactiva)</span>'}</td><td>${p.periodos}</td><td><b>${p.dias}</b></td></tr>`).join('')}</tbody></table></div>`;
+  const tDet=`<div class="table-wrap"><table class="table"><thead><tr><th>Persona</th><th>Del</th><th>Al</th><th>Días en el rango</th><th>Días del periodo</th><th>Estado</th><th>Notas</th></tr></thead><tbody>${r.filas.map(f=>`<tr><td>${esc(f.nombre)}</td><td>${fmtDate(f.inicio)}</td><td>${fmtDate(f.fin)}</td><td>${f.diasEnRango}</td><td>${f.diasPeriodo}</td><td>${esc(f.estado)}</td><td>${esc(f.notas)}</td></tr>`).join('')}</tbody></table></div>`;
+  box.innerHTML=resumen+pend+'<h4 style="margin:6px 0">Por persona</h4>'+tPer+'<h4 style="margin:6px 0">Detalle de periodos</h4>'+tDet;
+}
+async function exportVacationRangeExcel(){
+  if(!isAdmin){alert('Solo un administrador puede exportar este reporte.');return}
+  const {d,h}=vrLeerRango();if(!d||!h||h<d){alert('Revisa las fechas del reporte.');return}
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',typeof XLSX!=='undefined');
+    const r=vrDatosRango(d,h),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{'Reporte':'Vacaciones por periodo','Desde':fmtDate(d),'Hasta':fmtDate(h),'Personas':r.personas.length,'Periodos':r.filas.length,'Días en el rango':r.totalDias,'Solicitudes pendientes no incluidas':r.pendientes}]),'Resumen');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r.personas.map(p=>({'Persona':p.nombre,'Periodos':p.periodos,'Días en el rango':p.dias,'Estatus de la persona':p.activo?'Activo':'Inactivo'}))),'Por persona');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(r.filas.map(f=>({'Persona':f.nombre,'Inicio del periodo':fmtDate(f.inicio),'Fin del periodo':fmtDate(f.fin),'Días dentro del rango':f.diasEnRango,'Días totales del periodo':f.diasPeriodo,'Estado':f.estado,'Notas':f.notas}))),'Detalle');
+    XLSX.writeFile(wb,`Vacaciones_${d}_a_${h}.xlsx`);
+  }catch(e){alert('No se pudo generar el Excel: '+e.message)}
+}
+async function exportVacationRangePDF(){
+  if(!isAdmin){alert('Solo un administrador puede exportar este reporte.');return}
+  const {d,h}=vrLeerRango();if(!d||!h||h<d){alert('Revisa las fechas del reporte.');return}
+  try{
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',typeof window.jspdf!=='undefined');
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',typeof window.jspdf!=='undefined'&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable!=='undefined');
+    const {jsPDF}=window.jspdf,doc=new jsPDF(),NAVY=[7,59,118],pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight(),logo=getLogoDataUrl(),r=vrDatosRango(d,h);
+    const encabezados=new Set();
+    function drawHeader(){
+      const pn=doc.internal.getCurrentPageInfo().pageNumber;if(encabezados.has(pn))return;encabezados.add(pn);   // las tablas lo vuelven a pedir: se dibuja una sola vez por página
+      doc.setFillColor(NAVY[0],NAVY[1],NAVY[2]);doc.rect(0,0,pageW,26,'F');
+      if(logo){try{doc.addImage(logo,'PNG',12,5,30,15)}catch(e){}}
+      doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('Vacaciones por periodo',pageW-12,12,{align:'right'});
+      doc.setFontSize(8.5);doc.setFont(undefined,'normal');doc.text(`Del ${fmtDate(d)} al ${fmtDate(h)}  |  Generado el ${new Date().toLocaleString('es-MX')}`,pageW-12,18,{align:'right'});doc.setTextColor(0,0,0);
+    }
+    function drawFooter(){const n=doc.internal.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(150);doc.setFont(undefined,'normal');doc.text('Roma & Associates - Documento confidencial',12,pageH-8);doc.text(`Pagina ${i} de ${n}`,pageW-12,pageH-8,{align:'right'})}doc.setTextColor(0)}
+    drawHeader();let y=36;doc.setFontSize(10);doc.setFont(undefined,'normal');
+    doc.text(`${r.personas.length} ${vrPlural(r.personas.length,'persona','personas')}  |  ${r.filas.length} ${vrPlural(r.filas.length,'periodo','periodos')}  |  ${r.totalDias} ${vrPlural(r.totalDias,'dia','dias')} de vacaciones en el rango`,12,y);y+=5;
+    doc.setFontSize(8);doc.setTextColor(110);doc.text('Solo periodos autorizados. Los dias cuentan de lunes a sabado (domingo no cuenta) y solo dentro del rango.',12,y);y+=5;
+    if(r.pendientes){doc.text(`${r.pendientes} ${vrPlural(r.pendientes,'solicitud pendiente','solicitudes pendientes')} de autorizacion en este rango (no incluida${r.pendientes===1?'':'s'}).`,12,y);y+=5}
+    doc.setTextColor(0);y+=3;
+    if(!r.filas.length){doc.setFontSize(11);doc.text('Nadie tomo vacaciones autorizadas en este periodo.',12,y+4)}
+    else{
+      doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Por persona',12,y);
+      doc.autoTable({startY:y+3,head:[['Persona','Periodos','Dias en el rango']],body:r.personas.map(p=>[p.nombre+(p.activo?'':' (inactiva)'),p.periodos,p.dias]),theme:'striped',headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},columnStyles:{1:{halign:'center'},2:{halign:'center',fontStyle:'bold'}},margin:{top:32,left:12,right:12},didDrawPage:drawHeader});
+      y=doc.lastAutoTable.finalY+10;if(y>240){doc.addPage();drawHeader();y=36}
+      doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Detalle de periodos',12,y);
+      doc.autoTable({startY:y+3,head:[['Persona','Del','Al','Dias en rango','Dias del periodo','Estado','Notas']],body:r.filas.map(f=>[f.nombre,fmtDate(f.inicio),fmtDate(f.fin),f.diasEnRango,f.diasPeriodo,f.estado,f.notas]),theme:'striped',headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},styles:{fontSize:8.5},columnStyles:{3:{halign:'center'},4:{halign:'center'}},margin:{top:32,left:12,right:12},didDrawPage:drawHeader});
+    }
+    drawFooter();doc.save(`Vacaciones_${d}_a_${h}.pdf`);
+  }catch(e){alert('No se pudo generar el PDF: '+e.message)}
+}
 function renderVacations(){
   const el=$('#vacationsContent');if(!el)return;
   const toggle=$('#vacationsViewToggle');
