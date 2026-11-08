@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>CYARoma | Centro de Operaciones</title>
+<!-- GitHub Pages sirve este archivo cuando alguien abre una dirección como /clientes/1234-addi-inversiones.
+     Lo reenvía a la página principal («/?/clientes/…») y allí la app vuelve a dejar la dirección limpia y abre esa pantalla.
+     Se sube UNA vez, junto a index.html, y no cambia con las versiones de la app. Es el mismo método estándar que ya usas en tus otras apps
+     (dominio propio en la raíz: pathSegmentsToKeep = 0). Si ya tienes ese archivo, puedes reutilizarlo tal cual. -->
+<script>
+  var pathSegmentsToKeep = 0;
+  var l = window.location;
+  l.replace(
+    l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+    l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+    l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+    (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+    l.hash
+  );
+</script>
+</head>
+<body></body>
+</html>
